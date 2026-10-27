@@ -1,0 +1,2 @@
+model,dataset,k,n_ratings,MAE,RMSE
+User-Based CF,Test,20,9818,0.7124780426116382,0.9317233366433374

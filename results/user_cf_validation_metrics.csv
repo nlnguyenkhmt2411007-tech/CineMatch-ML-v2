@@ -1,0 +1,2 @@
+model,dataset,k,MAE,RMSE
+User-Based CF,Validation,30,0.6899036863227015,0.9099742458798825

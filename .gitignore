@@ -1,0 +1,94 @@
+
+# ============================================================
+# CINEMATCH ML V2 - GITIGNORE
+# Deployment: Vercel (Frontend) + Render (Backend)
+# ============================================================
+
+# ------------------------------------------------------------
+# 1. NODE.JS / REACT / VITE
+# ------------------------------------------------------------
+node_modules/
+build/
+dist/
+coverage/
+.vite/
+
+# ------------------------------------------------------------
+# 2. SYSTEM / LOG FILES
+# ------------------------------------------------------------
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ------------------------------------------------------------
+# 3. ENVIRONMENT VARIABLES / SECRETS
+# ------------------------------------------------------------
+.env
+.env.*
+!.env.example
+
+# Private keys
+*.pem
+*.key
+
+# ------------------------------------------------------------
+# 4. PYTHON ENVIRONMENT / CACHE
+# ------------------------------------------------------------
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ------------------------------------------------------------
+# 5. MOVIELENS DATA
+# ------------------------------------------------------------
+# GIU data/raw VA data/processed DE DEPLOY RENDER.
+# KHONG bo qua toan bo data/.
+
+# Chi bo qua TMDb cache va file tam.
+data/cache/
+data/tmp/
+data/temp/
+
+# ------------------------------------------------------------
+# 6. MACHINE LEARNING MODELS
+# ------------------------------------------------------------
+# GIU models/ neu Backend can file model da huan luyen.
+# KHONG bo qua toan bo models/.
+
+# ------------------------------------------------------------
+# 7. MACHINE LEARNING RESULTS
+# ------------------------------------------------------------
+# GIU results/ de ML Dashboard doc metrics.
+# KHONG bo qua toan bo results/.
+
+# ------------------------------------------------------------
+# 8. BACKUP / TEMPORARY FILES
+# ------------------------------------------------------------
+*.backup.*
+*.backup_*
+*.before_*
+*.bak
+*.tmp
+*.temp
+design-backup/
+
+# ------------------------------------------------------------
+# 9. EDITOR FILES
+# ------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ------------------------------------------------------------
+# 10. LOCAL CONFIGURATION
+# ------------------------------------------------------------
+*.local

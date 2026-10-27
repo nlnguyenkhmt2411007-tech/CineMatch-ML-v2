@@ -1,0 +1,1107 @@
+userId,model,hits,relevant_count,precision_at_10,recall_at_10,candidate_count
+1,Content-Based,0,17,0.0,0.0,123
+1,User-Based CF,3,17,0.3,0.17647058823529413,123
+2,Content-Based,0,2,0.0,0.0,102
+2,User-Based CF,1,2,0.1,0.5,102
+4,Content-Based,1,11,0.1,0.09090909090909091,121
+4,User-Based CF,2,11,0.2,0.18181818181818182,121
+5,Content-Based,1,3,0.1,0.3333333333333333,104
+5,User-Based CF,0,3,0.0,0.0,104
+6,Content-Based,1,9,0.1,0.1111111111111111,126
+6,User-Based CF,0,9,0.0,0.0,126
+7,Content-Based,0,5,0.0,0.0,115
+7,User-Based CF,0,5,0.0,0.0,115
+8,Content-Based,0,3,0.0,0.0,104
+8,User-Based CF,0,3,0.0,0.0,104
+9,Content-Based,0,1,0.0,0.0,104
+9,User-Based CF,0,1,0.0,0.0,104
+10,Content-Based,0,5,0.0,0.0,113
+10,User-Based CF,0,5,0.0,0.0,113
+11,Content-Based,0,6,0.0,0.0,106
+11,User-Based CF,2,6,0.2,0.3333333333333333,106
+12,Content-Based,2,3,0.2,0.6666666666666666,103
+12,User-Based CF,1,3,0.1,0.3333333333333333,103
+13,Content-Based,0,2,0.0,0.0,103
+13,User-Based CF,0,2,0.0,0.0,103
+14,Content-Based,0,1,0.0,0.0,104
+14,User-Based CF,0,1,0.0,0.0,104
+15,Content-Based,2,3,0.2,0.6666666666666666,113
+15,User-Based CF,0,3,0.0,0.0,113
+16,Content-Based,2,8,0.2,0.25,109
+16,User-Based CF,0,8,0.0,0.0,109
+17,Content-Based,1,8,0.1,0.125,110
+17,User-Based CF,1,8,0.1,0.125,110
+18,Content-Based,4,21,0.4,0.19047619047619047,141
+18,User-Based CF,0,21,0.0,0.0,141
+19,Content-Based,0,12,0.0,0.0,170
+19,User-Based CF,1,12,0.1,0.08333333333333333,170
+20,Content-Based,4,11,0.4,0.36363636363636365,124
+20,User-Based CF,2,11,0.2,0.18181818181818182,124
+21,Content-Based,3,7,0.3,0.42857142857142855,141
+21,User-Based CF,2,7,0.2,0.2857142857142857,141
+22,Content-Based,0,1,0.0,0.0,111
+22,User-Based CF,0,1,0.0,0.0,111
+23,Content-Based,2,5,0.2,0.4,112
+23,User-Based CF,2,5,0.2,0.4,112
+24,Content-Based,0,8,0.0,0.0,111
+24,User-Based CF,4,8,0.4,0.5,111
+25,Content-Based,0,2,0.0,0.0,102
+25,User-Based CF,0,2,0.0,0.0,102
+27,Content-Based,0,12,0.0,0.0,113
+27,User-Based CF,2,12,0.2,0.16666666666666666,113
+28,Content-Based,0,3,0.0,0.0,155
+28,User-Based CF,0,3,0.0,0.0,155
+29,Content-Based,0,7,0.0,0.0,108
+29,User-Based CF,1,7,0.1,0.14285714285714285,108
+30,Content-Based,1,2,0.1,0.5,103
+30,User-Based CF,0,2,0.0,0.0,103
+31,Content-Based,0,3,0.0,0.0,105
+31,User-Based CF,0,3,0.0,0.0,105
+32,Content-Based,2,5,0.2,0.4,110
+32,User-Based CF,1,5,0.1,0.2,110
+33,Content-Based,0,7,0.0,0.0,115
+33,User-Based CF,2,7,0.2,0.2857142857142857,115
+34,Content-Based,4,5,0.4,0.8,108
+34,User-Based CF,0,5,0.0,0.0,108
+35,Content-Based,0,2,0.0,0.0,102
+35,User-Based CF,0,2,0.0,0.0,102
+37,Content-Based,0,2,0.0,0.0,102
+37,User-Based CF,0,2,0.0,0.0,102
+38,Content-Based,0,1,0.0,0.0,107
+38,User-Based CF,1,1,0.1,1.0,107
+39,Content-Based,3,6,0.3,0.5,110
+39,User-Based CF,1,6,0.1,0.16666666666666666,110
+40,Content-Based,1,5,0.1,0.2,110
+40,User-Based CF,0,5,0.0,0.0,110
+41,Content-Based,2,9,0.2,0.2222222222222222,121
+41,User-Based CF,1,9,0.1,0.1111111111111111,121
+42,Content-Based,0,36,0.0,0.0,144
+42,User-Based CF,2,36,0.2,0.05555555555555555,144
+43,Content-Based,0,11,0.0,0.0,111
+43,User-Based CF,0,11,0.0,0.0,111
+44,Content-Based,1,1,0.1,1.0,104
+44,User-Based CF,0,1,0.0,0.0,104
+45,Content-Based,0,29,0.0,0.0,139
+45,User-Based CF,3,29,0.3,0.10344827586206896,139
+46,Content-Based,1,2,0.1,0.5,104
+46,User-Based CF,0,2,0.0,0.0,104
+47,Content-Based,0,1,0.0,0.0,114
+47,User-Based CF,0,1,0.0,0.0,114
+48,Content-Based,3,3,0.3,1.0,103
+48,User-Based CF,0,3,0.0,0.0,103
+49,Content-Based,0,2,0.0,0.0,102
+49,User-Based CF,0,2,0.0,0.0,102
+50,Content-Based,1,3,0.1,0.3333333333333333,129
+50,User-Based CF,0,3,0.0,0.0,129
+51,Content-Based,2,20,0.2,0.1,134
+51,User-Based CF,1,20,0.1,0.05,134
+52,Content-Based,4,12,0.4,0.3333333333333333,113
+52,User-Based CF,2,12,0.2,0.16666666666666666,113
+53,Content-Based,1,2,0.1,0.5,102
+53,User-Based CF,2,2,0.2,1.0,102
+55,Content-Based,1,2,0.1,0.5,102
+55,User-Based CF,0,2,0.0,0.0,102
+56,Content-Based,0,2,0.0,0.0,104
+56,User-Based CF,0,2,0.0,0.0,104
+57,Content-Based,1,15,0.1,0.06666666666666667,147
+57,User-Based CF,1,15,0.1,0.06666666666666667,147
+58,Content-Based,1,8,0.1,0.125,111
+58,User-Based CF,0,8,0.0,0.0,111
+59,Content-Based,5,9,0.5,0.5555555555555556,110
+59,User-Based CF,0,9,0.0,0.0,110
+60,Content-Based,0,2,0.0,0.0,102
+60,User-Based CF,0,2,0.0,0.0,102
+61,Content-Based,0,3,0.0,0.0,103
+61,User-Based CF,1,3,0.1,0.3333333333333333,103
+62,Content-Based,0,11,0.0,0.0,134
+62,User-Based CF,1,11,0.1,0.09090909090909091,134
+63,Content-Based,1,10,0.1,0.1,127
+63,User-Based CF,1,10,0.1,0.1,127
+64,Content-Based,0,29,0.0,0.0,150
+64,User-Based CF,1,29,0.1,0.034482758620689655,150
+65,Content-Based,1,3,0.1,0.3333333333333333,103
+65,User-Based CF,0,3,0.0,0.0,103
+66,Content-Based,1,19,0.1,0.05263157894736842,133
+66,User-Based CF,0,19,0.0,0.0,133
+67,Content-Based,0,1,0.0,0.0,103
+67,User-Based CF,0,1,0.0,0.0,103
+68,Content-Based,3,34,0.3,0.08823529411764706,218
+68,User-Based CF,1,34,0.1,0.029411764705882353,218
+69,Content-Based,1,3,0.1,0.3333333333333333,104
+69,User-Based CF,1,3,0.1,0.3333333333333333,104
+70,Content-Based,1,4,0.1,0.25,106
+70,User-Based CF,2,4,0.2,0.5,106
+71,Content-Based,1,3,0.1,0.3333333333333333,103
+71,User-Based CF,0,3,0.0,0.0,103
+72,Content-Based,0,4,0.0,0.0,104
+72,User-Based CF,1,4,0.1,0.25,104
+73,Content-Based,2,20,0.2,0.1,121
+73,User-Based CF,0,20,0.0,0.0,121
+74,Content-Based,4,7,0.4,0.5714285714285714,115
+74,User-Based CF,2,7,0.2,0.2857142857142857,115
+75,Content-Based,1,3,0.1,0.3333333333333333,106
+75,User-Based CF,0,3,0.0,0.0,106
+76,Content-Based,0,3,0.0,0.0,110
+76,User-Based CF,1,3,0.1,0.3333333333333333,110
+77,Content-Based,2,2,0.2,1.0,102
+77,User-Based CF,1,2,0.1,0.5,102
+78,Content-Based,0,4,0.0,0.0,106
+78,User-Based CF,1,4,0.1,0.25,106
+79,Content-Based,4,6,0.4,0.6666666666666666,106
+79,User-Based CF,0,6,0.0,0.0,106
+80,Content-Based,1,12,0.1,0.08333333333333333,114
+80,User-Based CF,0,12,0.0,0.0,114
+81,Content-Based,1,1,0.1,1.0,102
+81,User-Based CF,0,1,0.0,0.0,102
+82,Content-Based,2,9,0.2,0.2222222222222222,122
+82,User-Based CF,0,9,0.0,0.0,122
+83,Content-Based,0,1,0.0,0.0,111
+83,User-Based CF,0,1,0.0,0.0,111
+84,Content-Based,0,4,0.0,0.0,129
+84,User-Based CF,0,4,0.0,0.0,129
+85,Content-Based,2,2,0.2,1.0,103
+85,User-Based CF,1,2,0.1,0.5,103
+86,Content-Based,0,5,0.0,0.0,107
+86,User-Based CF,0,5,0.0,0.0,107
+87,Content-Based,0,2,0.0,0.0,102
+87,User-Based CF,0,2,0.0,0.0,102
+88,Content-Based,1,5,0.1,0.2,105
+88,User-Based CF,0,5,0.0,0.0,105
+89,Content-Based,0,7,0.0,0.0,107
+89,User-Based CF,2,7,0.2,0.2857142857142857,107
+90,Content-Based,0,1,0.0,0.0,103
+90,User-Based CF,0,1,0.0,0.0,103
+91,Content-Based,3,15,0.3,0.2,155
+91,User-Based CF,0,15,0.0,0.0,155
+92,Content-Based,0,2,0.0,0.0,102
+92,User-Based CF,0,2,0.0,0.0,102
+93,Content-Based,2,9,0.2,0.2222222222222222,109
+93,User-Based CF,0,9,0.0,0.0,109
+95,Content-Based,2,14,0.2,0.14285714285714285,116
+95,User-Based CF,2,14,0.2,0.14285714285714285,116
+96,Content-Based,0,6,0.0,0.0,107
+96,User-Based CF,0,6,0.0,0.0,107
+97,Content-Based,0,1,0.0,0.0,103
+97,User-Based CF,0,1,0.0,0.0,103
+98,Content-Based,1,7,0.1,0.14285714285714285,109
+98,User-Based CF,1,7,0.1,0.14285714285714285,109
+99,Content-Based,0,1,0.0,0.0,105
+99,User-Based CF,1,1,0.1,1.0,105
+100,Content-Based,5,11,0.5,0.45454545454545453,114
+100,User-Based CF,2,11,0.2,0.18181818181818182,114
+101,Content-Based,1,6,0.1,0.16666666666666666,106
+101,User-Based CF,1,6,0.1,0.16666666666666666,106
+102,Content-Based,0,1,0.0,0.0,105
+102,User-Based CF,0,1,0.0,0.0,105
+103,Content-Based,3,27,0.3,0.1111111111111111,136
+103,User-Based CF,1,27,0.1,0.037037037037037035,136
+104,Content-Based,1,12,0.1,0.08333333333333333,123
+104,User-Based CF,2,12,0.2,0.16666666666666666,123
+105,Content-Based,3,46,0.3,0.06521739130434782,152
+105,User-Based CF,3,46,0.3,0.06521739130434782,152
+106,Content-Based,1,1,0.1,1.0,102
+106,User-Based CF,0,1,0.0,0.0,102
+107,Content-Based,0,2,0.0,0.0,103
+107,User-Based CF,0,2,0.0,0.0,103
+108,Content-Based,3,7,0.3,0.42857142857142855,107
+108,User-Based CF,2,7,0.2,0.2857142857142857,107
+109,Content-Based,1,1,0.1,1.0,112
+109,User-Based CF,0,1,0.0,0.0,112
+110,Content-Based,0,3,0.0,0.0,105
+110,User-Based CF,1,3,0.1,0.3333333333333333,105
+111,Content-Based,1,15,0.1,0.06666666666666667,138
+111,User-Based CF,1,15,0.1,0.06666666666666667,138
+112,Content-Based,1,4,0.1,0.25,106
+112,User-Based CF,0,4,0.0,0.0,106
+113,Content-Based,0,14,0.0,0.0,115
+113,User-Based CF,2,14,0.2,0.14285714285714285,115
+114,Content-Based,0,2,0.0,0.0,103
+114,User-Based CF,0,2,0.0,0.0,103
+115,Content-Based,2,7,0.2,0.2857142857142857,111
+115,User-Based CF,2,7,0.2,0.2857142857142857,111
+116,Content-Based,0,3,0.0,0.0,108
+116,User-Based CF,0,3,0.0,0.0,108
+117,Content-Based,0,3,0.0,0.0,116
+117,User-Based CF,1,3,0.1,0.3333333333333333,116
+118,Content-Based,0,2,0.0,0.0,102
+118,User-Based CF,0,2,0.0,0.0,102
+119,Content-Based,4,14,0.4,0.2857142857142857,119
+119,User-Based CF,0,14,0.0,0.0,119
+120,Content-Based,0,1,0.0,0.0,102
+120,User-Based CF,0,1,0.0,0.0,102
+121,Content-Based,0,3,0.0,0.0,105
+121,User-Based CF,0,3,0.0,0.0,105
+122,Content-Based,1,26,0.1,0.038461538461538464,129
+122,User-Based CF,4,26,0.4,0.15384615384615385,129
+123,Content-Based,4,5,0.4,0.8,105
+123,User-Based CF,0,5,0.0,0.0,105
+124,Content-Based,0,4,0.0,0.0,105
+124,User-Based CF,0,4,0.0,0.0,105
+125,Content-Based,0,14,0.0,0.0,129
+125,User-Based CF,1,14,0.1,0.07142857142857142,129
+127,Content-Based,0,1,0.0,0.0,102
+127,User-Based CF,0,1,0.0,0.0,102
+128,Content-Based,0,3,0.0,0.0,103
+128,User-Based CF,3,3,0.3,1.0,103
+129,Content-Based,3,8,0.3,0.375,114
+129,User-Based CF,1,8,0.1,0.125,114
+130,Content-Based,0,2,0.0,0.0,102
+130,User-Based CF,1,2,0.1,0.5,102
+131,Content-Based,0,2,0.0,0.0,106
+131,User-Based CF,0,2,0.0,0.0,106
+132,Content-Based,0,3,0.0,0.0,132
+132,User-Based CF,0,3,0.0,0.0,132
+135,Content-Based,2,18,0.2,0.1111111111111111,127
+135,User-Based CF,3,18,0.3,0.16666666666666666,127
+136,Content-Based,0,3,0.0,0.0,111
+136,User-Based CF,0,3,0.0,0.0,111
+137,Content-Based,3,12,0.3,0.25,114
+137,User-Based CF,2,12,0.2,0.16666666666666666,114
+138,Content-Based,0,2,0.0,0.0,102
+138,User-Based CF,1,2,0.1,0.5,102
+140,Content-Based,0,16,0.0,0.0,157
+140,User-Based CF,1,16,0.1,0.0625,157
+141,Content-Based,1,8,0.1,0.125,116
+141,User-Based CF,0,8,0.0,0.0,116
+142,Content-Based,1,3,0.1,0.3333333333333333,103
+142,User-Based CF,0,3,0.0,0.0,103
+143,Content-Based,1,1,0.1,1.0,107
+143,User-Based CF,0,1,0.0,0.0,107
+144,Content-Based,0,3,0.0,0.0,112
+144,User-Based CF,0,3,0.0,0.0,112
+146,Content-Based,0,1,0.0,0.0,103
+146,User-Based CF,0,1,0.0,0.0,103
+148,Content-Based,1,1,0.1,1.0,104
+148,User-Based CF,0,1,0.0,0.0,104
+149,Content-Based,0,1,0.0,0.0,105
+149,User-Based CF,0,1,0.0,0.0,105
+151,Content-Based,0,1,0.0,0.0,104
+151,User-Based CF,0,1,0.0,0.0,104
+152,Content-Based,0,2,0.0,0.0,106
+152,User-Based CF,0,2,0.0,0.0,106
+154,Content-Based,1,1,0.1,1.0,103
+154,User-Based CF,0,1,0.0,0.0,103
+155,Content-Based,0,2,0.0,0.0,104
+155,User-Based CF,0,2,0.0,0.0,104
+156,Content-Based,2,19,0.2,0.10526315789473684,139
+156,User-Based CF,3,19,0.3,0.15789473684210525,139
+157,Content-Based,0,1,0.0,0.0,102
+157,User-Based CF,0,1,0.0,0.0,102
+158,Content-Based,0,1,0.0,0.0,102
+158,User-Based CF,0,1,0.0,0.0,102
+159,Content-Based,0,2,0.0,0.0,109
+159,User-Based CF,0,2,0.0,0.0,109
+160,Content-Based,1,19,0.1,0.05263157894736842,142
+160,User-Based CF,3,19,0.3,0.15789473684210525,142
+161,Content-Based,1,3,0.1,0.3333333333333333,103
+161,User-Based CF,0,3,0.0,0.0,103
+162,Content-Based,0,2,0.0,0.0,103
+162,User-Based CF,1,2,0.1,0.5,103
+163,Content-Based,0,1,0.0,0.0,102
+163,User-Based CF,0,1,0.0,0.0,102
+164,Content-Based,2,3,0.2,0.6666666666666666,103
+164,User-Based CF,1,3,0.1,0.3333333333333333,103
+165,Content-Based,2,6,0.2,0.3333333333333333,106
+165,User-Based CF,0,6,0.0,0.0,106
+166,Content-Based,1,11,0.1,0.09090909090909091,119
+166,User-Based CF,0,11,0.0,0.0,119
+167,Content-Based,2,7,0.2,0.2857142857142857,117
+167,User-Based CF,2,7,0.2,0.2857142857142857,117
+168,Content-Based,0,8,0.0,0.0,109
+168,User-Based CF,5,8,0.5,0.625,109
+169,Content-Based,3,23,0.3,0.13043478260869565,126
+169,User-Based CF,2,23,0.2,0.08695652173913043,126
+171,Content-Based,0,8,0.0,0.0,108
+171,User-Based CF,3,8,0.3,0.375,108
+173,Content-Based,0,2,0.0,0.0,102
+173,User-Based CF,1,2,0.1,0.5,102
+174,Content-Based,0,2,0.0,0.0,106
+174,User-Based CF,0,2,0.0,0.0,106
+176,Content-Based,1,3,0.1,0.3333333333333333,103
+176,User-Based CF,0,3,0.0,0.0,103
+177,Content-Based,4,29,0.4,0.13793103448275862,189
+177,User-Based CF,1,29,0.1,0.034482758620689655,189
+178,Content-Based,0,7,0.0,0.0,107
+178,User-Based CF,0,7,0.0,0.0,107
+179,Content-Based,1,3,0.1,0.3333333333333333,106
+179,User-Based CF,0,3,0.0,0.0,106
+180,Content-Based,0,1,0.0,0.0,102
+180,User-Based CF,0,1,0.0,0.0,102
+182,Content-Based,1,44,0.1,0.022727272727272728,189
+182,User-Based CF,3,44,0.3,0.06818181818181818,189
+183,Content-Based,1,3,0.1,0.3333333333333333,105
+183,User-Based CF,0,3,0.0,0.0,105
+184,Content-Based,1,3,0.1,0.3333333333333333,107
+184,User-Based CF,2,3,0.2,0.6666666666666666,107
+185,Content-Based,2,3,0.2,0.6666666666666666,104
+185,User-Based CF,0,3,0.0,0.0,104
+186,Content-Based,1,18,0.1,0.05555555555555555,122
+186,User-Based CF,0,18,0.0,0.0,122
+187,Content-Based,3,12,0.3,0.25,121
+187,User-Based CF,1,12,0.1,0.08333333333333333,121
+188,Content-Based,0,4,0.0,0.0,104
+188,User-Based CF,2,4,0.2,0.5,104
+189,Content-Based,0,1,0.0,0.0,102
+189,User-Based CF,0,1,0.0,0.0,102
+190,Content-Based,2,4,0.2,0.5,106
+190,User-Based CF,1,4,0.1,0.25,106
+191,Content-Based,4,6,0.4,0.6666666666666666,108
+191,User-Based CF,4,6,0.4,0.6666666666666666,108
+192,Content-Based,1,2,0.1,0.5,102
+192,User-Based CF,0,2,0.0,0.0,102
+194,Content-Based,0,1,0.0,0.0,102
+194,User-Based CF,0,1,0.0,0.0,102
+195,Content-Based,3,11,0.3,0.2727272727272727,118
+195,User-Based CF,1,11,0.1,0.09090909090909091,118
+196,Content-Based,0,1,0.0,0.0,103
+196,User-Based CF,0,1,0.0,0.0,103
+197,Content-Based,0,1,0.0,0.0,103
+197,User-Based CF,0,1,0.0,0.0,103
+198,Content-Based,2,7,0.2,0.2857142857142857,123
+198,User-Based CF,0,7,0.0,0.0,123
+199,Content-Based,1,11,0.1,0.09090909090909091,135
+199,User-Based CF,0,11,0.0,0.0,135
+200,Content-Based,2,22,0.2,0.09090909090909091,133
+200,User-Based CF,0,22,0.0,0.0,133
+201,Content-Based,0,10,0.0,0.0,111
+201,User-Based CF,2,10,0.2,0.2,111
+202,Content-Based,1,28,0.1,0.03571428571428571,139
+202,User-Based CF,2,28,0.2,0.07142857142857142,139
+203,Content-Based,1,3,0.1,0.3333333333333333,104
+203,User-Based CF,0,3,0.0,0.0,104
+204,Content-Based,1,7,0.1,0.14285714285714285,108
+204,User-Based CF,3,7,0.3,0.42857142857142855,108
+205,Content-Based,0,2,0.0,0.0,102
+205,User-Based CF,0,2,0.0,0.0,102
+206,Content-Based,0,1,0.0,0.0,102
+206,User-Based CF,0,1,0.0,0.0,102
+208,Content-Based,1,2,0.1,0.5,102
+208,User-Based CF,0,2,0.0,0.0,102
+209,Content-Based,0,2,0.0,0.0,103
+209,User-Based CF,0,2,0.0,0.0,103
+210,Content-Based,2,6,0.2,0.3333333333333333,110
+210,User-Based CF,0,6,0.0,0.0,110
+211,Content-Based,4,8,0.4,0.5,108
+211,User-Based CF,0,8,0.0,0.0,108
+212,Content-Based,0,16,0.0,0.0,123
+212,User-Based CF,1,16,0.1,0.0625,123
+213,Content-Based,2,7,0.2,0.2857142857142857,108
+213,User-Based CF,1,7,0.1,0.14285714285714285,108
+214,Content-Based,0,1,0.0,0.0,101
+214,User-Based CF,0,1,0.0,0.0,101
+215,Content-Based,2,5,0.2,0.4,109
+215,User-Based CF,0,5,0.0,0.0,109
+216,Content-Based,3,7,0.3,0.42857142857142855,116
+216,User-Based CF,0,7,0.0,0.0,116
+217,Content-Based,0,2,0.0,0.0,160
+217,User-Based CF,0,2,0.0,0.0,160
+218,Content-Based,0,2,0.0,0.0,102
+218,User-Based CF,1,2,0.1,0.5,102
+219,Content-Based,1,10,0.1,0.1,150
+219,User-Based CF,0,10,0.0,0.0,150
+220,Content-Based,1,10,0.1,0.1,120
+220,User-Based CF,0,10,0.0,0.0,120
+221,Content-Based,8,29,0.8,0.27586206896551724,133
+221,User-Based CF,1,29,0.1,0.034482758620689655,133
+222,Content-Based,0,5,0.0,0.0,124
+222,User-Based CF,0,5,0.0,0.0,124
+223,Content-Based,0,2,0.0,0.0,107
+223,User-Based CF,0,2,0.0,0.0,107
+224,Content-Based,2,3,0.2,0.6666666666666666,105
+224,User-Based CF,0,3,0.0,0.0,105
+225,Content-Based,0,5,0.0,0.0,107
+225,User-Based CF,0,5,0.0,0.0,107
+226,Content-Based,2,27,0.2,0.07407407407407407,148
+226,User-Based CF,1,27,0.1,0.037037037037037035,148
+227,Content-Based,2,9,0.2,0.2222222222222222,109
+227,User-Based CF,1,9,0.1,0.1111111111111111,109
+228,Content-Based,0,2,0.0,0.0,102
+228,User-Based CF,0,2,0.0,0.0,102
+229,Content-Based,0,4,0.0,0.0,106
+229,User-Based CF,1,4,0.1,0.25,106
+230,Content-Based,3,5,0.3,0.6,113
+230,User-Based CF,0,5,0.0,0.0,113
+231,Content-Based,0,1,0.0,0.0,102
+231,User-Based CF,0,1,0.0,0.0,102
+232,Content-Based,4,35,0.4,0.11428571428571428,179
+232,User-Based CF,4,35,0.4,0.11428571428571428,179
+233,Content-Based,1,4,0.1,0.25,114
+233,User-Based CF,2,4,0.2,0.5,114
+234,Content-Based,2,10,0.2,0.2,120
+234,User-Based CF,0,10,0.0,0.0,120
+235,Content-Based,0,3,0.0,0.0,106
+235,User-Based CF,0,3,0.0,0.0,106
+236,Content-Based,0,1,0.0,0.0,103
+236,User-Based CF,0,1,0.0,0.0,103
+237,Content-Based,1,2,0.1,0.5,105
+237,User-Based CF,0,2,0.0,0.0,105
+238,Content-Based,1,2,0.1,0.5,103
+238,User-Based CF,0,2,0.0,0.0,103
+239,Content-Based,6,25,0.6,0.24,127
+239,User-Based CF,5,25,0.5,0.2,127
+240,Content-Based,1,7,0.1,0.14285714285714285,112
+240,User-Based CF,0,7,0.0,0.0,112
+241,Content-Based,0,5,0.0,0.0,107
+241,User-Based CF,0,5,0.0,0.0,107
+242,Content-Based,1,2,0.1,0.5,103
+242,User-Based CF,1,2,0.1,0.5,103
+243,Content-Based,0,2,0.0,0.0,103
+243,User-Based CF,0,2,0.0,0.0,103
+244,Content-Based,1,5,0.1,0.2,109
+244,User-Based CF,0,5,0.0,0.0,109
+245,Content-Based,0,1,0.0,0.0,102
+245,User-Based CF,0,1,0.0,0.0,102
+246,Content-Based,3,15,0.3,0.2,120
+246,User-Based CF,2,15,0.2,0.13333333333333333,120
+247,Content-Based,1,8,0.1,0.125,115
+247,User-Based CF,1,8,0.1,0.125,115
+248,Content-Based,1,1,0.1,1.0,105
+248,User-Based CF,0,1,0.0,0.0,105
+249,Content-Based,4,42,0.4,0.09523809523809523,198
+249,User-Based CF,2,42,0.2,0.047619047619047616,198
+250,Content-Based,1,2,0.1,0.5,102
+250,User-Based CF,1,2,0.1,0.5,102
+251,Content-Based,0,2,0.0,0.0,102
+251,User-Based CF,2,2,0.2,1.0,102
+252,Content-Based,2,3,0.2,0.6666666666666666,103
+252,User-Based CF,0,3,0.0,0.0,103
+253,Content-Based,0,3,0.0,0.0,103
+253,User-Based CF,2,3,0.2,0.6666666666666666,103
+254,Content-Based,2,10,0.2,0.2,112
+254,User-Based CF,0,10,0.0,0.0,112
+256,Content-Based,2,14,0.2,0.14285714285714285,117
+256,User-Based CF,0,14,0.0,0.0,117
+258,Content-Based,0,2,0.0,0.0,102
+258,User-Based CF,0,2,0.0,0.0,102
+259,Content-Based,1,1,0.1,1.0,102
+259,User-Based CF,0,1,0.0,0.0,102
+260,Content-Based,1,6,0.1,0.16666666666666666,115
+260,User-Based CF,1,6,0.1,0.16666666666666666,115
+261,Content-Based,1,4,0.1,0.25,105
+261,User-Based CF,1,4,0.1,0.25,105
+262,Content-Based,0,2,0.0,0.0,105
+262,User-Based CF,2,2,0.2,1.0,105
+263,Content-Based,2,9,0.2,0.2222222222222222,119
+263,User-Based CF,0,9,0.0,0.0,119
+264,Content-Based,0,1,0.0,0.0,105
+264,User-Based CF,0,1,0.0,0.0,105
+265,Content-Based,0,3,0.0,0.0,115
+265,User-Based CF,1,3,0.1,0.3333333333333333,115
+266,Content-Based,3,16,0.3,0.1875,118
+266,User-Based CF,3,16,0.3,0.1875,118
+267,Content-Based,1,5,0.1,0.2,105
+267,User-Based CF,1,5,0.1,0.2,105
+268,Content-Based,0,2,0.0,0.0,112
+268,User-Based CF,0,2,0.0,0.0,112
+270,Content-Based,0,1,0.0,0.0,104
+270,User-Based CF,0,1,0.0,0.0,104
+272,Content-Based,1,2,0.1,0.5,103
+272,User-Based CF,0,2,0.0,0.0,103
+273,Content-Based,1,5,0.1,0.2,105
+273,User-Based CF,0,5,0.0,0.0,105
+274,Content-Based,3,42,0.3,0.07142857142857142,221
+274,User-Based CF,3,42,0.3,0.07142857142857142,221
+275,Content-Based,4,31,0.4,0.12903225806451613,139
+275,User-Based CF,4,31,0.4,0.12903225806451613,139
+276,Content-Based,1,4,0.1,0.25,104
+276,User-Based CF,0,4,0.0,0.0,104
+278,Content-Based,0,2,0.0,0.0,102
+278,User-Based CF,2,2,0.2,1.0,102
+279,Content-Based,0,3,0.0,0.0,117
+279,User-Based CF,0,3,0.0,0.0,117
+280,Content-Based,1,8,0.1,0.125,118
+280,User-Based CF,0,8,0.0,0.0,118
+281,Content-Based,0,1,0.0,0.0,102
+281,User-Based CF,0,1,0.0,0.0,102
+282,Content-Based,1,17,0.1,0.058823529411764705,123
+282,User-Based CF,1,17,0.1,0.058823529411764705,123
+283,Content-Based,0,2,0.0,0.0,103
+283,User-Based CF,0,2,0.0,0.0,103
+284,Content-Based,1,4,0.1,0.25,108
+284,User-Based CF,0,4,0.0,0.0,108
+285,Content-Based,1,2,0.1,0.5,103
+285,User-Based CF,1,2,0.1,0.5,103
+286,Content-Based,0,2,0.0,0.0,110
+286,User-Based CF,1,2,0.1,0.5,110
+287,Content-Based,3,11,0.3,0.2727272727272727,115
+287,User-Based CF,0,11,0.0,0.0,115
+288,Content-Based,2,37,0.2,0.05405405405405406,204
+288,User-Based CF,2,37,0.2,0.05405405405405406,204
+289,Content-Based,0,2,0.0,0.0,102
+289,User-Based CF,0,2,0.0,0.0,102
+290,Content-Based,4,25,0.4,0.16,126
+290,User-Based CF,4,25,0.4,0.16,126
+291,Content-Based,0,2,0.0,0.0,103
+291,User-Based CF,0,2,0.0,0.0,103
+292,Content-Based,4,13,0.4,0.3076923076923077,143
+292,User-Based CF,0,13,0.0,0.0,143
+294,Content-Based,0,17,0.0,0.0,143
+294,User-Based CF,2,17,0.2,0.11764705882352941,143
+295,Content-Based,0,2,0.0,0.0,104
+295,User-Based CF,0,2,0.0,0.0,104
+298,Content-Based,0,1,0.0,0.0,185
+298,User-Based CF,0,1,0.0,0.0,185
+299,Content-Based,0,2,0.0,0.0,102
+299,User-Based CF,0,2,0.0,0.0,102
+300,Content-Based,0,2,0.0,0.0,103
+300,User-Based CF,0,2,0.0,0.0,103
+301,Content-Based,2,5,0.2,0.4,111
+301,User-Based CF,2,5,0.2,0.4,111
+302,Content-Based,0,1,0.0,0.0,103
+302,User-Based CF,1,1,0.1,1.0,103
+303,Content-Based,3,3,0.3,1.0,105
+303,User-Based CF,0,3,0.0,0.0,105
+304,Content-Based,3,13,0.3,0.23076923076923078,121
+304,User-Based CF,1,13,0.1,0.07692307692307693,121
+305,Content-Based,1,33,0.1,0.030303030303030304,165
+305,User-Based CF,1,33,0.1,0.030303030303030304,165
+307,Content-Based,3,32,0.3,0.09375,186
+307,User-Based CF,2,32,0.2,0.0625,186
+308,Content-Based,2,4,0.2,0.5,111
+308,User-Based CF,0,4,0.0,0.0,111
+309,Content-Based,0,5,0.0,0.0,110
+309,User-Based CF,2,5,0.2,0.4,110
+310,Content-Based,0,3,0.0,0.0,106
+310,User-Based CF,0,3,0.0,0.0,106
+312,Content-Based,0,20,0.0,0.0,122
+312,User-Based CF,4,20,0.4,0.2,122
+313,Content-Based,3,15,0.3,0.2,134
+313,User-Based CF,2,15,0.2,0.13333333333333333,134
+314,Content-Based,0,4,0.0,0.0,111
+314,User-Based CF,0,4,0.0,0.0,111
+317,Content-Based,1,8,0.1,0.125,118
+317,User-Based CF,1,8,0.1,0.125,118
+318,Content-Based,2,26,0.2,0.07692307692307693,154
+318,User-Based CF,5,26,0.5,0.19230769230769232,154
+319,Content-Based,0,3,0.0,0.0,103
+319,User-Based CF,0,3,0.0,0.0,103
+320,Content-Based,0,2,0.0,0.0,102
+320,User-Based CF,0,2,0.0,0.0,102
+321,Content-Based,0,1,0.0,0.0,105
+321,User-Based CF,0,1,0.0,0.0,105
+322,Content-Based,1,4,0.1,0.25,110
+322,User-Based CF,0,4,0.0,0.0,110
+323,Content-Based,0,4,0.0,0.0,109
+323,User-Based CF,0,4,0.0,0.0,109
+324,Content-Based,0,2,0.0,0.0,102
+324,User-Based CF,0,2,0.0,0.0,102
+325,Content-Based,1,18,0.1,0.05555555555555555,126
+325,User-Based CF,3,18,0.3,0.16666666666666666,126
+326,Content-Based,1,11,0.1,0.09090909090909091,115
+326,User-Based CF,2,11,0.2,0.18181818181818182,115
+327,Content-Based,0,4,0.0,0.0,104
+327,User-Based CF,0,4,0.0,0.0,104
+328,Content-Based,2,12,0.2,0.16666666666666666,125
+328,User-Based CF,2,12,0.2,0.16666666666666666,125
+330,Content-Based,1,14,0.1,0.07142857142857142,124
+330,User-Based CF,0,14,0.0,0.0,124
+331,Content-Based,0,5,0.0,0.0,116
+331,User-Based CF,0,5,0.0,0.0,116
+332,Content-Based,0,9,0.0,0.0,126
+332,User-Based CF,4,9,0.4,0.4444444444444444,126
+333,Content-Based,0,2,0.0,0.0,102
+333,User-Based CF,0,2,0.0,0.0,102
+335,Content-Based,0,2,0.0,0.0,102
+335,User-Based CF,2,2,0.2,1.0,102
+336,Content-Based,1,5,0.1,0.2,105
+336,User-Based CF,0,5,0.0,0.0,105
+337,Content-Based,0,5,0.0,0.0,107
+337,User-Based CF,0,5,0.0,0.0,107
+339,Content-Based,0,30,0.0,0.0,136
+339,User-Based CF,3,30,0.3,0.1,136
+340,Content-Based,0,2,0.0,0.0,102
+340,User-Based CF,0,2,0.0,0.0,102
+341,Content-Based,1,2,0.1,0.5,105
+341,User-Based CF,0,2,0.0,0.0,105
+343,Content-Based,1,4,0.1,0.25,105
+343,User-Based CF,0,4,0.0,0.0,105
+344,Content-Based,2,4,0.2,0.5,106
+344,User-Based CF,1,4,0.1,0.25,106
+345,Content-Based,0,3,0.0,0.0,105
+345,User-Based CF,0,3,0.0,0.0,105
+346,Content-Based,0,15,0.0,0.0,116
+346,User-Based CF,3,15,0.3,0.2,116
+347,Content-Based,1,2,0.1,0.5,104
+347,User-Based CF,0,2,0.0,0.0,104
+348,Content-Based,1,5,0.1,0.2,105
+348,User-Based CF,4,5,0.4,0.8,105
+349,Content-Based,0,1,0.0,0.0,103
+349,User-Based CF,0,1,0.0,0.0,103
+350,Content-Based,0,2,0.0,0.0,104
+350,User-Based CF,0,2,0.0,0.0,104
+351,Content-Based,2,6,0.2,0.3333333333333333,112
+351,User-Based CF,1,6,0.1,0.16666666666666666,112
+352,Content-Based,2,18,0.2,0.1111111111111111,129
+352,User-Based CF,5,18,0.5,0.2777777777777778,129
+353,Content-Based,1,3,0.1,0.3333333333333333,109
+353,User-Based CF,0,3,0.0,0.0,109
+354,Content-Based,1,12,0.1,0.08333333333333333,122
+354,User-Based CF,2,12,0.2,0.16666666666666666,122
+355,Content-Based,0,1,0.0,0.0,102
+355,User-Based CF,1,1,0.1,1.0,102
+356,Content-Based,1,14,0.1,0.07142857142857142,126
+356,User-Based CF,0,14,0.0,0.0,126
+357,Content-Based,1,29,0.1,0.034482758620689655,137
+357,User-Based CF,1,29,0.1,0.034482758620689655,137
+358,Content-Based,0,3,0.0,0.0,103
+358,User-Based CF,0,3,0.0,0.0,103
+359,Content-Based,0,4,0.0,0.0,107
+359,User-Based CF,2,4,0.2,0.5,107
+361,Content-Based,0,1,0.0,0.0,109
+361,User-Based CF,0,1,0.0,0.0,109
+362,Content-Based,2,10,0.2,0.2,110
+362,User-Based CF,1,10,0.1,0.1,110
+363,Content-Based,1,1,0.1,1.0,103
+363,User-Based CF,0,1,0.0,0.0,103
+365,Content-Based,2,5,0.2,0.4,123
+365,User-Based CF,2,5,0.2,0.4,123
+366,Content-Based,0,1,0.0,0.0,103
+366,User-Based CF,0,1,0.0,0.0,103
+367,Content-Based,0,9,0.0,0.0,118
+367,User-Based CF,0,9,0.0,0.0,118
+368,Content-Based,0,2,0.0,0.0,145
+368,User-Based CF,0,2,0.0,0.0,145
+369,Content-Based,1,4,0.1,0.25,112
+369,User-Based CF,1,4,0.1,0.25,112
+370,Content-Based,0,4,0.0,0.0,109
+370,User-Based CF,0,4,0.0,0.0,109
+371,Content-Based,1,4,0.1,0.25,104
+371,User-Based CF,1,4,0.1,0.25,104
+372,Content-Based,2,7,0.2,0.2857142857142857,123
+372,User-Based CF,1,7,0.1,0.14285714285714285,123
+373,Content-Based,0,5,0.0,0.0,110
+373,User-Based CF,0,5,0.0,0.0,110
+374,Content-Based,0,3,0.0,0.0,103
+374,User-Based CF,1,3,0.1,0.3333333333333333,103
+375,Content-Based,0,2,0.0,0.0,103
+375,User-Based CF,0,2,0.0,0.0,103
+376,Content-Based,2,11,0.2,0.18181818181818182,113
+376,User-Based CF,0,11,0.0,0.0,113
+377,Content-Based,0,5,0.0,0.0,108
+377,User-Based CF,0,5,0.0,0.0,108
+378,Content-Based,0,4,0.0,0.0,104
+378,User-Based CF,0,4,0.0,0.0,104
+380,Content-Based,2,52,0.2,0.038461538461538464,215
+380,User-Based CF,1,52,0.1,0.019230769230769232,215
+381,Content-Based,2,31,0.2,0.06451612903225806,147
+381,User-Based CF,4,31,0.4,0.12903225806451613,147
+382,Content-Based,0,1,0.0,0.0,127
+382,User-Based CF,0,1,0.0,0.0,127
+383,Content-Based,1,2,0.1,0.5,103
+383,User-Based CF,0,2,0.0,0.0,103
+384,Content-Based,0,2,0.0,0.0,106
+384,User-Based CF,0,2,0.0,0.0,106
+385,Content-Based,1,16,0.1,0.0625,120
+385,User-Based CF,3,16,0.3,0.1875,120
+386,Content-Based,0,3,0.0,0.0,106
+386,User-Based CF,0,3,0.0,0.0,106
+387,Content-Based,1,13,0.1,0.07692307692307693,188
+387,User-Based CF,0,13,0.0,0.0,188
+388,Content-Based,2,2,0.2,1.0,102
+388,User-Based CF,0,2,0.0,0.0,102
+389,Content-Based,0,2,0.0,0.0,103
+389,User-Based CF,0,2,0.0,0.0,103
+390,Content-Based,0,4,0.0,0.0,108
+390,User-Based CF,0,4,0.0,0.0,108
+391,Content-Based,2,26,0.2,0.07692307692307693,137
+391,User-Based CF,5,26,0.5,0.19230769230769232,137
+392,Content-Based,0,1,0.0,0.0,102
+392,User-Based CF,0,1,0.0,0.0,102
+393,Content-Based,1,4,0.1,0.25,112
+393,User-Based CF,0,4,0.0,0.0,112
+394,Content-Based,1,1,0.1,1.0,102
+394,User-Based CF,0,1,0.0,0.0,102
+395,Content-Based,0,1,0.0,0.0,106
+395,User-Based CF,0,1,0.0,0.0,106
+396,Content-Based,1,2,0.1,0.5,102
+396,User-Based CF,1,2,0.1,0.5,102
+397,Content-Based,0,2,0.0,0.0,102
+397,User-Based CF,1,2,0.1,0.5,102
+398,Content-Based,0,4,0.0,0.0,104
+398,User-Based CF,1,4,0.1,0.25,104
+399,Content-Based,1,2,0.1,0.5,103
+399,User-Based CF,0,2,0.0,0.0,103
+400,Content-Based,0,4,0.0,0.0,104
+400,User-Based CF,3,4,0.3,0.75,104
+402,Content-Based,0,2,0.0,0.0,104
+402,User-Based CF,0,2,0.0,0.0,104
+403,Content-Based,0,3,0.0,0.0,103
+403,User-Based CF,1,3,0.1,0.3333333333333333,103
+404,Content-Based,0,1,0.0,0.0,106
+404,User-Based CF,1,1,0.1,1.0,106
+405,Content-Based,2,9,0.2,0.2222222222222222,111
+405,User-Based CF,2,9,0.2,0.2222222222222222,111
+406,Content-Based,1,1,0.1,1.0,102
+406,User-Based CF,0,1,0.0,0.0,102
+407,Content-Based,1,2,0.1,0.5,102
+407,User-Based CF,0,2,0.0,0.0,102
+408,Content-Based,2,8,0.2,0.25,114
+408,User-Based CF,2,8,0.2,0.25,114
+409,Content-Based,0,11,0.0,0.0,112
+409,User-Based CF,5,11,0.5,0.45454545454545453,112
+410,Content-Based,2,12,0.2,0.16666666666666666,116
+410,User-Based CF,0,12,0.0,0.0,116
+411,Content-Based,0,1,0.0,0.0,112
+411,User-Based CF,0,1,0.0,0.0,112
+412,Content-Based,0,5,0.0,0.0,110
+412,User-Based CF,1,5,0.1,0.2,110
+413,Content-Based,1,5,0.1,0.2,105
+413,User-Based CF,0,5,0.0,0.0,105
+414,Content-Based,1,66,0.1,0.015151515151515152,338
+414,User-Based CF,1,66,0.1,0.015151515151515152,338
+415,Content-Based,2,6,0.2,0.3333333333333333,109
+415,User-Based CF,0,6,0.0,0.0,109
+416,Content-Based,1,5,0.1,0.2,105
+416,User-Based CF,1,5,0.1,0.2,105
+417,Content-Based,1,3,0.1,0.3333333333333333,106
+417,User-Based CF,1,3,0.1,0.3333333333333333,106
+418,Content-Based,1,3,0.1,0.3333333333333333,109
+418,User-Based CF,0,3,0.0,0.0,109
+419,Content-Based,1,6,0.1,0.16666666666666666,115
+419,User-Based CF,0,6,0.0,0.0,115
+420,Content-Based,0,8,0.0,0.0,114
+420,User-Based CF,1,8,0.1,0.125,114
+421,Content-Based,1,3,0.1,0.3333333333333333,103
+421,User-Based CF,1,3,0.1,0.3333333333333333,103
+422,Content-Based,0,4,0.0,0.0,107
+422,User-Based CF,0,4,0.0,0.0,107
+423,Content-Based,0,2,0.0,0.0,102
+423,User-Based CF,1,2,0.1,0.5,102
+424,Content-Based,4,7,0.4,0.5714285714285714,113
+424,User-Based CF,0,7,0.0,0.0,113
+425,Content-Based,0,14,0.0,0.0,130
+425,User-Based CF,0,14,0.0,0.0,130
+426,Content-Based,1,4,0.1,0.25,108
+426,User-Based CF,1,4,0.1,0.25,108
+427,Content-Based,0,2,0.0,0.0,108
+427,User-Based CF,0,2,0.0,0.0,108
+428,Content-Based,0,3,0.0,0.0,129
+428,User-Based CF,0,3,0.0,0.0,129
+429,Content-Based,1,3,0.1,0.3333333333333333,105
+429,User-Based CF,0,3,0.0,0.0,105
+430,Content-Based,0,4,0.0,0.0,105
+430,User-Based CF,2,4,0.2,0.5,105
+431,Content-Based,0,1,0.0,0.0,102
+431,User-Based CF,0,1,0.0,0.0,102
+432,Content-Based,1,16,0.1,0.0625,126
+432,User-Based CF,0,16,0.0,0.0,126
+433,Content-Based,0,1,0.0,0.0,102
+433,User-Based CF,0,1,0.0,0.0,102
+434,Content-Based,2,9,0.2,0.2222222222222222,123
+434,User-Based CF,1,9,0.1,0.1111111111111111,123
+435,Content-Based,1,4,0.1,0.25,104
+435,User-Based CF,0,4,0.0,0.0,104
+437,Content-Based,2,9,0.2,0.2222222222222222,112
+437,User-Based CF,1,9,0.1,0.1111111111111111,112
+438,Content-Based,2,13,0.2,0.15384615384615385,160
+438,User-Based CF,2,13,0.2,0.15384615384615385,160
+439,Content-Based,0,2,0.0,0.0,102
+439,User-Based CF,0,2,0.0,0.0,102
+441,Content-Based,0,3,0.0,0.0,104
+441,User-Based CF,1,3,0.1,0.3333333333333333,104
+443,Content-Based,1,3,0.1,0.3333333333333333,103
+443,User-Based CF,0,3,0.0,0.0,103
+444,Content-Based,0,1,0.0,0.0,104
+444,User-Based CF,0,1,0.0,0.0,104
+445,Content-Based,0,1,0.0,0.0,107
+445,User-Based CF,0,1,0.0,0.0,107
+446,Content-Based,0,2,0.0,0.0,108
+446,User-Based CF,0,2,0.0,0.0,108
+447,Content-Based,0,6,0.0,0.0,107
+447,User-Based CF,0,6,0.0,0.0,107
+448,Content-Based,2,14,0.2,0.14285714285714285,217
+448,User-Based CF,1,14,0.1,0.07142857142857142,217
+449,Content-Based,0,1,0.0,0.0,103
+449,User-Based CF,1,1,0.1,1.0,103
+450,Content-Based,0,5,0.0,0.0,105
+450,User-Based CF,0,5,0.0,0.0,105
+451,Content-Based,0,3,0.0,0.0,103
+451,User-Based CF,0,3,0.0,0.0,103
+452,Content-Based,4,20,0.4,0.2,120
+452,User-Based CF,2,20,0.2,0.1,120
+453,Content-Based,0,25,0.0,0.0,131
+453,User-Based CF,1,25,0.1,0.04,131
+454,Content-Based,0,2,0.0,0.0,104
+454,User-Based CF,1,2,0.1,0.5,104
+455,Content-Based,0,4,0.0,0.0,105
+455,User-Based CF,1,4,0.1,0.25,105
+456,Content-Based,0,3,0.0,0.0,103
+456,User-Based CF,0,3,0.0,0.0,103
+457,Content-Based,0,3,0.0,0.0,105
+457,User-Based CF,0,3,0.0,0.0,105
+458,Content-Based,1,4,0.1,0.25,105
+458,User-Based CF,1,4,0.1,0.25,105
+459,Content-Based,0,1,0.0,0.0,102
+459,User-Based CF,1,1,0.1,1.0,102
+460,Content-Based,1,8,0.1,0.125,108
+460,User-Based CF,3,8,0.3,0.375,108
+462,Content-Based,2,17,0.2,0.11764705882352941,134
+462,User-Based CF,3,17,0.3,0.17647058823529413,134
+463,Content-Based,1,1,0.1,1.0,103
+463,User-Based CF,0,1,0.0,0.0,103
+464,Content-Based,0,4,0.0,0.0,108
+464,User-Based CF,0,4,0.0,0.0,108
+465,Content-Based,0,9,0.0,0.0,111
+465,User-Based CF,4,9,0.4,0.4444444444444444,111
+466,Content-Based,1,5,0.1,0.2,111
+466,User-Based CF,0,5,0.0,0.0,111
+467,Content-Based,1,1,0.1,1.0,102
+467,User-Based CF,1,1,0.1,1.0,102
+468,Content-Based,0,1,0.0,0.0,103
+468,User-Based CF,0,1,0.0,0.0,103
+469,Content-Based,1,35,0.1,0.02857142857142857,145
+469,User-Based CF,5,35,0.5,0.14285714285714285,145
+470,Content-Based,0,2,0.0,0.0,108
+470,User-Based CF,0,2,0.0,0.0,108
+472,Content-Based,2,2,0.2,1.0,102
+472,User-Based CF,0,2,0.0,0.0,102
+473,Content-Based,0,3,0.0,0.0,103
+473,User-Based CF,2,3,0.2,0.6666666666666666,103
+474,Content-Based,2,76,0.2,0.02631578947368421,265
+474,User-Based CF,3,76,0.3,0.039473684210526314,265
+475,Content-Based,2,15,0.2,0.13333333333333333,115
+475,User-Based CF,1,15,0.1,0.06666666666666667,115
+476,Content-Based,1,3,0.1,0.3333333333333333,106
+476,User-Based CF,0,3,0.0,0.0,106
+477,Content-Based,4,42,0.4,0.09523809523809523,155
+477,User-Based CF,3,42,0.3,0.07142857142857142,155
+479,Content-Based,3,12,0.3,0.25,118
+479,User-Based CF,2,12,0.2,0.16666666666666666,118
+480,Content-Based,2,29,0.2,0.06896551724137931,181
+480,User-Based CF,3,29,0.3,0.10344827586206896,181
+482,Content-Based,2,8,0.2,0.25,112
+482,User-Based CF,0,8,0.0,0.0,112
+483,Content-Based,1,32,0.1,0.03125,164
+483,User-Based CF,2,32,0.2,0.0625,164
+484,Content-Based,2,14,0.2,0.14285714285714285,127
+484,User-Based CF,0,14,0.0,0.0,127
+485,Content-Based,0,1,0.0,0.0,102
+485,User-Based CF,0,1,0.0,0.0,102
+486,Content-Based,0,2,0.0,0.0,105
+486,User-Based CF,0,2,0.0,0.0,105
+487,Content-Based,0,2,0.0,0.0,105
+487,User-Based CF,0,2,0.0,0.0,105
+488,Content-Based,1,7,0.1,0.14285714285714285,111
+488,User-Based CF,0,7,0.0,0.0,111
+489,Content-Based,2,16,0.2,0.125,163
+489,User-Based CF,2,16,0.2,0.125,163
+490,Content-Based,1,4,0.1,0.25,111
+490,User-Based CF,1,4,0.1,0.25,111
+491,Content-Based,1,6,0.1,0.16666666666666666,106
+491,User-Based CF,0,6,0.0,0.0,106
+492,Content-Based,2,8,0.2,0.25,111
+492,User-Based CF,0,8,0.0,0.0,111
+493,Content-Based,3,5,0.3,0.6,106
+493,User-Based CF,0,5,0.0,0.0,106
+494,Content-Based,2,2,0.2,1.0,102
+494,User-Based CF,0,2,0.0,0.0,102
+495,Content-Based,1,20,0.1,0.05,126
+495,User-Based CF,0,20,0.0,0.0,126
+496,Content-Based,0,1,0.0,0.0,102
+496,User-Based CF,0,1,0.0,0.0,102
+497,Content-Based,0,1,0.0,0.0,105
+497,User-Based CF,0,1,0.0,0.0,105
+498,Content-Based,0,3,0.0,0.0,103
+498,User-Based CF,0,3,0.0,0.0,103
+499,Content-Based,0,1,0.0,0.0,102
+499,User-Based CF,0,1,0.0,0.0,102
+500,Content-Based,0,4,0.0,0.0,108
+500,User-Based CF,1,4,0.1,0.25,108
+501,Content-Based,0,2,0.0,0.0,104
+501,User-Based CF,0,2,0.0,0.0,104
+502,Content-Based,0,2,0.0,0.0,103
+502,User-Based CF,0,2,0.0,0.0,103
+503,Content-Based,1,4,0.1,0.25,108
+503,User-Based CF,0,4,0.0,0.0,108
+504,Content-Based,2,7,0.2,0.2857142857142857,108
+504,User-Based CF,0,7,0.0,0.0,108
+505,Content-Based,0,3,0.0,0.0,103
+505,User-Based CF,3,3,0.3,1.0,103
+506,Content-Based,1,3,0.1,0.3333333333333333,104
+506,User-Based CF,0,3,0.0,0.0,104
+508,Content-Based,0,2,0.0,0.0,102
+508,User-Based CF,0,2,0.0,0.0,102
+509,Content-Based,2,9,0.2,0.2222222222222222,141
+509,User-Based CF,1,9,0.1,0.1111111111111111,141
+510,Content-Based,0,2,0.0,0.0,110
+510,User-Based CF,2,2,0.2,1.0,110
+511,Content-Based,1,2,0.1,0.5,105
+511,User-Based CF,0,2,0.0,0.0,105
+512,Content-Based,0,2,0.0,0.0,105
+512,User-Based CF,1,2,0.1,0.5,105
+513,Content-Based,0,2,0.0,0.0,103
+513,User-Based CF,1,2,0.1,0.5,103
+514,Content-Based,0,6,0.0,0.0,131
+514,User-Based CF,0,6,0.0,0.0,131
+515,Content-Based,0,2,0.0,0.0,102
+515,User-Based CF,0,2,0.0,0.0,102
+516,Content-Based,0,1,0.0,0.0,102
+516,User-Based CF,0,1,0.0,0.0,102
+517,Content-Based,0,2,0.0,0.0,137
+517,User-Based CF,1,2,0.1,0.5,137
+518,Content-Based,0,2,0.0,0.0,102
+518,User-Based CF,0,2,0.0,0.0,102
+519,Content-Based,0,2,0.0,0.0,102
+519,User-Based CF,1,2,0.1,0.5,102
+520,Content-Based,1,12,0.1,0.08333333333333333,117
+520,User-Based CF,1,12,0.1,0.08333333333333333,117
+521,Content-Based,0,1,0.0,0.0,104
+521,User-Based CF,0,1,0.0,0.0,104
+522,Content-Based,0,10,0.0,0.0,120
+522,User-Based CF,1,10,0.1,0.1,120
+523,Content-Based,0,6,0.0,0.0,107
+523,User-Based CF,0,6,0.0,0.0,107
+524,Content-Based,3,8,0.3,0.375,113
+524,User-Based CF,1,8,0.1,0.125,113
+525,Content-Based,1,7,0.1,0.14285714285714285,147
+525,User-Based CF,0,7,0.0,0.0,147
+526,Content-Based,1,5,0.1,0.2,105
+526,User-Based CF,1,5,0.1,0.2,105
+527,Content-Based,3,12,0.3,0.25,116
+527,User-Based CF,0,12,0.0,0.0,116
+528,Content-Based,1,2,0.1,0.5,107
+528,User-Based CF,0,2,0.0,0.0,107
+530,Content-Based,1,1,0.1,1.0,102
+530,User-Based CF,1,1,0.1,1.0,102
+531,Content-Based,2,2,0.2,1.0,102
+531,User-Based CF,0,2,0.0,0.0,102
+532,Content-Based,1,5,0.1,0.2,105
+532,User-Based CF,4,5,0.4,0.8,105
+533,Content-Based,2,3,0.2,0.6666666666666666,103
+533,User-Based CF,0,3,0.0,0.0,103
+534,Content-Based,3,27,0.3,0.1111111111111111,146
+534,User-Based CF,4,27,0.4,0.14814814814814814,146
+536,Content-Based,0,2,0.0,0.0,104
+536,User-Based CF,1,2,0.1,0.5,104
+537,Content-Based,0,2,0.0,0.0,104
+537,User-Based CF,0,2,0.0,0.0,104
+538,Content-Based,1,3,0.1,0.3333333333333333,103
+538,User-Based CF,0,3,0.0,0.0,103
+539,Content-Based,1,3,0.1,0.3333333333333333,103
+539,User-Based CF,0,3,0.0,0.0,103
+540,Content-Based,0,3,0.0,0.0,104
+540,User-Based CF,0,3,0.0,0.0,104
+542,Content-Based,1,4,0.1,0.25,111
+542,User-Based CF,0,4,0.0,0.0,111
+543,Content-Based,1,5,0.1,0.2,107
+543,User-Based CF,2,5,0.2,0.4,107
+544,Content-Based,2,2,0.2,1.0,102
+544,User-Based CF,0,2,0.0,0.0,102
+546,Content-Based,0,2,0.0,0.0,103
+546,User-Based CF,0,2,0.0,0.0,103
+549,Content-Based,1,2,0.1,0.5,102
+549,User-Based CF,1,2,0.1,0.5,102
+550,Content-Based,1,2,0.1,0.5,102
+550,User-Based CF,0,2,0.0,0.0,102
+551,Content-Based,3,7,0.3,0.42857142857142855,112
+551,User-Based CF,0,7,0.0,0.0,112
+552,Content-Based,1,3,0.1,0.3333333333333333,118
+552,User-Based CF,0,3,0.0,0.0,118
+553,Content-Based,2,8,0.2,0.25,108
+553,User-Based CF,2,8,0.2,0.25,108
+554,Content-Based,1,6,0.1,0.16666666666666666,108
+554,User-Based CF,0,6,0.0,0.0,108
+555,Content-Based,0,17,0.0,0.0,156
+555,User-Based CF,1,17,0.1,0.058823529411764705,156
+556,Content-Based,2,2,0.2,1.0,102
+556,User-Based CF,0,2,0.0,0.0,102
+557,Content-Based,1,2,0.1,0.5,102
+557,User-Based CF,0,2,0.0,0.0,102
+558,Content-Based,0,5,0.0,0.0,105
+558,User-Based CF,0,5,0.0,0.0,105
+559,Content-Based,1,10,0.1,0.1,114
+559,User-Based CF,2,10,0.2,0.2,114
+560,Content-Based,3,17,0.3,0.17647058823529413,141
+560,User-Based CF,2,17,0.2,0.11764705882352941,141
+561,Content-Based,3,21,0.3,0.14285714285714285,150
+561,User-Based CF,3,21,0.3,0.14285714285714285,150
+562,Content-Based,2,13,0.2,0.15384615384615385,123
+562,User-Based CF,0,13,0.0,0.0,123
+563,Content-Based,0,5,0.0,0.0,116
+563,User-Based CF,0,5,0.0,0.0,116
+564,Content-Based,3,7,0.3,0.42857142857142855,115
+564,User-Based CF,1,7,0.1,0.14285714285714285,115
+565,Content-Based,0,1,0.0,0.0,102
+565,User-Based CF,1,1,0.1,1.0,102
+566,Content-Based,1,4,0.1,0.25,107
+566,User-Based CF,1,4,0.1,0.25,107
+568,Content-Based,0,2,0.0,0.0,102
+568,User-Based CF,2,2,0.2,1.0,102
+569,Content-Based,1,1,0.1,1.0,102
+569,User-Based CF,0,1,0.0,0.0,102
+570,Content-Based,4,12,0.4,0.3333333333333333,119
+570,User-Based CF,2,12,0.2,0.16666666666666666,119
+572,Content-Based,0,13,0.0,0.0,115
+572,User-Based CF,0,13,0.0,0.0,115
+573,Content-Based,4,29,0.4,0.13793103448275862,129
+573,User-Based CF,0,29,0.0,0.0,129
+574,Content-Based,0,1,0.0,0.0,102
+574,User-Based CF,0,1,0.0,0.0,102
+575,Content-Based,0,1,0.0,0.0,102
+575,User-Based CF,0,1,0.0,0.0,102
+577,Content-Based,0,7,0.0,0.0,116
+577,User-Based CF,0,7,0.0,0.0,116
+578,Content-Based,0,1,0.0,0.0,101
+578,User-Based CF,0,1,0.0,0.0,101
+579,Content-Based,1,5,0.1,0.2,107
+579,User-Based CF,0,5,0.0,0.0,107
+580,Content-Based,2,12,0.2,0.16666666666666666,142
+580,User-Based CF,0,12,0.0,0.0,142
+581,Content-Based,1,3,0.1,0.3333333333333333,104
+581,User-Based CF,0,3,0.0,0.0,104
+582,Content-Based,1,4,0.1,0.25,105
+582,User-Based CF,0,4,0.0,0.0,105
+583,Content-Based,0,1,0.0,0.0,105
+583,User-Based CF,0,1,0.0,0.0,105
+584,Content-Based,1,6,0.1,0.16666666666666666,108
+584,User-Based CF,0,6,0.0,0.0,108
+585,Content-Based,3,6,0.3,0.5,106
+585,User-Based CF,1,6,0.1,0.16666666666666666,106
+586,Content-Based,4,17,0.4,0.23529411764705882,120
+586,User-Based CF,1,17,0.1,0.058823529411764705,120
+587,Content-Based,1,14,0.1,0.07142857142857142,116
+587,User-Based CF,1,14,0.1,0.07142857142857142,116
+588,Content-Based,0,2,0.0,0.0,105
+588,User-Based CF,1,2,0.1,0.5,105
+589,Content-Based,0,2,0.0,0.0,104
+589,User-Based CF,0,2,0.0,0.0,104
+590,Content-Based,4,24,0.4,0.16666666666666666,172
+590,User-Based CF,2,24,0.2,0.08333333333333333,172
+591,Content-Based,0,2,0.0,0.0,105
+591,User-Based CF,0,2,0.0,0.0,105
+592,Content-Based,1,2,0.1,0.5,108
+592,User-Based CF,0,2,0.0,0.0,108
+593,Content-Based,2,6,0.2,0.3333333333333333,110
+593,User-Based CF,0,6,0.0,0.0,110
+594,Content-Based,4,21,0.4,0.19047619047619047,123
+594,User-Based CF,2,21,0.2,0.09523809523809523,123
+595,Content-Based,1,2,0.1,0.5,102
+595,User-Based CF,0,2,0.0,0.0,102
+596,Content-Based,0,6,0.0,0.0,117
+596,User-Based CF,1,6,0.1,0.16666666666666666,117
+597,Content-Based,0,31,0.0,0.0,144
+597,User-Based CF,3,31,0.3,0.0967741935483871,144
+598,Content-Based,0,1,0.0,0.0,102
+598,User-Based CF,0,1,0.0,0.0,102
+599,Content-Based,0,1,0.0,0.0,285
+599,User-Based CF,0,1,0.0,0.0,285
+600,Content-Based,0,10,0.0,0.0,176
+600,User-Based CF,0,10,0.0,0.0,176
+601,Content-Based,2,8,0.2,0.25,109
+601,User-Based CF,0,8,0.0,0.0,109
+602,Content-Based,1,3,0.1,0.3333333333333333,113
+602,User-Based CF,0,3,0.0,0.0,113
+603,Content-Based,2,40,0.2,0.05,185
+603,User-Based CF,5,40,0.5,0.125,185
+604,Content-Based,2,8,0.2,0.25,110
+604,User-Based CF,1,8,0.1,0.125,110
+606,Content-Based,4,37,0.4,0.10810810810810811,205
+606,User-Based CF,2,37,0.2,0.05405405405405406,205
+607,Content-Based,2,10,0.2,0.2,117
+607,User-Based CF,0,10,0.0,0.0,117
+608,Content-Based,2,15,0.2,0.13333333333333333,182
+608,User-Based CF,2,15,0.2,0.13333333333333333,182
+609,Content-Based,0,1,0.0,0.0,103
+609,User-Based CF,1,1,0.1,1.0,103
+610,Content-Based,0,24,0.0,0.0,174
+610,User-Based CF,0,24,0.0,0.0,174

@@ -1,0 +1,8 @@
+{
+  "name": "CineMatch ML V2 — Recommender Engine",
+  "description": "Nền tảng gợi ý phim điện ảnh tích hợp Machine Learning: Content-Based Filtering, User-Based Collaborative Filtering và Báo cáo thực nghiệm đồ án MovieLens.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
