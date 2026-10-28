@@ -1,4 +1,4 @@
-﻿
+
 import React, { useEffect, useMemo, useState } from "react";
 
 import {
@@ -79,7 +79,7 @@ async function getEnrichedMovie(movieId: number): Promise<Movie> {
 
   const request = (async () => {
     const response = await fetch(
-      `http://127.0.0.1:8000/api/movies/enriched/${movieId}`
+      `${import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}/api/movies/enriched/${movieId}`
     );
 
     if (!response.ok) {
@@ -262,7 +262,7 @@ export const CollaborativeView: React.FC<CollaborativeViewProps> = ({
 
       try {
         const response = await fetch(
-          `http://127.0.0.1:8000/api/recommend/user/${userId}/explain/${explainMovieId}`
+          `${import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}/api/recommend/user/${userId}/explain/${explainMovieId}`
         );
 
         if (!response.ok) {
@@ -715,7 +715,7 @@ export const CollaborativeView: React.FC<CollaborativeViewProps> = ({
 
               <p className="text-xs">
                 Kiểm tra FastAPI:
-                http://127.0.0.1:8000/api/recommend/user/1
+                {" "}{import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}/api/recommend/user/1
               </p>
             </div>
           </div>

@@ -1,4 +1,4 @@
-﻿
+
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Sliders,
@@ -44,7 +44,7 @@ async function getEnrichedMovie(movieId: number): Promise<Movie> {
 
   const request = (async () => {
     const response = await fetch(
-      `http://127.0.0.1:8000/api/movies/enriched/${movieId}`
+      `${import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}/api/movies/enriched/${movieId}`
     );
 
     if (!response.ok) {
@@ -556,7 +556,7 @@ export const ContentBasedView: React.FC<ContentBasedViewProps> = ({
 
               <p className="text-xs">
                 Kiểm tra FastAPI ở địa chỉ:
-                http://127.0.0.1:8000/api/recommend/content-user/1
+                {" "}{import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}/api/recommend/content-user/1
               </p>
             </div>
           </div>

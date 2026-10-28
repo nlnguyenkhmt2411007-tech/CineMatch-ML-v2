@@ -57,7 +57,7 @@ export const MovieModal: React.FC<MovieModalProps> = ({
     async function loadTrailer() {
       try {
         const response = await fetch(
-          `http://127.0.0.1:8000/api/movies/${movie!.movieId}/trailer`
+          `${import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}/api/movies/${movie!.movieId}/trailer`
         );
 
         if (!response.ok) {
@@ -110,7 +110,7 @@ export const MovieModal: React.FC<MovieModalProps> = ({
         similarMovies.map(async (item) => {
           try {
             const response = await fetch(
-              `http://127.0.0.1:8000/api/movies/enriched/${item.movie.movieId}`
+              `${import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}/api/movies/enriched/${item.movie.movieId}`
             );
 
             if (!response.ok) return null;

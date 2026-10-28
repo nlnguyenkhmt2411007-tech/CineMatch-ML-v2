@@ -328,7 +328,7 @@ export const MLDashboardView: React.FC = () => {
               <p className="mt-2 text-xs">
                 Hãy kiểm tra backend tại
                 {" "}
-                http://127.0.0.1:8000/api/evaluation
+                {" "}{import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}/api/evaluation
               </p>
             </div>
           </div>
