@@ -1,15 +1,19 @@
-
+﻿
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  Sliders,
-  Sparkles,
-  BookOpen,
+  ArrowRight,
+  Bookmark,
+  ChevronDown,
+  Clapperboard,
   Film,
-  CheckCircle2,
-  AlertCircle,
+  Heart,
+  Loader2,
   RefreshCw,
   Search,
-  UserRound,
+  Sparkles,
+  Star,
+  Users,
+  WandSparkles,
 } from "lucide-react";
 
 import type { Movie, UserProfile } from "../../types";
@@ -32,6 +36,10 @@ interface RecommendationItem {
   similarity: number;
 }
 
+type DiscoverMode = "profile" | "movie";
+
+const MAX_USER_ID = 610;
+
 const enrichedMovieCache = new Map<number, Movie>();
 const pendingMovieRequests = new Map<number, Promise<Movie>>();
 
@@ -43,12 +51,15 @@ async function getEnrichedMovie(movieId: number): Promise<Movie> {
   if (pending) return pending;
 
   const request = (async () => {
+    const baseUrl =
+      import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+
     const response = await fetch(
-      `${import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}/api/movies/enriched/${movieId}`
+      `${baseUrl}/api/movies/enriched/${movieId}`
     );
 
     if (!response.ok) {
-      throw new Error(`Cannot load enriched movie ${movieId}`);
+      throw new Error(`Cannot load movie ${movieId}`);
     }
 
     const movie = (await response.json()) as Movie;
@@ -86,13 +97,20 @@ async function enrichRecommendations(
     )
   );
 }
-const MAX_USER_ID = 610;
 
-function formatScore(value: number): string {
-  return Number.isFinite(value) ? value.toFixed(4) : "--";
+function getPoster(movie: Movie | null): string {
+  if (!movie) return "";
+
+  const poster = movie.posterUrl || "";
+
+  return poster.startsWith("https://image.tmdb.org/t/p/")
+    ? poster
+    : "";
 }
 
-export const ContentBasedView: React.FC<ContentBasedViewProps> = ({
+export const ContentBasedView: React.FC<
+  ContentBasedViewProps
+> = ({
   currentUser,
   availableUsers,
   onSelectUser,
@@ -101,12 +119,11 @@ export const ContentBasedView: React.FC<ContentBasedViewProps> = ({
   bookmarkedMovieIds,
   onToggleBookmark,
 }) => {
-  // =========================================================
-  // 1. TRANG THAI
-  // =========================================================
+  const [mode, setMode] = useState<DiscoverMode>("profile");
 
   const [userId, setUserId] = useState<number>(
-    currentUser.userId >= 1 && currentUser.userId <= MAX_USER_ID
+    currentUser.userId >= 1 &&
+      currentUser.userId <= MAX_USER_ID
       ? currentUser.userId
       : 1
   );
@@ -120,33 +137,30 @@ export const ContentBasedView: React.FC<ContentBasedViewProps> = ({
   const [recommendationMovies, setRecommendationMovies] =
     useState<Map<number, Movie>>(new Map());
 
-  const [similarMovieDetails, setSimilarMovieDetails] =
-    useState<Map<number, Movie>>(new Map());
-
-  const [loading, setLoading] = useState<boolean>(true);
-
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  const [refreshKey, setRefreshKey] = useState<number>(0);
+  const [selectedMovieId, setSelectedMovieId] =
+    useState<number>(1);
 
-  // Chon phim de tim phim tuong tu.
-  const [selectedMovieId, setSelectedMovieId] = useState<number>(1);
-
-  const [movieSearch, setMovieSearch] = useState<string>("");
+  const [movieSearch, setMovieSearch] = useState("");
+  const [showMovieOptions, setShowMovieOptions] =
+    useState(false);
 
   const [similarMovies, setSimilarMovies] = useState<
     RecommendationItem[]
   >([]);
 
-  const [similarLoading, setSimilarLoading] =
-    useState<boolean>(true);
+  const [similarMovieDetails, setSimilarMovieDetails] =
+    useState<Map<number, Movie>>(new Map());
 
+  const [similarLoading, setSimilarLoading] = useState(false);
   const [similarError, setSimilarError] =
     useState<string | null>(null);
 
-  // =========================================================
-  // 2. TRA CUU PHIM TRONG CATALOG
-  // =========================================================
+  const [showExplanation, setShowExplanation] =
+    useState(false);
 
   const movieMap = useMemo(() => {
     return new Map(
@@ -155,33 +169,63 @@ export const ContentBasedView: React.FC<ContentBasedViewProps> = ({
   }, [allMovies]);
 
   const selectedMovie =
-    movieMap.get(selectedMovieId) ?? null;
+    movieMap.get(selectedMovieId) ??
+    enrichedMovieCache.get(selectedMovieId) ??
+    null;
 
   const filteredMovieOptions = useMemo(() => {
     const query = movieSearch.trim().toLowerCase();
 
     if (!query) {
-      return allMovies.slice(0, 30);
+      return allMovies.slice(0, 24);
     }
 
     return allMovies
       .filter((movie) =>
         movie.title.toLowerCase().includes(query)
       )
-      .slice(0, 30);
+      .slice(0, 24);
   }, [allMovies, movieSearch]);
 
-  // =========================================================
-  // 3. GOI API CONTENT-BASED THEO USER
-  // =========================================================
+  const activeItems =
+    mode === "profile" ? recommendations : similarMovies;
 
+  const activeLoading =
+    mode === "profile" ? loading : similarLoading;
+
+  const activeError =
+    mode === "profile" ? error : similarError;
+
+  const activeMovieDetails =
+    mode === "profile"
+      ? recommendationMovies
+      : similarMovieDetails;
+
+  const featuredMovie = useMemo(() => {
+    for (const item of activeItems) {
+      const movie =
+        activeMovieDetails.get(item.movieId) ??
+        movieMap.get(item.movieId);
+
+      if (movie && getPoster(movie)) {
+        return movie;
+      }
+    }
+
+    return null;
+  }, [activeItems, activeMovieDetails, movieMap]);
+
+  // Gợi ý theo sở thích của hồ sơ MovieLens.
   useEffect(() => {
+    if (mode !== "profile") return;
+
     let cancelled = false;
 
     async function loadRecommendations() {
       setLoading(true);
       setError(null);
       setRecommendations([]);
+      setRecommendationMovies(new Map());
 
       try {
         const response =
@@ -194,23 +238,23 @@ export const ContentBasedView: React.FC<ContentBasedViewProps> = ({
 
         setRecommendations(response.items);
 
-        const enriched = await enrichRecommendations(response.items);
+        const enriched = await enrichRecommendations(
+          response.items
+        );
 
         if (!cancelled) {
           setRecommendationMovies(enriched);
         }
       } catch (err) {
-        if (cancelled) return;
-
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Không thể tải gợi ý từ FastAPI."
-        );
-      } finally {
         if (!cancelled) {
-          setLoading(false);
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Không thể tải danh sách phim."
+          );
         }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     }
 
@@ -219,34 +263,34 @@ export const ContentBasedView: React.FC<ContentBasedViewProps> = ({
     return () => {
       cancelled = true;
     };
-  }, [userId, topN, refreshKey]);
+  }, [mode, userId, topN, refreshKey]);
 
-  // =========================================================
-  // 4. GOI API PHIM TUONG TU THEO MOVIE ID
-  // =========================================================
-
+  // Tìm phim tương tự với phim đã chọn.
   useEffect(() => {
+    if (mode !== "movie") return;
+
     let cancelled = false;
 
     async function loadSimilarMovies() {
       setSimilarLoading(true);
       setSimilarError(null);
       setSimilarMovies([]);
+      setSimilarMovieDetails(new Map());
 
       try {
-        const response =
-          await cineMatchApi.getSimilarMovies(
-            selectedMovieId,
-            4
-          );
+        const response = await cineMatchApi.getSimilarMovies(
+          selectedMovieId,
+          4
+        );
 
         if (cancelled) return;
 
-        const items = response.items.map((item) => ({
-          movieId: item.movieId,
-          title: item.title,
-          similarity: item.similarity,
-        }));
+        const items: RecommendationItem[] =
+          response.items.map((item) => ({
+            movieId: item.movieId,
+            title: item.title,
+            similarity: item.similarity,
+          }));
 
         setSimilarMovies(items);
 
@@ -256,17 +300,15 @@ export const ContentBasedView: React.FC<ContentBasedViewProps> = ({
           setSimilarMovieDetails(enriched);
         }
       } catch (err) {
-        if (cancelled) return;
-
-        setSimilarError(
-          err instanceof Error
-            ? err.message
-            : "Không thể tải danh sách phim tương tự."
-        );
-      } finally {
         if (!cancelled) {
-          setSimilarLoading(false);
+          setSimilarError(
+            err instanceof Error
+              ? err.message
+              : "Không thể tìm phim tương tự."
+          );
         }
+      } finally {
+        if (!cancelled) setSimilarLoading(false);
       }
     }
 
@@ -275,11 +317,7 @@ export const ContentBasedView: React.FC<ContentBasedViewProps> = ({
     return () => {
       cancelled = true;
     };
-  }, [selectedMovieId, refreshKey]);
-
-  // =========================================================
-  // 5. DONG BO USER VOI NAVBAR KHI DUNG USER MOVIELENS
-  // =========================================================
+  }, [mode, selectedMovieId, refreshKey]);
 
   const handleChangeUser = (nextUserId: number) => {
     if (
@@ -301,525 +339,578 @@ export const ContentBasedView: React.FC<ContentBasedViewProps> = ({
     }
   };
 
-  // =========================================================
-  // 6. RENDER
-  // =========================================================
-
   return (
-    <div className="mx-auto max-w-[1440px] space-y-10 px-6 py-12">
-      {/* HEADER */}
-
-      <section className="space-y-3 border-b border-white/[0.08] pb-6">
-        <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#E8B65B]">
-          <Sliders className="h-4 w-4" />
-          <span>Mô hình 1 · CineMatch Machine Learning</span>
-        </div>
-
-        <h1 className="font-display text-3xl font-bold text-[#F5F2EA] sm:text-4xl">
-          Content-Based Filtering
-        </h1>
-
-        <p className="max-w-3xl text-sm leading-relaxed text-[#9EA3AE]">
-          Hệ thống đề xuất phim theo hồ sơ sở thích của người
-          dùng, được xây dựng từ lịch sử đánh giá trong tập
-          Train. Phim được biểu diễn bằng 19 đặc trưng thể loại
-          Multi-Hot Encoding và xếp hạng bằng Cosine Similarity.
-        </p>
-
-        <div className="flex flex-wrap gap-2 pt-2">
-          <span className="rounded border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 font-mono text-[11px] text-emerald-400">
-            Python FastAPI · ML thật
-          </span>
-
-          <span className="rounded bg-[#191D27] px-3 py-1.5 font-mono text-[11px] text-[#9EA3AE]">
-            19 đặc trưng
-          </span>
-
-          <span className="rounded bg-[#191D27] px-3 py-1.5 font-mono text-[11px] text-[#9EA3AE]">
-            Cosine Similarity
-          </span>
-
-          <span className="rounded bg-[#191D27] px-3 py-1.5 font-mono text-[11px] text-[#9EA3AE]">
-            Train only
-          </span>
-        </div>
-      </section>
-
-      {/* GIAI THICH THUAT TOAN */}
-
-      <section className="space-y-5 rounded-[10px] border border-white/[0.08] bg-[#11141C] p-6">
-        <h2 className="flex items-center gap-2 font-display text-sm font-semibold uppercase tracking-wider text-[#F5F2EA]">
-          <BookOpen className="h-4 w-4 text-[#E8B65B]" />
-          Nguyên lý hoạt động
-        </h2>
-
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <div className="space-y-2 rounded-[8px] border border-white/[0.06] bg-[#191D27] p-4">
-            <p className="font-mono text-xs font-semibold text-[#E8B65B]">
-              01 · Multi-Hot Encoding
-            </p>
-
-            <p className="text-xs leading-relaxed text-[#9EA3AE]">
-              Biểu diễn mỗi bộ phim bằng vector 19 thể loại
-              như Action, Comedy, Drama, Sci-Fi và Romance.
-            </p>
-          </div>
-
-          <div className="space-y-2 rounded-[8px] border border-white/[0.06] bg-[#191D27] p-4">
-            <p className="font-mono text-xs font-semibold text-[#E8B65B]">
-              02 · Hồ sơ người dùng
-            </p>
-
-            <p className="text-xs leading-relaxed text-[#9EA3AE]">
-              Kết hợp vector thể loại của các phim được đánh
-              giá từ 4 sao trở lên trong Train, có trọng số
-              theo rating. Nếu không có phim đạt ngưỡng,
-              mô hình dùng lịch sử Train hiện có.
-            </p>
-          </div>
-
-          <div className="space-y-2 rounded-[8px] border border-white/[0.06] bg-[#191D27] p-4">
-            <p className="font-mono text-xs font-semibold text-[#E8B65B]">
-              03 · Cosine Similarity
-            </p>
-
-            <p className="text-xs leading-relaxed text-[#9EA3AE]">
-              Tính mức tương đồng giữa vector phim ứng viên
-              và hồ sơ người dùng, rồi trả về Top-N phim
-              chưa xuất hiện trong lịch sử Train.
-            </p>
-
-            <p className="font-mono text-xs text-[#E8B65B]">
-              similarity = cosine(profile, movie)
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* LUA CHON USER */}
-
-      <section className="space-y-6 rounded-[10px] border border-white/[0.08] bg-[#11141C] p-6">
-        <div className="flex flex-col justify-between gap-4 border-b border-white/[0.08] pb-4 sm:flex-row sm:items-center">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-[#E8B65B]">
-              <UserRound className="h-4 w-4" />
-              Hồ sơ người dùng MovieLens
-            </div>
-
-            <h2 className="font-display text-xl font-bold text-[#F5F2EA]">
-              Chọn người dùng để gợi ý phim
-            </h2>
-
-            <p className="text-xs text-[#9EA3AE]">
-              Dữ liệu Train chứa 610 người dùng.
-              User #999 là tài khoản khách DEMO,
-              không có hồ sơ trong mô hình Python.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <label
-              htmlFor="content-user-id"
-              className="text-xs text-[#9EA3AE]"
-            >
-              User ID
-            </label>
-
-            <select
-              id="content-user-id"
-              value={userId}
-              onChange={(event) =>
-                handleChangeUser(Number(event.target.value))
+    <div className="min-h-screen bg-[#090909] text-[#F6F0E7]">
+      {/* CINEMATIC HEADER */}
+      <section className="relative isolate overflow-hidden border-b border-white/10">
+        <div className="absolute inset-0 -z-20">
+          {featuredMovie && getPoster(featuredMovie) ? (
+            <img
+              src={
+                featuredMovie.backdropUrl ||
+                getPoster(featuredMovie)
               }
-              className="rounded-[8px] border border-white/[0.12] bg-[#191D27] px-4 py-2.5 text-sm text-[#F5F2EA] outline-none focus:border-[#E8B65B]"
-            >
-              {Array.from(
-                { length: MAX_USER_ID },
-                (_, index) => index + 1
-              ).map((id) => (
-                <option key={id} value={id}>
-                  User #{id}
-                </option>
-              ))}
-            </select>
-          </div>
+              alt=""
+              className="h-full w-full scale-105 object-cover opacity-25 blur-[5px] transition-all duration-700"
+            />
+          ) : (
+            <div className="h-full w-full bg-[radial-gradient(ellipse_at_80%_30%,#49321C_0%,#14100D_40%,#090909_75%)]" />
+          )}
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className="rounded-[8px] border border-white/[0.06] bg-[#191D27] p-4">
-            <p className="text-xs text-[#9EA3AE]">
-              Người dùng đang phân tích
-            </p>
+        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-[#090909] via-[#090909]/85 to-[#090909]/45" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-t from-[#090909] via-transparent to-[#090909]/25" />
 
-            <p className="mt-2 font-display text-2xl font-bold text-[#E8B65B]">
-              #{userId}
-            </p>
-          </div>
-
-          <div className="rounded-[8px] border border-white/[0.06] bg-[#191D27] p-4">
-            <p className="text-xs text-[#9EA3AE]">
-              Phương pháp
-            </p>
-
-            <p className="mt-2 text-sm font-semibold text-[#F5F2EA]">
-              User Genre Profile
-            </p>
-          </div>
-
-          <div className="rounded-[8px] border border-white/[0.06] bg-[#191D27] p-4">
-            <p className="text-xs text-[#9EA3AE]">
-              Nguồn dữ liệu huấn luyện
-            </p>
-
-            <p className="mt-2 text-sm font-semibold text-[#F5F2EA]">
-              ratings_train.csv
-            </p>
-          </div>
-        </div>
-
-        <p className="text-xs leading-relaxed text-[#9EA3AE]">
-          Trọng số chi tiết của 19 thể loại chưa được trả về
-          bởi API hiện tại. Vì vậy, trang này chỉ hiển thị
-          kết quả gợi ý thực tế, không sử dụng vector DEMO.
-          Việc đổi User ID tại đây không tạo tài khoản mới.
-        </p>
-      </section>
-
-      {/* KET QUA GOI Y THEO USER */}
-
-      <section className="space-y-6">
-        <div className="flex flex-col justify-between gap-4 border-b border-white/[0.08] pb-5 sm:flex-row sm:items-center">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-[#E8B65B]">
-              <Sparkles className="h-5 w-5" />
-
-              <h2 className="font-display text-2xl font-bold text-[#F5F2EA]">
-                Top-{topN} phim gợi ý cho User #{userId}
-              </h2>
+        <div className="mx-auto grid max-w-[1440px] items-center gap-10 px-5 py-12 sm:px-8 lg:grid-cols-[1fr_340px] lg:px-12 lg:py-16">
+          <div className="max-w-2xl">
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#DDB878]/30 bg-black/35 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#E8C58C]">
+              <Sparkles className="h-4 w-4" />
+              Dành riêng cho bạn
             </div>
 
-            <p className="text-xs text-[#9EA3AE]">
-              Kết quả trả về trực tiếp từ mô hình
-              Content-Based Python.
+            <h1 className="font-display text-4xl font-bold leading-[1.12] tracking-tight sm:text-5xl lg:text-6xl">
+              Phim hay
+              <span className="mt-1 block text-[#E8BF82]">
+                đúng gu bạn.
+              </span>
+            </h1>
+
+            <p className="mt-5 max-w-lg text-sm leading-7 text-[#C4B9AB] sm:text-base">
+              Chọn sở thích hoặc một bộ phim bạn yêu thích.
+              CineMatch sẽ giúp bạn khám phá những bộ phim tiếp theo.
             </p>
+
+            <div className="mt-7 flex flex-wrap items-center gap-4 text-xs text-[#BBAE9D]">
+              <span className="flex items-center gap-2">
+                <Heart className="h-4 w-4 text-[#E8BF82]" />
+                Khám phá theo sở thích
+              </span>
+
+              <span className="flex items-center gap-2">
+                <Clapperboard className="h-4 w-4 text-[#E8BF82]" />
+                Hàng nghìn bộ phim
+              </span>
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="mr-2 text-xs text-[#9EA3AE]">
-              Top-N:
-            </span>
+          <div className="relative hidden items-center justify-center lg:flex">
+            <div className="absolute h-64 w-64 rounded-full bg-[#D7AA61]/10 blur-[75px]" />
 
-            {[4, 6, 10, 20].map((number) => (
+            {featuredMovie && getPoster(featuredMovie) ? (
               <button
                 type="button"
-                key={number}
-                onClick={() => setTopN(number)}
-                className={`rounded-[6px] px-3 py-1.5 font-mono text-xs transition-colors ${
-                  topN === number
-                    ? "bg-[#E8B65B] font-bold text-[#090A0E]"
-                    : "border border-white/[0.08] bg-[#191D27] text-[#9EA3AE] hover:text-[#F5F2EA]"
-                }`}
+                onClick={() => onSelectMovie(featuredMovie)}
+                className="group relative w-48 rotate-3 overflow-hidden rounded-2xl border border-[#D7AA61]/30 shadow-[0_25px_80px_rgba(0,0,0,0.7)] transition duration-500 hover:rotate-0 hover:scale-105"
               >
-                N={number}
+                <img
+                  src={getPoster(featuredMovie)}
+                  alt={featuredMovie.title}
+                  className="aspect-[2/3] w-full object-cover"
+                />
               </button>
-            ))}
+            ) : (
+              <div className="relative flex h-64 w-48 rotate-3 items-center justify-center rounded-2xl border border-[#D7AA61]/25 bg-[#211A12]">
+                <Film className="h-16 w-16 text-[#D7AA61]/50" />
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <main className="mx-auto max-w-[1440px] space-y-9 px-5 py-10 sm:px-8 lg:px-12">
+        {/* DISCOVERY MODE */}
+        <section>
+          <div className="mb-5">
+            <h2 className="font-display text-2xl font-bold sm:text-3xl">
+              Bạn muốn tìm phim theo cách nào?
+            </h2>
+            <p className="mt-2 text-sm text-[#AFA497]">
+              Chỉ cần chọn một cách để bắt đầu.
+            </p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <button
+              type="button"
+              onClick={() => setMode("profile")}
+              className={`group relative overflow-hidden rounded-2xl border p-6 text-left transition-all duration-300 hover:-translate-y-1 sm:p-7 ${
+                mode === "profile"
+                  ? "border-[#E8BF82] bg-gradient-to-br from-[#352719] to-[#181411] shadow-[0_12px_45px_rgba(215,170,97,0.12)]"
+                  : "border-white/10 bg-[#171717] hover:border-[#D7AA61]/45"
+              }`}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#E8BF82]/15 text-[#E8BF82]">
+                  <Heart className="h-6 w-6" />
+                </div>
+
+                <ArrowRight
+                  className={`h-5 w-5 transition-transform group-hover:translate-x-1 ${
+                    mode === "profile"
+                      ? "text-[#E8BF82]"
+                      : "text-[#8F8578]"
+                  }`}
+                />
+              </div>
+
+              <h3 className="mt-5 text-xl font-bold">
+                Theo sở thích
+              </h3>
+
+              <p className="mt-2 max-w-sm text-sm leading-6 text-[#BDB1A3]">
+                Chọn một hồ sơ xem phim để khám phá những
+                bộ phim phù hợp với gu của hồ sơ đó.
+              </p>
+
+              <div className="mt-5 text-xs font-semibold text-[#E8BF82]">
+                {mode === "profile"
+                  ? "Đang khám phá"
+                  : "Khám phá ngay"}
+              </div>
+            </button>
 
             <button
               type="button"
-              onClick={() => setRefreshKey((value) => value + 1)}
-              className="ml-2 rounded-[6px] border border-[#E8B65B]/30 bg-[#E8B65B]/10 p-2 text-[#E8B65B] hover:bg-[#E8B65B]/20"
-              title="Tải lại gợi ý"
-              aria-label="Tải lại gợi ý"
+              onClick={() => setMode("movie")}
+              className={`group relative overflow-hidden rounded-2xl border p-6 text-left transition-all duration-300 hover:-translate-y-1 sm:p-7 ${
+                mode === "movie"
+                  ? "border-[#E8BF82] bg-gradient-to-br from-[#352719] to-[#181411] shadow-[0_12px_45px_rgba(215,170,97,0.12)]"
+                  : "border-white/10 bg-[#171717] hover:border-[#D7AA61]/45"
+              }`}
             >
-              <RefreshCw className="h-4 w-4" />
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#E8BF82]/15 text-[#E8BF82]">
+                  <Film className="h-6 w-6" />
+                </div>
+
+                <ArrowRight
+                  className={`h-5 w-5 transition-transform group-hover:translate-x-1 ${
+                    mode === "movie"
+                      ? "text-[#E8BF82]"
+                      : "text-[#8F8578]"
+                  }`}
+                />
+              </div>
+
+              <h3 className="mt-5 text-xl font-bold">
+                Theo phim bạn thích
+              </h3>
+
+              <p className="mt-2 max-w-sm text-sm leading-6 text-[#BDB1A3]">
+                Chọn một bộ phim yêu thích để tìm thêm
+                những bộ phim có phong cách tương tự.
+              </p>
+
+              <div className="mt-5 text-xs font-semibold text-[#E8BF82]">
+                {mode === "movie"
+                  ? "Đang khám phá"
+                  : "Khám phá ngay"}
+              </div>
             </button>
           </div>
-        </div>
+        </section>
 
-        {loading && (
-          <div className="flex items-center justify-center gap-3 rounded-[10px] border border-white/[0.08] bg-[#11141C] p-12 text-sm text-[#9EA3AE]">
-            <RefreshCw className="h-5 w-5 animate-spin text-[#E8B65B]" />
-            Đang tính gợi ý từ mô hình Python...
-          </div>
-        )}
+        {/* SELECTION PANEL */}
+        <section className="rounded-2xl border border-white/10 bg-[#151413] p-5 sm:p-7">
+          {mode === "profile" ? (
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <div className="mb-3 flex items-center gap-2 text-[#E8BF82]">
+                  <Users className="h-5 w-5" />
+                  <span className="text-xs font-semibold uppercase tracking-wider">
+                    Chọn hồ sơ
+                  </span>
+                </div>
 
-        {!loading && error && (
-          <div className="flex items-start gap-3 rounded-[10px] border border-red-500/30 bg-red-950/20 p-5 text-sm text-red-300">
-            <AlertCircle className="h-5 w-5 shrink-0" />
+                <h2 className="text-xl font-bold sm:text-2xl">
+                  Khám phá gu xem phim
+                </h2>
 
-            <div className="space-y-1">
-              <p className="font-semibold">
-                Không tải được gợi ý Content-Based
-              </p>
+                <p className="mt-2 max-w-xl text-sm leading-6 text-[#AFA497]">
+                  Thử các hồ sơ có sẵn để xem mỗi người
+                  được gợi ý những phim khác nhau.
+                </p>
+              </div>
 
-              <p className="text-xs">{error}</p>
+              <div className="w-full lg:w-64">
+                <label
+                  htmlFor="cm-content-user"
+                  className="mb-2 block text-xs text-[#C8BBA9]"
+                >
+                  Hồ sơ đang chọn
+                </label>
 
-              <p className="text-xs">
-                Kiểm tra FastAPI ở địa chỉ:
-                {" "}{import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}/api/recommend/content-user/1
-              </p>
+                <div className="relative">
+                  <select
+                    id="cm-content-user"
+                    value={userId}
+                    onChange={(event) =>
+                      handleChangeUser(Number(event.target.value))
+                    }
+                    className="w-full appearance-none rounded-xl border border-[#D7AA61]/30 bg-[#24201B] px-4 py-3.5 pr-10 text-sm font-semibold text-[#F6F0E7] outline-none transition focus:border-[#E8BF82]"
+                  >
+                    {Array.from(
+                      { length: MAX_USER_ID },
+                      (_, index) => index + 1
+                    ).map((id) => (
+                      <option key={id} value={id}>
+                        Hồ sơ #{id}
+                      </option>
+                    ))}
+                  </select>
+
+                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#E8BF82]" />
+                </div>
+              </div>
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
+              <div>
+                <div className="mb-3 flex items-center gap-2 text-[#E8BF82]">
+                  <Search className="h-5 w-5" />
+                  <span className="text-xs font-semibold uppercase tracking-wider">
+                    Chọn bộ phim
+                  </span>
+                </div>
 
-        {!loading && !error && recommendations.length === 0 && (
-          <div className="rounded-[10px] border border-white/[0.08] bg-[#11141C] p-10 text-center text-sm text-[#9EA3AE]">
-            Chưa có phim gợi ý cho người dùng này.
-          </div>
-        )}
+                <h2 className="text-xl font-bold sm:text-2xl">
+                  Bạn vừa xem phim gì hay?
+                </h2>
 
-        {!loading && !error && recommendations.length > 0 && (
-          <>
-            <div className="flex items-center gap-2 text-xs text-emerald-400">
-              <CheckCircle2 className="h-4 w-4" />
-              Đã nhận {recommendations.length} gợi ý từ FastAPI.
-            </div>
+                <p className="mt-2 text-sm text-[#AFA497]">
+                  Tìm tên phim và chọn một kết quả bên dưới.
+                </p>
 
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-              {recommendations.map((item) => {
-                const movie =
-                  recommendationMovies.get(item.movieId) ??
-                  movieMap.get(item.movieId);
+                <div className="relative mt-5 max-w-xl">
+                  <Search className="absolute left-4 top-4 h-5 w-5 text-[#D7AA61]" />
 
-                if (!movie) {
-                  return (
-                    <div
-                      key={item.movieId}
-                      className="rounded-[8px] border border-white/[0.08] bg-[#11141C] p-4"
-                    >
-                      <Film className="mb-3 h-7 w-7 text-[#E8B65B]" />
-
-                      <p className="text-sm font-semibold text-[#F5F2EA]">
-                        {item.title}
-                      </p>
-
-                      <p className="mt-2 font-mono text-xs text-[#E8B65B]">
-                        Similarity: {formatScore(item.similarity)}
-                      </p>
-                    </div>
-                  );
-                }
-
-                return (
-                  <MovieCard
-                    key={item.movieId}
-                    movie={movie}
-                    similarityScore={item.similarity}
-                    onClick={() => onSelectMovie(movie)}
-                    isBookmarked={bookmarkedMovieIds.has(item.movieId)}
-                    onToggleBookmark={(event) => {
-                      event.stopPropagation();
-                      onToggleBookmark(item.movieId);
+                  <input
+                    type="text"
+                    value={movieSearch}
+                    onChange={(event) => {
+                      setMovieSearch(event.target.value);
+                      setShowMovieOptions(true);
                     }}
-                    userRating={currentUser.ratings[item.movieId]}
+                    onFocus={() => setShowMovieOptions(true)}
+                    placeholder="Ví dụ: Toy Story, Matrix, Inception..."
+                    className="w-full rounded-xl border border-white/15 bg-[#24201B] py-3.5 pl-12 pr-4 text-sm text-[#F6F0E7] outline-none placeholder:text-[#8F8578] focus:border-[#E8BF82]"
                   />
-                );
-              })}
-            </div>
-          </>
-        )}
 
-        <div className="rounded-[8px] border border-[#E8B65B]/15 bg-[#E8B65B]/[0.04] p-4 text-xs leading-relaxed text-[#9EA3AE]">
-          <strong className="text-[#E8B65B]">
-            Lưu ý:
-          </strong>{" "}
-          Điểm Similarity từ 0 đến 1 đo mức tương đồng
-          thể loại giữa phim và hồ sơ sở thích của người dùng.
-          Đây không phải xác suất thích phim hay độ chính xác
-          của mô hình.
-        </div>
-      </section>
+                  {showMovieOptions && (
+                    <div className="absolute left-0 right-0 top-full z-30 mt-2 max-h-72 overflow-y-auto rounded-xl border border-[#D7AA61]/25 bg-[#1D1A17] p-2 shadow-2xl">
+                      {filteredMovieOptions.length === 0 ? (
+                        <p className="p-4 text-sm text-[#AFA497]">
+                          Không tìm thấy phim phù hợp.
+                        </p>
+                      ) : (
+                        filteredMovieOptions.map((movie) => (
+                          <button
+                            key={movie.movieId}
+                            type="button"
+                            onClick={() => {
+                              setSelectedMovieId(movie.movieId);
+                              setMovieSearch(movie.title);
+                              setShowMovieOptions(false);
+                            }}
+                            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition hover:bg-[#D7AA61]/10"
+                          >
+                            <Film className="h-4 w-4 shrink-0 text-[#D7AA61]" />
 
-      {/* PHONG THI NGHIEM PHIM TUONG TU */}
+                            <span className="min-w-0 flex-1 truncate text-sm text-[#F6F0E7]">
+                              {movie.title}
+                            </span>
 
-      <section className="space-y-6 rounded-[10px] border border-white/[0.08] bg-[#11141C] p-6">
-        <div className="space-y-2 border-b border-white/[0.08] pb-5">
-          <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-[#E8B65B]">
-            <Film className="h-4 w-4" />
-            Item-to-Item Similarity
-          </div>
+                            <span className="shrink-0 text-xs text-[#9F9485]">
+                              {movie.year || ""}
+                            </span>
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
 
-          <h2 className="font-display text-xl font-bold text-[#F5F2EA]">
-            Phòng thí nghiệm phim tương tự
-          </h2>
-
-          <p className="text-xs leading-relaxed text-[#9EA3AE]">
-            Chọn một bộ phim trong MovieLens để tìm những phim
-            có vector thể loại tương đồng. Kết quả được tính
-            từ Python và trả về qua FastAPI.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-          {/* PHIM MUC TIEU */}
-
-          <div className="space-y-4 rounded-[8px] border border-white/[0.06] bg-[#191D27] p-4 lg:col-span-4">
-            <label
-              htmlFor="content-movie-search"
-              className="text-xs font-semibold uppercase tracking-wider text-[#E8B65B]"
-            >
-              Tìm phim mục tiêu
-            </label>
-
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9EA3AE]" />
-
-              <input
-                id="content-movie-search"
-                type="text"
-                value={movieSearch}
-                onChange={(event) =>
-                  setMovieSearch(event.target.value)
-                }
-                placeholder="Ví dụ: Toy Story, Matrix..."
-                className="w-full rounded-[6px] border border-white/[0.12] bg-[#11141C] py-2.5 pl-9 pr-3 text-xs text-[#F5F2EA] outline-none focus:border-[#E8B65B]"
-              />
-            </div>
-
-            <select
-              value={selectedMovieId}
-              onChange={(event) =>
-                setSelectedMovieId(Number(event.target.value))
-              }
-              size={Math.min(
-                Math.max(filteredMovieOptions.length, 1),
-                5
-              )}
-              className="w-full rounded-[6px] border border-white/[0.12] bg-[#11141C] p-2 text-xs text-[#F5F2EA] outline-none focus:border-[#E8B65B]"
-            >
-              {selectedMovie &&
-                !filteredMovieOptions.some(
-                  (movie) => movie.movieId === selectedMovieId
-                ) && (
-                  <option value={selectedMovie.movieId}>
-                    {selectedMovie.title} (đang chọn)
-                  </option>
+              <div className="flex items-center gap-4 rounded-xl border border-white/10 bg-[#211D18] p-4">
+                {selectedMovie && getPoster(selectedMovie) ? (
+                  <img
+                    src={getPoster(selectedMovie)}
+                    alt={selectedMovie.title}
+                    className="aspect-[2/3] w-20 shrink-0 rounded-lg object-cover"
+                  />
+                ) : (
+                  <div className="flex aspect-[2/3] w-20 shrink-0 items-center justify-center rounded-lg bg-[#342A20]">
+                    <Film className="h-8 w-8 text-[#D7AA61]" />
+                  </div>
                 )}
 
-              {filteredMovieOptions.map((movie) => (
-                <option key={movie.movieId} value={movie.movieId}>
-                  {movie.title} ({movie.year || "N/A"})
-                </option>
-              ))}
-            </select>
-
-            {selectedMovie ? (
-              <div className="flex items-start gap-3 rounded-[8px] border border-white/[0.06] bg-[#11141C] p-3">
-                <div className="flex aspect-[2/3] w-16 shrink-0 items-center justify-center rounded border border-[#E8B65B]/20 bg-[#191D27]">
-                  <Film className="h-7 w-7 text-[#E8B65B]" />
-                </div>
-
-                <div className="space-y-2">
-                  <p className="text-sm font-semibold text-[#F5F2EA]">
-                    {selectedMovie.title}
+                <div className="min-w-0">
+                  <p className="text-xs text-[#D7AA61]">
+                    Phim đã chọn
                   </p>
 
-                  <p className="font-mono text-xs text-[#9EA3AE]">
-                    Movie ID: {selectedMovie.movieId}
-                  </p>
+                  <h3 className="mt-2 line-clamp-2 font-semibold">
+                    {selectedMovie?.title || "Chọn một bộ phim"}
+                  </h3>
 
-                  <p className="text-xs text-[#9EA3AE]">
-                    {selectedMovie.year || "Chưa rõ năm"}
+                  <p className="mt-2 text-xs text-[#AFA497]">
+                    {selectedMovie?.year || ""}
                   </p>
-
-                  <div className="flex flex-wrap gap-1">
-                    {selectedMovie.genres.map((genre) => (
-                      <span
-                        key={genre}
-                        className="rounded bg-[#191D27] px-2 py-1 text-[10px] text-[#F5F2EA]"
-                      >
-                        {genre}
-                      </span>
-                    ))}
-                  </div>
                 </div>
               </div>
-            ) : (
-              <p className="text-xs text-[#9EA3AE]">
-                Đang tải danh sách phim...
+            </div>
+          )}
+        </section>
+
+        {/* RECOMMENDATION RESULTS */}
+        <section className="space-y-6">
+          <div className="flex flex-col gap-4 border-b border-white/10 pb-5 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <div className="mb-3 flex items-center gap-2 text-[#E8BF82]">
+                <WandSparkles className="h-5 w-5" />
+                <span className="text-xs font-semibold uppercase tracking-[0.15em]">
+                  CineMatch Picks
+                </span>
+              </div>
+
+              <h2 className="font-display text-2xl font-bold sm:text-3xl">
+                {mode === "profile"
+                  ? "Có thể bạn sẽ thích"
+                  : "Nếu thích phim này, hãy thử..."}
+              </h2>
+
+              <p className="mt-2 text-sm text-[#AFA497]">
+                {mode === "profile"
+                  ? `Danh sách phim dành cho hồ sơ #${userId}`
+                  : `Những bộ phim tương tự ${
+                      selectedMovie?.title || "phim bạn chọn"
+                    }`}
               </p>
-            )}
-          </div>
+            </div>
 
-          {/* KET QUA PHIM TUONG TU */}
+            <div className="flex flex-wrap items-center gap-3">
+              {mode === "profile" && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-[#AFA497]">
+                    Hiển thị
+                  </span>
 
-          <div className="space-y-4 lg:col-span-8">
-            <h3 className="text-sm font-semibold text-[#F5F2EA]">
-              Các phim tương tự{" "}
-              {selectedMovie ? `"${selectedMovie.title}"` : ""}
-            </h3>
-
-            {similarLoading && (
-              <div className="flex items-center gap-2 rounded-[8px] bg-[#191D27] p-6 text-sm text-[#9EA3AE]">
-                <RefreshCw className="h-4 w-4 animate-spin text-[#E8B65B]" />
-                Đang tính Cosine Similarity...
-              </div>
-            )}
-
-            {!similarLoading && similarError && (
-              <div className="flex items-center gap-2 rounded-[8px] border border-red-500/30 bg-red-950/20 p-4 text-xs text-red-300">
-                <AlertCircle className="h-4 w-4" />
-                {similarError}
-              </div>
-            )}
-
-            {!similarLoading &&
-              !similarError &&
-              similarMovies.length === 0 && (
-                <p className="rounded-[8px] bg-[#191D27] p-6 text-sm text-[#9EA3AE]">
-                  Chưa có kết quả phim tương tự.
-                </p>
+                  <select
+                    value={topN}
+                    onChange={(event) =>
+                      setTopN(Number(event.target.value))
+                    }
+                    className="rounded-lg border border-white/15 bg-[#1C1A18] px-3 py-2 text-sm text-[#F6F0E7] outline-none focus:border-[#D7AA61]"
+                  >
+                    {[4, 6, 10, 20].map((value) => (
+                      <option key={value} value={value}>
+                        {value} phim
+                      </option>
+                    ))}
+                  </select>
+                </div>
               )}
 
-            {!similarLoading &&
-              !similarError &&
-              similarMovies.length > 0 && (
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                  {similarMovies.map((item) => {
+              <button
+                type="button"
+                onClick={() =>
+                  setRefreshKey((value) => value + 1)
+                }
+                className="inline-flex items-center gap-2 rounded-lg border border-[#D7AA61]/30 bg-[#D7AA61]/10 px-4 py-2.5 text-xs font-semibold text-[#E8BF82] transition hover:bg-[#D7AA61]/20"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Làm mới
+              </button>
+            </div>
+          </div>
+
+          {activeLoading && (
+            <div className="flex min-h-64 flex-col items-center justify-center gap-4 rounded-2xl border border-white/10 bg-[#151413]">
+              <Loader2 className="h-9 w-9 animate-spin text-[#E8BF82]" />
+
+              <p className="text-sm text-[#C4B9AB]">
+                Đang tìm những bộ phim dành cho bạn...
+              </p>
+            </div>
+          )}
+
+          {!activeLoading && activeError && (
+            <div className="rounded-2xl border border-red-500/20 bg-red-950/15 px-6 py-10 text-center">
+              <p className="font-semibold text-[#F6F0E7]">
+                Chưa thể tải danh sách phim
+              </p>
+
+              <p className="mt-2 text-sm text-[#C4B9AB]">
+                Hãy kiểm tra kết nối và thử lại.
+              </p>
+
+              <p className="mt-2 break-words text-xs text-red-300/70">
+                {activeError}
+              </p>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setRefreshKey((value) => value + 1)
+                }
+                className="mt-5 rounded-lg bg-[#E8BF82] px-5 py-2.5 text-sm font-semibold text-[#17110A]"
+              >
+                Thử lại
+              </button>
+            </div>
+          )}
+
+          {!activeLoading &&
+            !activeError &&
+            activeItems.length === 0 && (
+              <div className="rounded-2xl border border-white/10 bg-[#151413] px-6 py-14 text-center">
+                <Film className="mx-auto h-10 w-10 text-[#D7AA61]" />
+
+                <p className="mt-4 text-sm text-[#C4B9AB]">
+                  Chưa tìm thấy phim phù hợp.
+                </p>
+              </div>
+            )}
+
+          {!activeLoading &&
+            !activeError &&
+            activeItems.length > 0 && (
+              <>
+                <div className="flex items-center gap-2 text-xs text-[#AFA497]">
+                  <Sparkles className="h-4 w-4 text-[#E8BF82]" />
+                  Đã tìm thấy {activeItems.length} phim
+                </div>
+
+                <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6">
+                  {activeItems.map((item) => {
                     const movie =
-                      similarMovieDetails.get(item.movieId) ??
+                      activeMovieDetails.get(item.movieId) ??
                       movieMap.get(item.movieId);
 
                     if (!movie) {
                       return (
                         <div
                           key={item.movieId}
-                          className="rounded-[8px] border border-white/[0.08] bg-[#191D27] p-4"
+                          className="overflow-hidden rounded-xl bg-[#191715]"
                         >
-                          <Film className="mb-3 h-7 w-7 text-[#E8B65B]" />
+                          <div className="flex aspect-[2/3] items-center justify-center bg-[#28221C]">
+                            <Film className="h-10 w-10 text-[#D7AA61]/50" />
+                          </div>
 
-                          <p className="text-xs font-semibold text-[#F5F2EA]">
-                            {item.title}
-                          </p>
-
-                          <p className="mt-2 font-mono text-xs text-[#E8B65B]">
-                            Sim: {formatScore(item.similarity)}
-                          </p>
+                          <div className="p-3">
+                            <p className="line-clamp-2 text-sm font-semibold">
+                              {item.title}
+                            </p>
+                          </div>
                         </div>
                       );
                     }
 
                     return (
-                      <MovieCard
+                      <div
                         key={item.movieId}
-                        movie={movie}
-                        similarityScore={item.similarity}
-                        onClick={() => onSelectMovie(movie)}
-                        isBookmarked={bookmarkedMovieIds.has(item.movieId)}
-                        onToggleBookmark={(event) => {
-                          event.stopPropagation();
-                          onToggleBookmark(item.movieId);
-                        }}
-                        userRating={currentUser.ratings[item.movieId]}
-                      />
+                        className="transition-transform duration-300 hover:-translate-y-1"
+                      >
+                        <MovieCard
+                          movie={movie}
+                          onClick={() => onSelectMovie(movie)}
+                          isBookmarked={bookmarkedMovieIds.has(
+                            item.movieId
+                          )}
+                          onToggleBookmark={(event) => {
+                            event.stopPropagation();
+                            onToggleBookmark(item.movieId);
+                          }}
+                          userRating={
+                            currentUser.ratings[item.movieId]
+                          }
+                        />
+                      </div>
                     );
                   })}
                 </div>
-              )}
-          </div>
+              </>
+            )}
+        </section>
+
+        {/* OPTIONAL EXPLANATION */}
+        <section className="overflow-hidden rounded-2xl border border-white/10 bg-[#141312]">
+          <button
+            type="button"
+            onClick={() =>
+              setShowExplanation((value) => !value)
+            }
+            aria-expanded={showExplanation}
+            className="flex w-full items-center justify-between gap-4 p-5 text-left transition hover:bg-white/[0.03] sm:p-6"
+          >
+            <span className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#D7AA61]/10 text-[#E8BF82]">
+                <Sparkles className="h-5 w-5" />
+              </span>
+
+              <span>
+                <span className="block text-sm font-semibold text-[#F6F0E7]">
+                  CineMatch tìm phim như thế nào?
+                </span>
+
+                <span className="mt-1 block text-xs text-[#AFA497]">
+                  Tìm hiểu thêm nếu bạn tò mò
+                </span>
+              </span>
+            </span>
+
+            <ChevronDown
+              className={`h-5 w-5 shrink-0 text-[#D7AA61] transition-transform ${
+                showExplanation ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+
+          {showExplanation && (
+            <div className="grid gap-4 border-t border-white/10 p-5 md:grid-cols-2 sm:p-6">
+              <div className="rounded-xl bg-[#211D18] p-5">
+                <Heart className="mb-3 h-6 w-6 text-[#E8BF82]" />
+
+                <h3 className="font-semibold">
+                  Theo sở thích
+                </h3>
+
+                <p className="mt-2 text-sm leading-6 text-[#BDB1A3]">
+                  CineMatch xem các thể loại phim mà hồ sơ
+                  từng đánh giá, sau đó tìm những bộ phim
+                  có thể loại phù hợp.
+                </p>
+              </div>
+
+              <div className="rounded-xl bg-[#211D18] p-5">
+                <Star className="mb-3 h-6 w-6 text-[#E8BF82]" />
+
+                <h3 className="font-semibold">
+                  Theo phim bạn thích
+                </h3>
+
+                <p className="mt-2 text-sm leading-6 text-[#BDB1A3]">
+                  CineMatch so sánh thể loại của phim
+                  bạn chọn với các phim khác để tìm
+                  những bộ phim có nét tương đồng.
+                </p>
+              </div>
+
+              <p className="text-xs leading-6 text-[#8F8578] md:col-span-2">
+                Các gợi ý được lấy từ mô hình Content-Based
+                của dự án. Hồ sơ MovieLens là dữ liệu mẫu,
+                không phải tài khoản cá nhân của người truy cập.
+              </p>
+            </div>
+          )}
+        </section>
+
+        <div className="flex items-center justify-center gap-2 pb-4 text-xs text-[#786E62]">
+          <Bookmark className="h-3.5 w-3.5" />
+          Chạm vào biểu tượng lưu để giữ lại phim yêu thích
+          <ArrowRight className="h-3.5 w-3.5" />
         </div>
-      </section>
+      </main>
     </div>
   );
 };
-

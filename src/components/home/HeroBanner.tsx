@@ -1,6 +1,14 @@
-import React from 'react';
-import { Star, Info, Sparkles, ArrowRight } from 'lucide-react';
-import { Movie } from '../../types';
+
+import React, { useEffect, useState } from "react";
+import {
+  ArrowRight,
+  Clapperboard,
+  Film,
+  Play,
+  Sparkles,
+  Star,
+} from "lucide-react";
+import type { Movie } from "../../types";
 
 interface HeroBannerProps {
   movie: Movie;
@@ -8,136 +16,337 @@ interface HeroBannerProps {
   onFindSimilar: (movie: Movie) => void;
 }
 
+function getDisplayTitle(title: string): string {
+  const match = title.match(/^(.*), (The|A|An)$/i);
+
+  if (!match) return title;
+
+  return `${match[2]} ${match[1]}`;
+}
+
+function getSafeImageUrl(value?: string | null): string {
+  if (!value) return "";
+
+  const url = value.trim();
+
+  return url.startsWith("https://image.tmdb.org/t/p/")
+    ? url
+    : "";
+}
+
+const heroStyles = `
+  @keyframes cmHeroZoom {
+    0% {
+      transform: scale(1.09);
+      opacity: 0.55;
+    }
+    18% {
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1.0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes cmHeroEnter {
+    from {
+      opacity: 0;
+      transform: translateY(28px);
+      filter: blur(7px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0);
+    }
+  }
+
+  @keyframes cmHeroGlow {
+    0%, 100% {
+      opacity: 0.25;
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      opacity: 0.52;
+      transform: translate3d(-35px, 15px, 0) scale(1.12);
+    }
+  }
+
+  @keyframes cmHeroShine {
+    0% {
+      transform: translateX(-180%) skewX(-22deg);
+    }
+    100% {
+      transform: translateX(340%) skewX(-22deg);
+    }
+  }
+
+  @keyframes cmHeroFloat {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-7px);
+    }
+  }
+
+  @keyframes cmHeroPulse {
+    0%, 100% {
+      opacity: 0.5;
+      box-shadow: 0 0 0 0 rgba(232, 191, 130, 0.2);
+    }
+    50% {
+      opacity: 1;
+      box-shadow: 0 0 0 7px rgba(232, 191, 130, 0);
+    }
+  }
+
+  .cm-hero-image {
+    animation: cmHeroZoom 9s ease-out both;
+    will-change: transform;
+  }
+
+  .cm-hero-enter {
+    animation: cmHeroEnter 850ms cubic-bezier(.2,.8,.2,1) both;
+  }
+
+  .cm-hero-enter-1 {
+    animation-delay: 100ms;
+  }
+
+  .cm-hero-enter-2 {
+    animation-delay: 220ms;
+  }
+
+  .cm-hero-enter-3 {
+    animation-delay: 350ms;
+  }
+
+  .cm-hero-enter-4 {
+    animation-delay: 470ms;
+  }
+
+  .cm-hero-glow {
+    animation: cmHeroGlow 8s ease-in-out infinite;
+  }
+
+  .cm-hero-floating {
+    animation: cmHeroFloat 5s ease-in-out infinite;
+  }
+
+  .cm-hero-pulse {
+    animation: cmHeroPulse 2.8s ease-in-out infinite;
+  }
+
+  .cm-hero-primary {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+  }
+
+  .cm-hero-primary::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    width: 35%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255,255,255,0.35),
+      transparent
+    );
+    transform: translateX(-180%) skewX(-22deg);
+    pointer-events: none;
+  }
+
+  .cm-hero-primary:hover::after {
+    animation: cmHeroShine 850ms ease-out forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cm-hero-image,
+    .cm-hero-enter,
+    .cm-hero-glow,
+    .cm-hero-floating,
+    .cm-hero-pulse {
+      animation: none !important;
+      transform: none !important;
+      filter: none !important;
+      opacity: 1 !important;
+    }
+
+    .cm-hero-primary:hover::after {
+      animation: none !important;
+    }
+  }
+`;
+
 export const HeroBanner: React.FC<HeroBannerProps> = ({
   movie,
   onOpenDetails,
-  onFindSimilar
+  onFindSimilar,
 }) => {
+  const [imageError, setImageError] = useState(false);
+
+  const backdrop =
+    getSafeImageUrl(movie.backdropUrl) ||
+    getSafeImageUrl(movie.posterUrl);
+
+  useEffect(() => {
+    setImageError(false);
+  }, [movie.movieId, backdrop]);
+
+  const displayTitle = getDisplayTitle(movie.title);
+
+  const hasRating =
+    movie.ratingsCount > 0 &&
+    Number.isFinite(movie.avgRating);
+
+  const genres = movie.genres ?? [];
+  const description = movie.synopsis?.trim() || "";
+
   return (
-    <section className="relative w-full bg-[#090A0E] border-b border-white/[0.08] overflow-hidden">
-      {/* Full-bleed Cinematic Backdrop with Layered Dark Gradients */}
-      <div className="absolute inset-0 z-0">
-        <img
-          src={movie.backdropUrl}
-          alt={movie.title}
-          className="w-full h-full object-cover object-center scale-105 filter brightness-[0.38] contrast-125"
-        />
-        {/* Multidirectional deep dark gradients to guarantee text legibility */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#090A0E] via-[#090A0E]/90 to-[#090A0E]/40" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#090A0E] via-[#090A0E]/30 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#090A0E]/60 via-transparent to-[#090A0E]" />
+    <section className="relative isolate w-full overflow-hidden bg-[#08090B] text-white">
+      <style>{heroStyles}</style>
+
+      {/* BACKDROP: SHARPER, BRIGHTER, CINEMATIC ZOOM */}
+      <div className="absolute inset-0 -z-30 overflow-hidden">
+        {backdrop && !imageError ? (
+          <img
+            key={`${movie.movieId}-${backdrop}`}
+            src={backdrop}
+            alt=""
+            aria-hidden="true"
+            onError={() => setImageError(true)}
+            className="cm-hero-image h-full w-full object-cover object-center"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-[radial-gradient(ellipse_at_75%_35%,#634025_0%,#221A17_45%,#08090B_85%)]">
+            <Film className="h-24 w-24 text-[#D7AA61]/20" />
+          </div>
+        )}
       </div>
 
-      {/* Main Container (Max 1440px, 80px Spacing) */}
-      <div className="relative z-10 max-w-[1440px] mx-auto px-6 py-20 lg:py-24">
-        <div className="grid grid-cols-12 gap-8 lg:gap-12 items-center">
-          {/* Left Text Column: Spans 12 on mobile, 7 on desktop */}
-          <div className="col-span-12 lg:col-span-7 space-y-6">
-            {/* Editorial Kicker */}
-            <div className="flex items-center gap-2 text-xs tracking-wider uppercase text-[#E8B65B] font-medium">
-              <span className="w-2 h-2 rounded-full bg-[#E8B65B]" />
-              <span className="font-mono">CineMatch ML · Recommender Engine</span>
-            </div>
+      {/* GRADIENTS: KEEP TEXT LEGIBLE WITHOUT HIDING THE FILM */}
+      <div className="pointer-events-none absolute inset-0 -z-20 bg-gradient-to-r from-[#08090B]/95 via-[#08090B]/65 to-transparent" />
 
-            {/* Main Heading H1 (Exact requested text in Manrope 700/800) */}
-            <h1 className="font-display font-extrabold text-4xl sm:text-5xl lg:text-[56px] text-[#F5F2EA] leading-[1.1] tracking-tight">
-              Khám phá những bộ phim{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#E8B65B] to-[#F5D48B]">
-                dành riêng cho bạn
-              </span>
+      <div className="pointer-events-none absolute inset-0 -z-20 bg-gradient-to-t from-[#08090B] via-transparent to-[#08090B]/15" />
+
+      {/* ANIMATED CINEMATIC LIGHTING */}
+      <div className="cm-hero-glow pointer-events-none absolute -right-32 top-[5%] -z-10 h-[420px] w-[420px] rounded-full bg-[#D9A65E]/15 blur-[110px]" />
+
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-t from-[#08090B] to-transparent" />
+
+      {/* MAIN CONTENT */}
+      <div className="relative mx-auto flex min-h-[540px] max-w-[1440px] items-center px-6 pb-24 pt-24 sm:min-h-[620px] sm:px-10 lg:min-h-[690px] lg:px-14">
+        <div
+          key={movie.movieId}
+          className="relative z-10 max-w-[750px]"
+        >
+          {/* EYEBROW */}
+          <div className="cm-hero-enter cm-hero-enter-1 mb-6 flex flex-wrap items-center gap-3">
+            <span className="cm-hero-pulse h-2 w-2 rounded-full bg-[#E8BF82]" />
+
+            <span className="text-[11px] font-bold uppercase tracking-[0.28em] text-[#E8BF82] sm:text-xs">
+              CineMatch Spotlight
+            </span>
+
+            <span className="hidden h-px w-12 bg-gradient-to-r from-[#E8BF82]/70 to-transparent sm:block" />
+
+            <span className="hidden items-center gap-1.5 text-[11px] text-[#E9D9C4]/80 sm:inline-flex">
+              <Clapperboard className="h-3.5 w-3.5" />
+              Phim nổi bật
+            </span>
+          </div>
+
+          {/* MOVIE TITLE */}
+          <div className="cm-hero-enter cm-hero-enter-2">
+            <h1 className="max-w-[760px] text-5xl font-black leading-[1.05] tracking-[-0.045em] text-[#FFF9F1] drop-shadow-[0_8px_25px_rgba(0,0,0,0.55)] sm:text-6xl lg:text-[76px]">
+              {displayTitle}
             </h1>
 
-            {/* Description (Exact requested text in Inter 300) */}
-            <p className="text-base sm:text-lg text-[#9EA3AE] font-light leading-relaxed max-w-xl">
-              Hệ thống đề xuất thông minh dựa trên sở thích và lịch sử đánh giá của người dùng.
-            </p>
-
-            {/* Quick Feature Film Attribution */}
-            <div className="pt-2 flex items-center gap-3 text-xs text-[#9EA3AE]">
-              <span className="text-[#F5F2EA] font-medium">Phim tiêu điểm:</span>
-              <span>{movie.title}</span>
-              <span aria-hidden="true" className="opacity-40">·</span>
-              <span className="text-[#E8B65B] flex items-center gap-1 font-mono">
-                <Star className="w-3.5 h-3.5 fill-current" />
-                {movie.avgRating.toFixed(1)}/5.0
-              </span>
-            </div>
+            <div className="mt-6 h-[3px] w-20 rounded-full bg-gradient-to-r from-[#F5D49C] via-[#D7AA61] to-transparent shadow-[0_0_22px_rgba(232,191,130,0.5)]" />
           </div>
 
-          {/* Right Featured Movie Section: Spans 12 on mobile, 5 on desktop */}
-          <div className="col-span-12 lg:col-span-5">
-            <div className="p-6 rounded-[10px] bg-[#11141C]/90 border border-white/[0.08] backdrop-blur-md space-y-5">
-              <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
-                <span className="text-xs font-semibold uppercase tracking-wider text-[#E8B65B]">
-                  Featured Movie
-                </span>
-                <span className="text-xs text-[#9EA3AE] font-mono">
-                  Mã phim #{movie.movieId}
-                </span>
-              </div>
+          {/* MOVIE METADATA */}
+          <div className="cm-hero-enter cm-hero-enter-3 mt-7 flex flex-wrap items-center gap-3 text-sm text-[#F0E6D9]">
+            {hasRating && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-[#E8BF82]/35 bg-[#E8BF82]/10 px-3 py-1.5 font-bold text-[#F4CB8E] backdrop-blur-md">
+                <Star className="h-4 w-4 fill-current" />
+                {movie.avgRating.toFixed(1)}
+              </span>
+            )}
 
-              {/* Poster + Info horizontal layout */}
-              <div className="flex gap-4">
-                {/* 2:3 Aspect ratio poster */}
-                <div className="w-28 sm:w-32 aspect-[2/3] shrink-0 rounded-[8px] overflow-hidden border border-white/[0.08] bg-[#090A0E]">
-                  <img
-                    src={movie.posterUrl}
-                    alt={movie.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
+            {movie.year && (
+              <span className="rounded-full border border-white/20 bg-black/25 px-3 py-1.5 backdrop-blur-sm">
+                {movie.year}
+              </span>
+            )}
 
-                <div className="flex flex-col justify-between py-0.5 space-y-2">
-                  <div>
-                    <h3 className="font-display font-bold text-lg sm:text-xl text-[#F5F2EA] leading-snug">
-                      {movie.title}
-                    </h3>
-                    <p className="text-xs text-[#9EA3AE] mt-1">
-                      Năm phát hành: <span className="text-[#F5F2EA] font-medium">{movie.year}</span>
-                    </p>
-                    <p className="text-xs text-[#9EA3AE]">
-                      Thể loại: <span className="text-[#F5F2EA] font-medium">{movie.genres.join(', ')}</span>
-                    </p>
-                  </div>
+            {genres.slice(0, 2).map((genre) => (
+              <span
+                key={genre}
+                className="rounded-full border border-white/20 bg-black/25 px-3 py-1.5 backdrop-blur-sm"
+              >
+                {genre}
+              </span>
+            ))}
+          </div>
 
-                  <div className="flex items-center gap-2 pt-1 text-xs">
-                    <span className="flex items-center gap-1 text-[#E8B65B] font-mono font-semibold">
-                      <Star className="w-4 h-4 fill-current" />
-                      {movie.avgRating.toFixed(2)} / 5.0
-                    </span>
-                    <span className="text-[#9EA3AE]">
-                      ({movie.ratingsCount} lượt đánh giá)
-                    </span>
-                  </div>
-                </div>
-              </div>
+          {/* DESCRIPTION */}
+          {description && (
+            <p className="cm-hero-enter cm-hero-enter-3 mt-6 line-clamp-3 max-w-[600px] text-sm leading-7 text-[#E9E1D7] drop-shadow-[0_2px_12px_rgba(0,0,0,0.85)] sm:text-base sm:leading-8">
+              {description}
+            </p>
+          )}
 
-              {/* Synopsis excerpt */}
-              <p className="text-xs text-[#9EA3AE] leading-relaxed line-clamp-3 font-light">
-                {movie.synopsis}
-              </p>
+          {/* ACTIONS */}
+          <div className="cm-hero-enter cm-hero-enter-4 mt-9 flex flex-wrap items-center gap-4">
+            <button
+              type="button"
+              onClick={() => onOpenDetails(movie)}
+              className="cm-hero-primary group inline-flex min-h-14 items-center justify-center gap-3 rounded-xl border border-[#F4D29A]/60 bg-gradient-to-r from-[#F2CD91] via-[#E8BF82] to-[#D9A968] px-8 py-3.5 text-sm font-extrabold text-[#18120B] shadow-[0_8px_35px_rgba(215,170,97,0.23)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_45px_rgba(215,170,97,0.4)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5D49C] motion-reduce:transform-none"
+            >
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#18120B]/10">
+                <Play className="h-4 w-4 fill-current" />
+              </span>
 
-              {/* Two Requested CTAs: "Xem chi tiết" and "Tìm phim tương tự" with 8px radius */}
-              <div className="grid grid-cols-2 gap-3 pt-1">
-                <button
-                  onClick={() => onOpenDetails(movie)}
-                  className="py-3 px-4 rounded-[8px] bg-[#E8B65B] hover:bg-[#F0C475] text-[#090A0E] font-display font-bold text-xs uppercase tracking-wider text-center transition-colors cursor-pointer shadow-sm"
-                >
-                  Xem chi tiết
-                </button>
+              Khám phá bộ phim
 
-                <button
-                  onClick={() => onFindSimilar(movie)}
-                  className="py-3 px-4 rounded-[8px] bg-transparent hover:bg-white/[0.04] border border-white/[0.14] hover:border-[#E8B65B]/50 text-[#F5F2EA] font-display font-medium text-xs uppercase tracking-wider text-center transition-colors cursor-pointer flex items-center justify-center gap-1.5"
-                >
-                  <span>Tìm phim tương tự</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-[#E8B65B]" />
-                </button>
-              </div>
-            </div>
+              <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1 motion-reduce:transform-none" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onFindSimilar(movie)}
+              className="group inline-flex min-h-14 items-center justify-center gap-3 rounded-xl border border-white/30 bg-black/30 px-7 py-3.5 text-sm font-bold text-white shadow-[0_8px_25px_rgba(0,0,0,0.15)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-[#E8BF82]/70 hover:bg-[#E8BF82]/10 hover:shadow-[0_10px_35px_rgba(215,170,97,0.15)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E8BF82] motion-reduce:transform-none"
+            >
+              <Sparkles className="h-4 w-4 text-[#E8BF82]" />
+
+              Tìm phim tương tự
+
+              <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1 motion-reduce:transform-none" />
+            </button>
+          </div>
+
+          {/* SUBTLE DECORATIVE DETAIL */}
+          <div className="cm-hero-enter cm-hero-enter-4 mt-9 hidden items-center gap-3 text-[10px] font-medium uppercase tracking-[0.22em] text-[#D1B894]/65 sm:flex">
+            <span className="h-px w-8 bg-[#D7AA61]/50" />
+            Discover your next favorite
           </div>
         </div>
+
+        {/* RIGHT SIDE ACCENT */}
+        <div className="cm-hero-floating pointer-events-none absolute bottom-32 right-12 hidden items-center gap-3 rounded-full border border-white/15 bg-black/20 px-5 py-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/70 backdrop-blur-lg xl:flex">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#E8BF82]" />
+          The cinema experience
+        </div>
       </div>
+
+      {/* TRANSITION TO NEXT SECTION */}
+      <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-[#090909] via-[#090909]/65 to-transparent" />
     </section>
   );
 };

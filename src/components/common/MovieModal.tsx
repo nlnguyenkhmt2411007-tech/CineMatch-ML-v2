@@ -1,8 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import { X, Star, Sparkles, ExternalLink, Sliders, CheckCircle2, Bookmark, Film, Play, Loader2 } from 'lucide-react';
-import { Movie } from '../../types';
-import { ALL_GENRES } from '../../data/mockMovies';
-import { getMovieGenreVector, getSimilarMoviesByContent } from '../../services/recommender';
+
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  Bookmark,
+  CheckCircle2,
+  ExternalLink,
+  Film,
+  Loader2,
+  Play,
+  Star,
+  X,
+} from "lucide-react";
+
+import type { Movie } from "../../types";
+import { getSimilarMoviesByContent } from "../../services/recommender";
 
 interface MovieModalProps {
   movie: Movie | null;
@@ -15,6 +25,83 @@ interface MovieModalProps {
   onToggleBookmark?: () => void;
 }
 
+interface TrailerData {
+  available: boolean;
+  videoKey: string | null;
+  title?: string;
+  message?: string;
+}
+
+const API_BASE =
+  import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+
+function safePoster(value?: string | null): string {
+  if (!value) return "";
+
+  const url = value.trim();
+
+  return url.startsWith("https://image.tmdb.org/t/p/")
+    ? url
+    : "";
+}
+
+function SimilarMoviePoster({
+  movie,
+  onClick,
+}: {
+  movie: Movie;
+  onClick: () => void;
+}) {
+  const [imageError, setImageError] = useState(false);
+  const poster = safePoster(movie.posterUrl);
+
+  useEffect(() => {
+    setImageError(false);
+  }, [movie.movieId, poster]);
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group min-w-0 text-left"
+      aria-label={`Xem phim ${movie.title}`}
+    >
+      <div className="relative aspect-[2/3] overflow-hidden rounded-xl bg-[#22201D] transition duration-300 group-hover:-translate-y-1 group-hover:shadow-2xl">
+        {poster && !imageError ? (
+          <img
+            src={poster}
+            alt={`Poster ${movie.title}`}
+            loading="lazy"
+            onError={() => setImageError(true)}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <div className="flex h-full flex-col items-center justify-center gap-3 bg-gradient-to-br from-[#30281E] to-[#141414] p-3 text-center">
+            <Film className="h-8 w-8 text-[#DDB574]/70" />
+            <span className="line-clamp-3 text-xs text-[#E9E1D4]">
+              {movie.title}
+            </span>
+          </div>
+        )}
+
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#E8BF82] text-[#17120C]">
+            <Play className="ml-0.5 h-5 w-5 fill-current" />
+          </span>
+        </div>
+      </div>
+
+      <h4 className="mt-3 line-clamp-2 text-sm font-semibold leading-5 text-[#F5F0E8] group-hover:text-[#E8BF82]">
+        {movie.title}
+      </h4>
+
+      <p className="mt-1 text-xs text-[#A99E90]">
+        {movie.year || "Phim"}
+      </p>
+    </button>
+  );
+}
+
 export const MovieModal: React.FC<MovieModalProps> = ({
   movie,
   onClose,
@@ -22,95 +109,92 @@ export const MovieModal: React.FC<MovieModalProps> = ({
   allMovies,
   userRating,
   onRateMovie,
-  isBookmarked,
-  onToggleBookmark
+  isBookmarked = false,
+  onToggleBookmark,
 }) => {
-
-
   const [hoverRating, setHoverRating] = useState<number | null>(null);
   const [ratedToast, setRatedToast] = useState(false);
 
-  const [trailerData, setTrailerData] = useState<{
-    available: boolean;
-    videoKey: string | null;
-    title?: string;
-    message?: string;
-  } | null>(null);
-
+  const [trailerData, setTrailerData] =
+    useState<TrailerData | null>(null);
   const [trailerLoading, setTrailerLoading] = useState(false);
   const [trailerError, setTrailerError] = useState(false);
   const [showTrailer, setShowTrailer] = useState(false);
+
+  const [enrichedMovies, setEnrichedMovies] = useState<
+    Map<number, Movie>
+  >(new Map());
+
+  const similarMovies = useMemo(
+    () =>
+      movie
+        ? getSimilarMoviesByContent(movie, allMovies, 4)
+        : [],
+    [movie, allMovies]
+  );
 
   useEffect(() => {
     setTrailerData(null);
     setTrailerError(false);
     setShowTrailer(false);
+    setHoverRating(null);
+    setRatedToast(false);
 
     if (!movie) {
       setTrailerLoading(false);
       return;
     }
 
-    let cancelled = false;
+    const controller = new AbortController();
     setTrailerLoading(true);
 
-    async function loadTrailer() {
+    async function loadTrailer(movieId: number) {
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}/api/movies/${movie!.movieId}/trailer`
+          `${API_BASE}/api/movies/${movieId}/trailer`,
+          { signal: controller.signal }
         );
 
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}`);
         }
 
-        const data = await response.json();
+        const data = (await response.json()) as TrailerData;
 
-        if (!cancelled) {
+        if (!controller.signal.aborted) {
           setTrailerData(data);
           setTrailerError(false);
         }
       } catch {
-        if (!cancelled) {
+        if (!controller.signal.aborted) {
           setTrailerError(true);
         }
       } finally {
-        if (!cancelled) {
+        if (!controller.signal.aborted) {
           setTrailerLoading(false);
         }
       }
     }
 
-    void loadTrailer();
+    void loadTrailer(movie.movieId);
 
-    return () => {
-      cancelled = true;
-    };
+    return () => controller.abort();
   }, [movie?.movieId]);
 
-  // Item-to-Item Content-Based similar movies
-  const similarMovies = movie
-    ? getSimilarMoviesByContent(movie, allMovies, 4)
-    : [];
-
-  const [enrichedMovies, setEnrichedMovies] = useState<Map<number, Movie>>(
-    new Map()
-  );
-
   useEffect(() => {
-    if (!movie) {
-      setEnrichedMovies(new Map());
-      return;
-    }
+    setEnrichedMovies(new Map());
 
-    let cancelled = false;
+    if (!movie || similarMovies.length === 0) return;
+
+    const controller = new AbortController();
 
     async function loadPosters() {
       const results = await Promise.all(
         similarMovies.map(async (item) => {
           try {
             const response = await fetch(
-              `${import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}/api/movies/enriched/${item.movie.movieId}`
+              `${API_BASE}/api/movies/enriched/${item.movie.movieId}`,
+              { signal: controller.signal }
             );
 
             if (!response.ok) return null;
@@ -124,352 +208,347 @@ export const MovieModal: React.FC<MovieModalProps> = ({
         })
       );
 
-      if (!cancelled) {
-        setEnrichedMovies(
-          new Map(
-            results.filter(
-              (entry): entry is readonly [number, Movie] =>
-                entry !== null
-            )
+      if (controller.signal.aborted) return;
+
+      setEnrichedMovies(
+        new Map(
+          results.filter(
+            (entry): entry is readonly [number, Movie] =>
+              entry !== null
           )
-        );
-      }
+        )
+      );
     }
 
     void loadPosters();
 
-    return () => {
-      cancelled = true;
+    return () => controller.abort();
+  }, [movie?.movieId, similarMovies]);
+
+  useEffect(() => {
+    if (!movie) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
     };
-  }, [movie?.movieId, allMovies]);
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () =>
+      window.removeEventListener("keydown", handleKeyDown);
+  }, [movie, onClose]);
 
   if (!movie) return null;
-  const genreVector = movie ? getMovieGenreVector(movie) : [];
+
+  const poster = safePoster(movie.posterUrl);
+  const backdrop = safePoster(movie.backdropUrl) || poster;
+
+  const hasCommunityRating =
+    movie.ratingsCount > 0 &&
+    Number.isFinite(movie.avgRating);
+
+  const hasTrailer =
+    trailerData?.available && Boolean(trailerData.videoKey);
 
   const handleRatingSubmit = (score: number) => {
     onRateMovie(movie.movieId, score);
     setRatedToast(true);
-    setTimeout(() => setRatedToast(false), 2500);
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-      {/* Backdrop */}
-      <div 
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-5">
+      {/* DARK OVERLAY */}
+      <div
+        className="absolute inset-0 bg-black/90 backdrop-blur-lg"
         onClick={onClose}
-        className="fixed inset-0 bg-[#090A0E]/85 backdrop-blur-md transition-opacity" 
       />
 
-      {/* Modal Dialog Card (rounded 10px dashboard card per spec) */}
-      <div className="relative w-full max-w-4xl bg-[#11141C] border border-white/[0.08] rounded-[10px] shadow-2xl overflow-hidden z-10 max-h-[90vh] flex flex-col">
-        {/* Close Button */}
+      {/* CINEMATIC MOVIE WINDOW */}
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Chi tiết phim ${movie.title}`}
+        className="relative z-10 flex h-full max-h-[96vh] w-full max-w-5xl flex-col overflow-hidden bg-[#101010] shadow-[0_35px_100px_rgba(0,0,0,0.8)] sm:h-auto sm:rounded-2xl"
+      >
         <button
+          type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 z-20 p-2 rounded-[8px] bg-[#090A0E]/80 border border-white/10 text-[#9EA3AE] hover:text-[#F5F2EA] transition-colors"
+          aria-label="Đóng chi tiết phim"
+          className="absolute right-4 top-4 z-30 flex h-10 w-10 items-center justify-center rounded-full bg-black/70 text-white backdrop-blur-md transition hover:bg-[#E8BF82] hover:text-black"
         >
-          <X className="w-5 h-5" />
+          <X className="h-5 w-5" />
         </button>
 
-        {/* Modal Header / Backdrop Hero Area */}
-        <div className="relative h-64 sm:h-72 w-full shrink-0 overflow-hidden bg-[#090A0E]">
-          <img
-            src={movie.backdropUrl || movie.posterUrl}
-            alt={movie.title}
-            className="w-full h-full object-cover opacity-35"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#11141C] via-[#11141C]/60 to-transparent" />
-
-          {/* Floating Movie Header Info */}
-          <div className="absolute bottom-6 left-6 right-6 flex items-end gap-6">
-            <div className="hidden sm:block w-28 aspect-[2/3] shrink-0 rounded-[8px] overflow-hidden border border-white/15 shadow-lg bg-[#090A0E]">
+        <div className="overflow-y-auto [scrollbar-width:thin]">
+          {/* LARGE MOVIE HERO */}
+          <div className="relative min-h-[390px] overflow-hidden bg-[#191919] sm:min-h-[460px]">
+            {backdrop ? (
               <img
-                src={movie.posterUrl}
-                alt={movie.title}
-                className="w-full h-full object-cover"
+                src={backdrop}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover object-center opacity-65"
               />
-            </div>
+            ) : (
+              <div className="absolute inset-0 bg-gradient-to-br from-[#382A1C] via-[#171717] to-black" />
+            )}
 
-            <div className="space-y-2 flex-1">
-              <div className="flex items-center gap-2 text-xs text-[#9EA3AE]">
-                <span>Mã phim (MovieLens ID): #{movie.movieId}</span>
-                <span aria-hidden="true">·</span>
-                <span>Năm {movie.year}</span>
-                <span aria-hidden="true">·</span>
-                <span className="text-[#E8B65B] flex items-center gap-1 font-medium">
-                  <Star className="w-3.5 h-3.5 fill-current" />
-                  {movie.avgRating.toFixed(2)}/5.0 ({movie.ratingsCount} lượt đánh giá)
-                </span>
-              </div>
+            <div className="absolute inset-0 bg-gradient-to-r from-[#101010] via-[#101010]/65 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#101010] via-transparent to-black/20" />
 
-              <h2 className="font-display font-bold text-2xl sm:text-3xl text-[#F5F2EA] leading-tight">
-                {movie.title}
-              </h2>
-
-              <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
-                {movie.genres.map((g) => (
-                  <span
-                    key={g}
-                    className="px-2.5 py-1 rounded-[6px] bg-[#191D27] border border-white/[0.08] text-[#F5F2EA] font-medium"
-                  >
-                    {g}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Modal Scrollable Body */}
-        <div className="p-6 overflow-y-auto space-y-6 flex-1 text-sm text-[#9EA3AE]">
-          {/* Main synopsis */}
-          <div className="space-y-2">
-            <h4 className="font-display font-semibold text-xs uppercase tracking-wider text-[#F5F2EA]">
-              Tóm tắt nội dung
-            </h4>
-            <p className="text-sm leading-relaxed text-[#F5F2EA]/90 font-light">
-              {movie.synopsis}
-            </p>
-          </div>
-
-          {/* Official YouTube Trailer */}
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h4 className="font-display font-semibold text-xs uppercase tracking-wider text-[#F5F2EA] flex items-center gap-2">
-                  <Play className="w-4 h-4 text-[#E8B65B]" />
-                  Trailer phim
-                </h4>
-                <p className="text-xs text-[#9EA3AE] mt-1">
-                  Xem trailer YouTube ngay trong CineMatch.
+            <div className="relative flex min-h-[390px] items-end px-6 pb-9 pt-24 sm:min-h-[460px] sm:px-10 sm:pb-12">
+              <div className="max-w-2xl">
+                <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#E8BF82]">
+                  CineMatch
                 </p>
-              </div>
 
-              {trailerData?.available && trailerData.videoKey && (
-                <button
-                  type="button"
-                  onClick={() => setShowTrailer((current) => !current)}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[8px] bg-[#E8B65B] text-[#11141C] font-semibold text-xs hover:bg-[#F5C779] transition-colors"
-                >
-                  {showTrailer ? (
-                    <X className="w-4 h-4" />
-                  ) : (
-                    <Play className="w-4 h-4 fill-current" />
+                <h2 className="text-3xl font-bold leading-tight tracking-tight text-white sm:text-5xl">
+                  {movie.title}
+                </h2>
+
+                <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-[#E2D9CD]">
+                  {movie.year && <span>{movie.year}</span>}
+
+                  {hasCommunityRating && (
+                    <span className="inline-flex items-center gap-1.5 font-semibold text-[#E8BF82]">
+                      <Star className="h-4 w-4 fill-current" />
+                      {movie.avgRating.toFixed(1)}/5
+                    </span>
                   )}
-                  {showTrailer ? 'Đóng trailer' : 'Xem trailer'}
-                </button>
-              )}
+
+                  {movie.genres.slice(0, 3).map((genre) => (
+                    <span key={genre}>{genre}</span>
+                  ))}
+                </div>
+
+                <div className="mt-7 flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (hasTrailer) {
+                        setShowTrailer((current) => !current);
+                      }
+                    }}
+                    disabled={!hasTrailer}
+                    className="inline-flex items-center gap-2 rounded-full bg-[#E8BF82] px-6 py-3 text-sm font-bold text-[#19130C] transition hover:bg-[#F6D5A3] disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {trailerLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : showTrailer ? (
+                      <X className="h-4 w-4" />
+                    ) : (
+                      <Play className="h-4 w-4 fill-current" />
+                    )}
+
+                    {trailerLoading
+                      ? "Đang tải..."
+                      : showTrailer
+                        ? "Đóng trailer"
+                        : hasTrailer
+                          ? "Xem trailer"
+                          : "Chưa có trailer"}
+                  </button>
+
+                  {onToggleBookmark && (
+                    <button
+                      type="button"
+                      onClick={onToggleBookmark}
+                      className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-black/35 px-5 py-3 text-sm font-semibold text-white backdrop-blur-md transition hover:bg-white/15"
+                    >
+                      <Bookmark
+                        className={`h-4 w-4 ${
+                          isBookmarked ? "fill-current" : ""
+                        }`}
+                      />
+                      {isBookmarked ? "Đã lưu" : "Lưu phim"}
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
+          </div>
 
-            {trailerLoading && (
-              <div className="flex items-center gap-2 rounded-[8px] border border-white/10 bg-[#191D27] p-4 text-xs">
-                <Loader2 className="w-4 h-4 animate-spin text-[#E8B65B]" />
-                Đang tìm trailer chính thức...
-              </div>
-            )}
-
-            {!trailerLoading && trailerError && (
-              <div className="rounded-[8px] border border-white/10 bg-[#191D27] p-4 text-xs">
-                Chưa thể tải trailer. Vui lòng thử lại sau.
-              </div>
-            )}
-
-            {!trailerLoading && !trailerError && trailerData && !trailerData.available && (
-              <div className="rounded-[8px] border border-white/10 bg-[#191D27] p-4 text-xs">
-                {trailerData.message || 'Phim này hiện chưa có trailer YouTube.'}
-              </div>
-            )}
-
-            {showTrailer && trailerData?.available && trailerData.videoKey && (
-              <div className="overflow-hidden rounded-[10px] border border-[#E8B65B]/30 bg-black shadow-xl">
+          {/* MOVIE DETAILS */}
+          <div className="space-y-10 px-6 pb-12 pt-5 sm:px-10">
+            {/* TRAILER */}
+            {showTrailer && hasTrailer && (
+              <section className="overflow-hidden rounded-xl bg-black">
                 <div className="aspect-video w-full">
                   <iframe
-                    key={`${movie.movieId}-${trailerData.videoKey}`}
-                    src={`https://www.youtube-nocookie.com/embed/${trailerData.videoKey}?autoplay=1&rel=0`}
+                    key={`${movie.movieId}-${trailerData?.videoKey}`}
+                    src={`https://www.youtube-nocookie.com/embed/${trailerData?.videoKey}?autoplay=1&rel=0`}
                     title={`Trailer ${movie.title}`}
-                    className="w-full h-full"
+                    className="h-full w-full"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     referrerPolicy="strict-origin-when-cross-origin"
                     allowFullScreen
                   />
                 </div>
-                <div className="px-3 py-2 text-[11px] text-[#9EA3AE]">
-                  {trailerData.title || 'Trailer phim'} · Nguồn: TMDb / YouTube
-                </div>
-              </div>
+              </section>
             )}
-          </div>
-          {/* Interactive Rating Studio Section */}
-          <div className="p-4 rounded-[8px] bg-[#191D27] border border-white/[0.08] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <h4 className="text-xs font-semibold text-[#F5F2EA] uppercase tracking-wider flex items-center gap-2">
-                <Star className="w-4 h-4 text-[#E8B65B]" />
-                Đánh giá của bạn cho phim này
-              </h4>
-              <p className="text-xs text-[#9EA3AE] mt-0.5">
-                Thang điểm từ 0.5 đến 5.0 (bước 0.5) chuẩn MovieLens. Giúp cá nhân hóa danh sách đề xuất.
+
+            {trailerError && (
+              <p className="text-xs text-[#A99E90]">
+                Trailer hiện chưa tải được.
               </p>
-            </div>
+            )}
 
-            <div className="flex items-center gap-1">
-              {[1, 2, 3, 4, 5].map((starVal) => {
-                const isFilled = (hoverRating !== null ? hoverRating : (userRating || 0)) >= starVal;
-                return (
-                  <button
-                    key={starVal}
-                    onMouseEnter={() => setHoverRating(starVal)}
-                    onMouseLeave={() => setHoverRating(null)}
-                    onClick={() => handleRatingSubmit(starVal)}
-                    className="p-1 text-lg transition-transform hover:scale-125 focus:outline-none"
-                    title={`Chấm ${starVal} sao`}
-                  >
-                    <Star
-                      className={`w-6 h-6 ${
-                        isFilled
-                          ? 'text-[#E8B65B] fill-[#E8B65B]'
-                          : 'text-[#9EA3AE]/30'
-                      }`}
-                    />
-                  </button>
-                );
-              })}
-              {userRating && (
-                <span className="ml-2 font-mono text-xs text-[#E8B65B] font-semibold">
-                  {userRating.toFixed(1)}★
-                </span>
-              )}
-            </div>
-          </div>
+            {/* SYNOPSIS AND PERSONAL RATING */}
+            <div className="grid gap-9 lg:grid-cols-[1fr_270px] lg:gap-12">
+              <section className="space-y-4">
+                <h3 className="text-xl font-semibold text-white">
+                  Nội dung phim
+                </h3>
 
-          {ratedToast && (
-            <div className="flex items-center gap-2 p-3 rounded-[8px] bg-emerald-950/40 border border-emerald-500/30 text-emerald-400 text-xs">
-              <CheckCircle2 className="w-4 h-4" />
-              <span>Đã lưu điểm đánh giá! Hồ sơ người dùng và đề xuất tương tác đã được cập nhật lại theo thời gian thực.</span>
-            </div>
-          )}
+                <p className="max-w-2xl whitespace-pre-line text-sm leading-7 text-[#C8BEB2] sm:text-base">
+                  {movie.synopsis?.trim() ||
+                    "Nội dung phim đang được cập nhật."}
+                </p>
 
-          {/* Multi-Hot Vector Encoding Inspector (Machine Learning Explanatory View) */}
-          <div className="space-y-3 pt-2">
-            <div className="flex items-center justify-between">
-              <h4 className="font-display font-semibold text-xs uppercase tracking-wider text-[#F5F2EA] flex items-center gap-2">
-                <Sliders className="w-3.5 h-3.5 text-[#E8B65B]" />
-                Vector nhị phân thể loại (Multi-Hot Feature Vector $x_i$)
-              </h4>
-              <span className="text-[11px] font-mono text-[#9EA3AE]">
-                18 chiều · Chuẩn mã hóa trong đồ án CTUT
-              </span>
-            </div>
-            <div className="p-3 bg-[#090A0E] rounded-[8px] border border-white/[0.08] overflow-x-auto">
-              <div className="flex flex-wrap gap-1.5">
-                {ALL_GENRES.map((genre, idx) => {
-                  const isActive = genreVector[idx] === 1;
-                  return (
-                    <div
-                      key={genre}
-                      className={`px-2 py-1 rounded-[4px] text-[11px] font-mono border flex items-center gap-1.5 transition-colors ${
-                        isActive
-                          ? 'bg-[#E8B65B]/15 border-[#E8B65B]/40 text-[#E8B65B] font-semibold'
-                          : 'bg-[#11141C] border-white/[0.04] text-[#9EA3AE]/50'
-                      }`}
-                    >
-                      <span>{genre}</span>
-                      <span className={`text-[10px] px-1 rounded ${isActive ? 'bg-[#E8B65B] text-[#090A0E]' : 'bg-white/5'}`}>
-                        {genreVector[idx]}
+                {movie.genres.length > 0 && (
+                  <div className="flex flex-wrap gap-2 pt-2">
+                    {movie.genres.map((genre) => (
+                      <span
+                        key={genre}
+                        className="rounded-full border border-white/10 bg-[#202020] px-3 py-1.5 text-xs text-[#D4C9BA]"
+                      >
+                        {genre}
                       </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
+                    ))}
+                  </div>
+                )}
+              </section>
 
-          {/* Content-Based Similar Movies Section (Item-to-Item Cosine Similarity) */}
-          <div className="space-y-3 pt-2">
-            <div className="flex items-center justify-between">
-              <h4 className="font-display font-semibold text-xs uppercase tracking-wider text-[#F5F2EA] flex items-center gap-2">
-                <Sparkles className="w-3.5 h-3.5 text-[#E8B65B]" />
-                Phim có độ tương đồng thể loại cao nhất (Item-to-Item Cosine Similarity)
-              </h4>
-              <span className="text-[11px] font-mono text-[#E8B65B]">
-                [Demo Engine]
-              </span>
+              <section className="space-y-4 rounded-xl border border-white/10 bg-[#191919] p-5 self-start">
+                <div>
+                  <h3 className="text-base font-semibold text-white">
+                    Bạn chấm mấy sao?
+                  </h3>
+
+                  <p className="mt-1 text-xs text-[#A99E90]">
+                    Chọn số sao bạn muốn.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((value) => {
+                    const selected =
+                      (hoverRating ?? userRating ?? 0) >= value;
+
+                    return (
+                      <button
+                        key={value}
+                        type="button"
+                        onMouseEnter={() => setHoverRating(value)}
+                        onMouseLeave={() => setHoverRating(null)}
+                        onFocus={() => setHoverRating(value)}
+                        onBlur={() => setHoverRating(null)}
+                        onClick={() => handleRatingSubmit(value)}
+                        title={`Chấm ${value} sao`}
+                        aria-label={`Chấm ${value} sao`}
+                        className="rounded-md p-1 transition-transform hover:scale-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#E8BF82]"
+                      >
+                        <Star
+                          className={`h-7 w-7 ${
+                            selected
+                              ? "fill-[#E8BF82] text-[#E8BF82]"
+                              : "text-[#615B54]"
+                          }`}
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {userRating !== undefined && (
+                  <p className="text-xs text-[#E8BF82]">
+                    Bạn đã chấm {userRating.toFixed(1)}/5
+                  </p>
+                )}
+
+                {ratedToast && (
+                  <p
+                    role="status"
+                    className="flex items-center gap-2 text-xs text-[#B8D8B6]"
+                  >
+                    <CheckCircle2 className="h-4 w-4" />
+                    Đã gửi đánh giá.
+                  </p>
+                )}
+              </section>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {similarMovies.map((simItem) => (
-                <div
-                  key={simItem.movie.movieId}
-                  onClick={() => onSelectMovie(enrichedMovies.get(simItem.movie.movieId) ?? simItem.movie)}
-                  className="group/item p-2 rounded-[8px] bg-[#191D27] border border-white/[0.08] hover:border-[#E8B65B]/40 cursor-pointer transition-all flex flex-col justify-between"
-                >
-                  <div className="aspect-[2/3] w-full rounded-[6px] overflow-hidden bg-[#090A0E] mb-2 relative">
-                    {(
-                      enrichedMovies.get(simItem.movie.movieId)?.posterUrl ??
-                      simItem.movie.posterUrl
-                    ) ? (
-                      <img
-                        src={
-                          enrichedMovies.get(simItem.movie.movieId)?.posterUrl ??
-                          simItem.movie.posterUrl
+            {/* SIMILAR MOVIES */}
+            {similarMovies.length > 0 && (
+              <section className="space-y-5">
+                <h3 className="text-xl font-semibold text-white sm:text-2xl">
+                  Có thể bạn cũng thích
+                </h3>
+
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-5">
+                  {similarMovies.map((item) => {
+                    const enriched = enrichedMovies.get(
+                      item.movie.movieId
+                    );
+
+                    const displayMovie: Movie = enriched
+                      ? {
+                          ...item.movie,
+                          ...enriched,
+                          posterUrl:
+                            enriched.posterUrl ||
+                            item.movie.posterUrl,
+                          backdropUrl:
+                            enriched.backdropUrl ||
+                            item.movie.backdropUrl,
+                          synopsis:
+                            enriched.synopsis ||
+                            item.movie.synopsis,
                         }
-                        alt={simItem.movie.title}
-                        className="w-full h-full object-cover group-hover/item:scale-105 transition-transform"
-                        onError={(event) => {
-                          event.currentTarget.style.display = "none";
+                      : item.movie;
+
+                    return (
+                      <SimilarMoviePoster
+                        key={item.movie.movieId}
+                        movie={displayMovie}
+                        onClick={() => {
+                          setShowTrailer(false);
+                          onSelectMovie(displayMovie);
                         }}
                       />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center">
-                        <Film className="h-8 w-8 text-[#E8B65B]/50" />
-                      </div>
-                    )}
-                    <div className="absolute top-1 right-1 px-1.5 py-0.5 rounded-[3px] bg-[#090A0E]/90 text-[10px] font-mono text-[#E8B65B] border border-[#E8B65B]/30">
-                      {Math.round(simItem.similarityScore * 100)}%
-                    </div>
-                  </div>
-                  <div>
-                    <h5 className="font-display font-medium text-xs text-[#F5F2EA] line-clamp-1 group-hover/item:text-[#E8B65B]">
-                      {simItem.movie.title}
-                    </h5>
-                    <p className="text-[10px] text-[#9EA3AE] mt-0.5">
-                      {simItem.movie.year} · {simItem.movie.genres[0]}
-                    </p>
-                  </div>
+                    );
+                  })}
                 </div>
-              ))}
-            </div>
-          </div>
+              </section>
+            )}
 
-          {/* External links */}
-          <div className="pt-2 flex items-center justify-between text-xs text-[#9EA3AE] border-t border-white/[0.06]">
-            <div className="flex items-center gap-4">
-              {movie.imdbId && (
-                <a
-                  href={`https://www.imdb.com/title/tt${movie.imdbId}/`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-1 hover:text-[#E8B65B] transition-colors"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  <span>Tra cứu trên IMDb (tt{movie.imdbId})</span>
-                </a>
-              )}
-              {movie.tmdbId && (
-                <a
-                  href={`https://www.themoviedb.org/movie/${movie.tmdbId}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-1 hover:text-[#E8B65B] transition-colors"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  <span>TMDb #{movie.tmdbId}</span>
-                </a>
-              )}
-            </div>
+            {/* SMALL EXTERNAL LINKS */}
+            {(movie.imdbId || movie.tmdbId) && (
+              <div className="flex flex-wrap items-center gap-5 border-t border-white/10 pt-6 text-xs text-[#A99E90]">
+                {movie.imdbId && (
+                  <a
+                    href={`https://www.imdb.com/title/tt${movie.imdbId}/`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 transition hover:text-[#E8BF82]"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    IMDb
+                  </a>
+                )}
 
-            {movie.tags && movie.tags.length > 0 && (
-              <div className="hidden sm:flex items-center gap-1 text-[11px]">
-                <span className="text-[#9EA3AE]/60">Tags:</span>
-                <span className="text-[#9EA3AE]">{movie.tags.slice(0, 3).join(', ')}</span>
+                {movie.tmdbId && (
+                  <a
+                    href={`https://www.themoviedb.org/movie/${movie.tmdbId}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 transition hover:text-[#E8BF82]"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    TMDb
+                  </a>
+                )}
               </div>
             )}
           </div>
@@ -478,4 +557,3 @@ export const MovieModal: React.FC<MovieModalProps> = ({
     </div>
   );
 };
-

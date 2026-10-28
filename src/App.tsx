@@ -1,4 +1,4 @@
-
+﻿
 import { useEffect, useState } from "react";
 
 import { cineMatchApi } from "./services/api";
@@ -8,6 +8,7 @@ import { fetchFeaturedMovies } from "./services/featuredApi";
 import { Navbar } from "./components/layout/Navbar";
 import type { NavTab } from "./components/layout/Navbar";
 import { Footer } from "./components/layout/Footer";
+import { CinematicIntro } from "./components/intro/CinematicIntro";
 
 import { HomeView } from "./components/home/HomeView";
 import { ExploreView } from "./components/explore/ExploreView";
@@ -29,6 +30,24 @@ import {
 import type { Movie, UserProfile } from "./types";
 
 export default function App() {
+  const [showCinematicIntro, setShowCinematicIntro] = useState(
+    () => {
+      try {
+        return sessionStorage.getItem("cinematch_intro_seen") !== "1";
+      } catch {
+        return true;
+      }
+    }
+  );
+
+  const completeCinematicIntro = () => {
+    try {
+      sessionStorage.setItem("cinematch_intro_seen", "1");
+    } catch {
+      // Storage may be unavailable.
+    }
+    setShowCinematicIntro(false);
+  };
   // ========================================================
   // 1. TRANG VA DU LIEU
   // ========================================================
@@ -454,6 +473,10 @@ export default function App() {
 
   return (
     <div className="flex min-h-screen flex-col bg-[#050A13] font-sans text-[#F5F7FB] selection:bg-cyan-400/20 selection:text-cyan-100">
+      {showCinematicIntro && (
+        <CinematicIntro onComplete={completeCinematicIntro} />
+      )}
+
       <Navbar
         currentTab={currentTab}
         onTabChange={navigateToTab}
@@ -603,3 +626,4 @@ export default function App() {
     </div>
   );
 }
+

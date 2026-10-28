@@ -87,6 +87,14 @@ export const cineMatchApi = {
 
     getMovie: (movieId: number) =>
         request<Movie>(`/api/movies/${movieId}`),
+    getEnrichedMovie: (movieId: number) =>
+        request<Movie & {
+            posterUrl?: string | null;
+            backdropUrl?: string | null;
+            synopsis?: string | null;
+            imdbId?: string | null;
+            tmdbId?: number | null;
+        }>(`/api/movies/enriched/${movieId}`),
 
     getSimilarMovies: (movieId: number, topN = 10) =>
         request<{

@@ -1,12 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
-
+﻿
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
-  BarChart3,
-  BrainCircuit,
+  Bookmark,
+  ChevronLeft,
+  ChevronRight,
   Clapperboard,
-  Database,
-  Film,
+  Compass,
+  Heart,
   Play,
   Sparkles,
   Star,
@@ -15,9 +16,9 @@ import {
 
 import type { Movie, UserProfile } from "../../types";
 import type { NavTab } from "../layout/Navbar";
-
 import { cineMatchApi } from "../../services/api";
 import { MovieCard } from "../common/MovieCard";
+import { HeroBanner } from "./HeroBanner";
 
 interface HomeViewProps {
   currentUser: UserProfile;
@@ -30,12 +31,529 @@ interface HomeViewProps {
   onToggleBookmark: (movieId: number) => void;
 }
 
-interface ApiRecommendation {
-  movieId: number;
+interface MovieRailProps {
+  title: string;
+  subtitle?: string;
+  movies: Movie[];
+  currentUser: UserProfile;
+  bookmarkedMovieIds: Set<number>;
+  onToggleBookmark: (movieId: number) => void;
+  onSelectMovie: (movie: Movie) => void;
+  onViewAll?: () => void;
 }
 
-const panelClass =
-  "rounded-2xl border border-cyan-400/15 bg-[#0C1725]/85 shadow-[0_15px_50px_rgba(0,0,0,0.18)]";
+const FEATURED_IDS = [
+  79132,  // Inception
+  109487, // Interstellar
+  58559,  // The Dark Knight
+  2571,   // The Matrix
+  4993,   // The Lord of the Rings
+  260,    // Star Wars
+  318,    // The Shawshank Redemption
+  296,    // Pulp Fiction
+  356,    // Forrest Gump
+  2959,   // Fight Club
+  527,    // Schindler's List
+  50,     // The Usual Suspects
+];
+
+const GENRE_CATEGORIES = [
+  { name: "Hành động", genre: "Action" },
+  { name: "Viễn tưởng", genre: "Sci-Fi" },
+  { name: "Tình cảm", genre: "Romance" },
+  { name: "Kinh dị", genre: "Horror" },
+  { name: "Hài hước", genre: "Comedy" },
+  { name: "Phiêu lưu", genre: "Adventure" },
+];
+
+function isValidTmdbImage(url?: string | null): boolean {
+  return Boolean(
+    url?.startsWith("https://image.tmdb.org/t/p/")
+  );
+}
+
+function MovieRail({
+  title,
+  subtitle,
+  movies,
+  currentUser,
+  bookmarkedMovieIds,
+  onToggleBookmark,
+  onSelectMovie,
+  onViewAll,
+}: MovieRailProps) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (direction: number) => {
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    scrollRef.current?.scrollBy({
+      left: direction * 650,
+      behavior: reducedMotion ? "auto" : "smooth",
+    });
+  };
+
+  if (!movies.length) return null;
+
+  return (
+    <section className="cm-reveal cm-section">
+      <div className="mb-7 flex items-end justify-between gap-4">
+        <div>
+          {subtitle && (
+            <p className="cm-eyebrow mb-3 flex items-center gap-2">
+              <span className="cm-eyebrow-line" />
+              {subtitle}
+            </p>
+          )}
+
+          <h2 className="text-2xl font-bold tracking-tight text-[#F8F1E6] sm:text-3xl">
+            {title}
+          </h2>
+        </div>
+
+        <div className="flex shrink-0 items-center gap-2">
+          {onViewAll && (
+            <button
+              type="button"
+              onClick={onViewAll}
+              className="group mr-2 hidden items-center gap-2 text-sm font-semibold text-[#E7BC7A] transition hover:text-white sm:inline-flex"
+            >
+              Xem thêm
+              <ArrowRight
+                size={16}
+                className="transition-transform group-hover:translate-x-1"
+              />
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => scroll(-1)}
+            aria-label={`Cuộn trái ${title}`}
+            className="cm-arrow"
+          >
+            <ChevronLeft size={19} />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => scroll(1)}
+            aria-label={`Cuộn phải ${title}`}
+            className="cm-arrow"
+          >
+            <ChevronRight size={19} />
+          </button>
+        </div>
+      </div>
+
+      <div
+        ref={scrollRef}
+        aria-label={title}
+        className="cm-movie-track flex snap-x snap-mandatory gap-4 overflow-x-auto pb-8 pt-3 sm:gap-5"
+      >
+        {movies.map((movie, index) => (
+          <div
+            key={movie.movieId}
+            className="cm-poster-shell w-[145px] shrink-0 snap-start sm:w-[185px] lg:w-[205px]"
+            style={{
+              animationDelay: `${Math.min(index, 8) * 65}ms`,
+            }}
+          >
+            <div className="cm-poster-frame">
+              <MovieCard
+                movie={movie}
+                onClick={() => onSelectMovie(movie)}
+                isBookmarked={bookmarkedMovieIds.has(
+                  movie.movieId
+                )}
+                onToggleBookmark={(event) => {
+                  event.stopPropagation();
+                  onToggleBookmark(movie.movieId);
+                }}
+                userRating={
+                  currentUser.ratings?.[movie.movieId]
+                }
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+const homeStyles = `
+  .cm-cinematic-home {
+    position: relative;
+    isolation: isolate;
+    background:
+      radial-gradient(
+        ellipse at 50% 12%,
+        rgba(195,133,58,.09),
+        transparent 42%
+      ),
+      radial-gradient(
+        ellipse at 8% 65%,
+        rgba(140,90,42,.055),
+        transparent 36%
+      ),
+      #080807;
+  }
+
+  .cm-eyebrow {
+    color: #D8AD70;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .19em;
+    text-transform: uppercase;
+  }
+
+  .cm-eyebrow-line {
+    display: inline-block;
+    width: 23px;
+    height: 2px;
+    border-radius: 20px;
+    background: linear-gradient(
+      90deg,
+      #F3CF96,
+      #A76C34
+    );
+    box-shadow: 0 0 12px rgba(232,191,130,.4);
+  }
+
+  .cm-movie-track {
+    scrollbar-width: none;
+    scroll-behavior: smooth;
+    overscroll-behavior-inline: contain;
+  }
+
+  .cm-movie-track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .cm-arrow {
+    display: flex;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(215,170,97,.28);
+    border-radius: 50%;
+    color: #E7BC7A;
+    background: rgba(255,255,255,.035);
+    backdrop-filter: blur(10px);
+    transition:
+      color 250ms ease,
+      background 250ms ease,
+      transform 250ms ease,
+      box-shadow 250ms ease;
+  }
+
+  .cm-arrow:hover {
+    color: #17110A;
+    background: #E7BC7A;
+    transform: scale(1.1);
+    box-shadow: 0 0 25px rgba(215,170,97,.3);
+  }
+
+  .cm-featured-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #70604A;
+    transition:
+      width 350ms ease,
+      background 350ms ease,
+      box-shadow 350ms ease;
+  }
+
+  .cm-featured-dot:hover {
+    background: #E7BC7A;
+  }
+
+  .cm-featured-dot.active {
+    width: 28px;
+    border-radius: 8px;
+    background: #E7BC7A;
+    box-shadow: 0 0 15px rgba(215,170,97,.45);
+  }
+
+  .cm-reveal {
+    opacity: 0;
+    transform: translateY(35px);
+    transition:
+      opacity 800ms cubic-bezier(.2,.7,.2,1),
+      transform 800ms cubic-bezier(.2,.7,.2,1);
+  }
+
+  .cm-reveal.cm-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .cm-poster-shell {
+    position: relative;
+    transform-origin: center bottom;
+    transition:
+      transform 380ms cubic-bezier(.2,.8,.2,1),
+      filter 380ms ease;
+  }
+
+  .cm-poster-frame {
+    position: relative;
+    border-radius: 16px;
+    transition: box-shadow 380ms ease;
+  }
+
+  .cm-poster-frame::before {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    z-index: -1;
+    border-radius: 19px;
+    background: linear-gradient(
+      135deg,
+      rgba(255,220,155,.5),
+      transparent 35%,
+      transparent 65%,
+      rgba(215,170,97,.35)
+    );
+    opacity: 0;
+    filter: blur(10px);
+    transition: opacity 380ms ease;
+    pointer-events: none;
+  }
+
+  .cm-poster-shell:hover {
+    transform: translateY(-10px) scale(1.035);
+    z-index: 5;
+    filter: brightness(1.07);
+  }
+
+  .cm-poster-shell:hover .cm-poster-frame {
+    box-shadow:
+      0 20px 45px rgba(0,0,0,.55),
+      0 0 25px rgba(215,170,97,.12);
+  }
+
+  .cm-poster-shell:hover .cm-poster-frame::before {
+    opacity: 1;
+  }
+
+  .cm-genre-card {
+    position: relative;
+    min-height: 215px;
+    overflow: hidden;
+    border: 1px solid rgba(215,170,97,.12);
+    border-radius: 20px;
+    background: #201A14;
+    isolation: isolate;
+    transition:
+      transform 400ms ease,
+      box-shadow 400ms ease,
+      border-color 400ms ease;
+  }
+
+  .cm-genre-card:hover {
+    transform: translateY(-8px);
+    border-color: rgba(232,191,130,.55);
+    box-shadow:
+      0 20px 50px rgba(0,0,0,.5),
+      0 0 30px rgba(215,170,97,.12);
+  }
+
+  .cm-genre-card img {
+    transition:
+      transform 800ms ease,
+      filter 600ms ease;
+  }
+
+  .cm-genre-card:hover img {
+    transform: scale(1.13);
+    filter: brightness(1.14) saturate(1.12);
+  }
+
+  .cm-genre-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(
+      0deg,
+      rgba(0,0,0,.94),
+      rgba(0,0,0,.06) 85%
+    );
+    pointer-events: none;
+  }
+
+  .cm-promo {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background:
+      radial-gradient(
+        circle at 80% 30%,
+        rgba(215,170,97,.2),
+        transparent 45%
+      ),
+      linear-gradient(
+        125deg,
+        #251A0F,
+        #100D0A 70%
+      );
+  }
+
+  .cm-promo::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      115deg,
+      transparent 30%,
+      rgba(255,225,165,.045) 50%,
+      transparent 70%
+    );
+    background-size: 220% 100%;
+    animation: cmPromoShimmer 9s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  .cm-promo-glow {
+    position: absolute;
+    width: 380px;
+    height: 380px;
+    right: -100px;
+    top: -120px;
+    border-radius: 50%;
+    background: rgba(215,170,97,.15);
+    filter: blur(75px);
+    animation: cmGlow 7s ease-in-out infinite alternate;
+    pointer-events: none;
+  }
+
+  .cm-promo-button {
+    transition:
+      transform 300ms ease,
+      background 300ms ease,
+      box-shadow 300ms ease;
+  }
+
+  .cm-promo-button:hover {
+    transform: translateY(-5px);
+    background: #F4D49F;
+    box-shadow: 0 15px 45px rgba(215,170,97,.3);
+  }
+
+  .cm-quick-action {
+    transition:
+      transform 350ms ease,
+      border-color 350ms ease,
+      background 350ms ease,
+      box-shadow 350ms ease;
+  }
+
+  .cm-quick-action:hover {
+    transform: translateY(-6px);
+    border-color: rgba(215,170,97,.5);
+    background: rgba(215,170,97,.075);
+    box-shadow: 0 15px 35px rgba(0,0,0,.25);
+  }
+
+  .cm-ambient-light {
+    position: absolute;
+    width: 460px;
+    height: 460px;
+    border-radius: 50%;
+    background: rgba(215,170,97,.055);
+    filter: blur(100px);
+    pointer-events: none;
+    animation: cmAmbientDrift 12s ease-in-out infinite alternate;
+  }
+
+  .cm-hero-enter {
+    animation: cmHeroEnter 850ms cubic-bezier(.2,.7,.2,1) both;
+  }
+
+  @keyframes cmHeroEnter {
+    from {
+      opacity: 0;
+      transform: scale(1.025);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes cmAmbientDrift {
+    from {
+      transform: translate3d(-30px,0,0);
+    }
+    to {
+      transform: translate3d(40px,-50px,0);
+    }
+  }
+
+  @keyframes cmGlow {
+    from {
+      transform: translate(-25px,15px);
+    }
+    to {
+      transform: translate(35px,-15px);
+    }
+  }
+
+  @keyframes cmPromoShimmer {
+    0%, 100% {
+      background-position: 100% 0;
+    }
+    50% {
+      background-position: 0 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cm-reveal {
+      opacity: 1 !important;
+      transform: none !important;
+      transition: none !important;
+    }
+
+    .cm-promo::before,
+    .cm-promo-glow,
+    .cm-ambient-light,
+    .cm-hero-enter {
+      animation: none !important;
+    }
+
+    .cm-poster-shell,
+    .cm-poster-frame,
+    .cm-genre-card,
+    .cm-genre-card img,
+    .cm-arrow,
+    .cm-promo-button,
+    .cm-quick-action,
+    .cm-featured-dot {
+      transition: none !important;
+    }
+
+    .cm-poster-shell:hover,
+    .cm-genre-card:hover,
+    .cm-genre-card:hover img,
+    .cm-arrow:hover,
+    .cm-promo-button:hover,
+    .cm-quick-action:hover {
+      transform: none !important;
+    }
+
+    .cm-movie-track {
+      scroll-behavior: auto;
+    }
+  }
+`;
 
 export function HomeView({
   currentUser,
@@ -45,6 +563,12 @@ export function HomeView({
   bookmarkedMovieIds,
   onToggleBookmark,
 }: HomeViewProps) {
+  const [featuredIndex, setFeaturedIndex] = useState(0);
+
+  const [enrichedFeatured, setEnrichedFeatured] = useState<
+    Map<number, Movie>
+  >(() => new Map());
+
   const [contentIds, setContentIds] = useState<number[]>([]);
   const [cfIds, setCfIds] = useState<number[]>([]);
   const [recsLoading, setRecsLoading] = useState(false);
@@ -57,33 +581,105 @@ export function HomeView({
   const movieMap = useMemo(
     () =>
       new Map<number, Movie>(
-        allMovies.map((movie) => [movie.movieId, movie])
+        allMovies.map((movie) => [
+          movie.movieId,
+          movie,
+        ])
       ),
     [allMovies]
   );
 
-  const featuredMovie = useMemo(
-    () =>
-      movieMap.get(79132) ||
-      allMovies.find((movie) => Boolean(movie.posterUrl)) ||
-      allMovies[0],
-    [allMovies, movieMap]
-  );
+  // Load high-quality TMDb artwork for featured movies.
+  // Requests run in parallel and failures do not block the page.
+  useEffect(() => {
+    let cancelled = false;
 
-  const featuredCollection = useMemo(() => {
-    const preferredIds = [
-      79132, 109487, 58559, 318, 296, 2571,
-      260, 356, 2959, 4993, 527, 50,
-    ];
+    async function loadFeaturedImages() {
+      const results = await Promise.allSettled(
+        FEATURED_IDS.map((movieId) =>
+          cineMatchApi.getEnrichedMovie(movieId)
+        )
+      );
 
-    const selected = preferredIds
-      .map((id) => movieMap.get(id))
-      .filter((movie): movie is Movie => Boolean(movie));
+      if (cancelled) return;
 
-    return selected.length > 0
-      ? selected
-      : allMovies.slice(0, 12);
-  }, [allMovies, movieMap]);
+      const enriched = new Map<number, Movie>();
+
+      results.forEach((result, index) => {
+        if (result.status !== "fulfilled") return;
+
+        const movie = result.value;
+        const movieId = FEATURED_IDS[index];
+
+        const original = movieMap.get(movieId);
+
+        const posterUrl = isValidTmdbImage(
+          movie.posterUrl
+        )
+          ? movie.posterUrl
+          : original?.posterUrl;
+
+        const backdropUrl = isValidTmdbImage(
+          movie.backdropUrl
+        )
+          ? movie.backdropUrl
+          : original?.backdropUrl;
+
+        const merged = {
+          ...(original ?? {}),
+          ...movie,
+          posterUrl,
+          backdropUrl,
+        } as Movie;
+
+        if (
+          isValidTmdbImage(merged.backdropUrl) ||
+          isValidTmdbImage(merged.posterUrl)
+        ) {
+          enriched.set(movieId, merged);
+        }
+      });
+
+      setEnrichedFeatured(enriched);
+    }
+
+    void loadFeaturedImages();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [movieMap]);
+
+  // Featured order is stable: Inception always comes first
+  // when it is available, followed by Interstellar and Batman.
+  const featuredMovies = useMemo(() => {
+    const selected = FEATURED_IDS
+      .map(
+        (id) =>
+          enrichedFeatured.get(id) ??
+          movieMap.get(id)
+      )
+      .filter(
+        (movie): movie is Movie =>
+          Boolean(movie) &&
+          Boolean(
+            movie?.backdropUrl ||
+            movie?.posterUrl
+          )
+      );
+
+    if (selected.length > 0) {
+      return selected;
+    }
+
+    return allMovies
+      .filter(
+        (movie) =>
+          Boolean(movie.backdropUrl) ||
+          Boolean(movie.posterUrl)
+      )
+      .slice(0, 12);
+  }, [allMovies, movieMap, enrichedFeatured]);
 
   const popularMovies = useMemo(() => {
     return [...allMovies]
@@ -95,19 +691,68 @@ export function HomeView({
       .map((movie) => ({
         movie,
         score:
-          (movie.ratingsCount * movie.avgRating + 50 * 3.5) /
+          (
+            movie.ratingsCount *
+              (movie.avgRating ?? 0) +
+            50 * 3.5
+          ) /
           (movie.ratingsCount + 50),
       }))
       .sort((a, b) => b.score - a.score)
-      .slice(0, 12)
+      .slice(0, 18)
       .map((item) => item.movie);
   }, [allMovies]);
 
-  const mainCollection =
-    featuredCollection.length > 0
-      ? featuredCollection
-      : popularMovies;
+  const genreCards = useMemo(() => {
+    return GENRE_CATEGORIES.map((category) => {
+      const movie =
+        allMovies.find(
+          (item) =>
+            item.genres?.includes(category.genre) &&
+            Boolean(item.backdropUrl)
+        ) ??
+        allMovies.find(
+          (item) =>
+            item.genres?.includes(category.genre) &&
+            Boolean(item.posterUrl)
+        );
 
+      return {
+        ...category,
+        movie,
+      };
+    });
+  }, [allMovies]);
+
+  const activeMovie =
+    featuredMovies[
+      featuredIndex %
+        Math.max(featuredMovies.length, 1)
+    ];
+
+  // Automatic carousel.
+  useEffect(() => {
+    if (featuredMovies.length <= 1) return;
+
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    if (reducedMotion) return;
+
+    const interval = window.setInterval(() => {
+      setFeaturedIndex(
+        (index) =>
+          (index + 1) % featuredMovies.length
+      );
+    }, 9000);
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [featuredMovies.length]);
+
+  // Fetch personalized ML recommendations.
   useEffect(() => {
     let cancelled = false;
 
@@ -141,7 +786,7 @@ export function HomeView({
         if (contentResult.status === "fulfilled") {
           setContentIds(
             contentResult.value.items.map(
-              (item: ApiRecommendation) => item.movieId
+              (item) => item.movieId
             )
           );
         }
@@ -149,14 +794,19 @@ export function HomeView({
         if (cfResult.status === "fulfilled") {
           setCfIds(
             cfResult.value.items.map(
-              (item: ApiRecommendation) => item.movieId
+              (item) => item.movieId
             )
           );
         }
       } catch (error) {
-        console.error("Không thể tải gợi ý:", error);
+        console.error(
+          "Không thể tải gợi ý:",
+          error
+        );
       } finally {
-        if (!cancelled) setRecsLoading(false);
+        if (!cancelled) {
+          setRecsLoading(false);
+        }
       }
     }
 
@@ -165,446 +815,465 @@ export function HomeView({
     return () => {
       cancelled = true;
     };
-  }, [currentUser.userId, validMovieLensUser]);
+  }, [
+    currentUser.userId,
+    validMovieLensUser,
+  ]);
 
   const contentMovies = contentIds
     .map((id) => movieMap.get(id))
-    .filter((movie): movie is Movie => Boolean(movie));
+    .filter(
+      (movie): movie is Movie => Boolean(movie)
+    );
 
   const cfMovies = cfIds
     .map((id) => movieMap.get(id))
-    .filter((movie): movie is Movie => Boolean(movie));
+    .filter(
+      (movie): movie is Movie => Boolean(movie)
+    );
 
-  const renderMovieCards = (movies: Movie[]) => (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-      {movies.slice(0, 6).map((movie) => (
-        <MovieCard
-          key={movie.movieId}
-          movie={movie}
-          onClick={() => onSelectMovie(movie)}
-          isBookmarked={bookmarkedMovieIds.has(movie.movieId)}
-          onToggleBookmark={(event) => {
-            event.stopPropagation();
-            onToggleBookmark(movie.movieId);
-          }}
-          userRating={currentUser.ratings[movie.movieId]}
-        />
-      ))}
-    </div>
-  );
+  // Reveal sections as they enter the viewport.
+  useEffect(() => {
+    const elements = document.querySelectorAll(
+      ".cm-cinematic-home .cm-reveal"
+    );
+
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    if (
+      !("IntersectionObserver" in window) ||
+      reducedMotion
+    ) {
+      elements.forEach((element) => {
+        element.classList.add("cm-visible");
+      });
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add(
+              "cm-visible"
+            );
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      {
+        threshold: 0.08,
+        rootMargin: "0px 0px 80px 0px",
+      }
+    );
+
+    elements.forEach((element) => {
+      observer.observe(element);
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [
+    allMovies.length,
+    contentMovies.length,
+    cfMovies.length,
+    validMovieLensUser,
+  ]);
+
+  const changeFeatured = (direction: number) => {
+    if (!featuredMovies.length) return;
+
+    setFeaturedIndex(
+      (index) =>
+        (
+          index +
+          direction +
+          featuredMovies.length
+        ) % featuredMovies.length
+    );
+  };
 
   return (
-    <div className="min-h-screen overflow-hidden bg-[#050A13] pb-20 text-white">
+    <div className="cm-cinematic-home min-h-screen overflow-hidden text-[#F8F1E6]">
+      <style>{homeStyles}</style>
 
-      {/* HERO */}
-      <section className="relative overflow-hidden border-b border-cyan-400/10">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_30%,rgba(6,182,212,0.16),transparent_55%),linear-gradient(120deg,#050A13,#0D1930)]" />
-
-        {featuredMovie?.backdropUrl && (
-          <img
-            src={featuredMovie.backdropUrl}
-            alt=""
-            loading="eager"
-            className="absolute inset-0 h-full w-full object-cover opacity-20"
-          />
-        )}
-
-        <div className="absolute inset-0 bg-gradient-to-r from-[#050A13] via-[#050A13]/90 to-[#050A13]/40" />
-
-        <div className="relative mx-auto grid max-w-[1440px] items-center gap-10 px-6 py-12 lg:grid-cols-[1.1fr_0.9fr] lg:py-16">
-
-          {/* HERO CONTENT */}
-          <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-400/10 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-cyan-300">
-              <Sparkles className="h-4 w-4" />
-              CineMatch ML
-            </div>
-
-            <h1 className="max-w-2xl font-display text-4xl font-extrabold leading-[1.15] tracking-tight sm:text-5xl xl:text-[56px]">
-              Tìm bộ phim tiếp theo
-              <span className="mt-2 block bg-gradient-to-r from-[#FFE0A0] to-[#F3B35A] bg-clip-text text-transparent">
-                dành cho bạn
-              </span>
-            </h1>
-
-            <p className="max-w-xl text-sm leading-8 text-slate-300 sm:text-base">
-              Khám phá hàng nghìn bộ phim và trải nghiệm
-              hệ thống gợi ý sử dụng hai thuật toán
-              Machine Learning trên dữ liệu MovieLens.
-            </p>
-
-            <div className="flex flex-wrap gap-3">
-              <button
-                type="button"
-                onClick={() => onNavigateTab("explore")}
-                className="inline-flex items-center gap-2 rounded-xl bg-[#F5BD66] px-6 py-3.5 text-sm font-bold text-[#08111E] transition hover:bg-[#FFD08A]"
-              >
-                Khám phá phim
-                <ArrowRight className="h-4 w-4" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => onNavigateTab("content-based")}
-                className="inline-flex items-center gap-2 rounded-xl border border-cyan-300/25 bg-white/5 px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10"
-              >
-                <Play className="h-4 w-4 text-cyan-300" />
-                Trải nghiệm gợi ý
-              </button>
-            </div>
-
-            <p className="flex items-center gap-2 text-xs text-slate-400">
-              <span className="h-2 w-2 rounded-full bg-emerald-400" />
-              MovieLens · FastAPI · TMDb
-            </p>
+      {/* CINEMATIC FEATURED HERO */}
+      {activeMovie && (
+        <section className="relative">
+          <div
+            key={activeMovie.movieId}
+            className="cm-hero-enter"
+          >
+            <HeroBanner
+              movie={activeMovie}
+              onOpenDetails={onSelectMovie}
+              onFindSimilar={() =>
+                onNavigateTab("content-based")
+              }
+            />
           </div>
 
-          {/* FEATURED MOVIE */}
-          {featuredMovie && (
-            <div className={`${panelClass} mx-auto w-full max-w-[500px] p-5 sm:p-6`}>
-              <div className="mb-5 flex items-center justify-between gap-3">
-                <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#F5BD66]">
-                  <Star className="h-4 w-4 fill-current" />
-                  Phim nổi bật
-                </span>
+          {featuredMovies.length > 1 && (
+            <div className="relative z-10 -mt-2 flex items-center justify-center gap-3 pb-8 pt-5">
+              <button
+                type="button"
+                onClick={() => changeFeatured(-1)}
+                className="cm-arrow"
+                aria-label="Phim nổi bật trước"
+              >
+                <ChevronLeft size={18} />
+              </button>
 
-                <span className="text-[10px] text-slate-500">
-                  MovieLens #{featuredMovie.movieId}
-                </span>
-              </div>
-
-              <div className="flex gap-5">
-                <div className="flex aspect-[2/3] w-28 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#18253A] sm:w-36">
-                  {featuredMovie.posterUrl ? (
-                    <img
-                      src={featuredMovie.posterUrl}
-                      alt={featuredMovie.title}
-                      className="h-full w-full object-cover"
+              <div className="flex items-center gap-2">
+                {featuredMovies
+                  .slice(0, 8)
+                  .map((movie, index) => (
+                    <button
+                      key={movie.movieId}
+                      type="button"
+                      onClick={() =>
+                        setFeaturedIndex(index)
+                      }
+                      className={`cm-featured-dot ${
+                        featuredIndex === index
+                          ? "active"
+                          : ""
+                      }`}
+                      aria-label={`Hiển thị phim ${
+                        index + 1
+                      }`}
+                      aria-pressed={
+                        featuredIndex === index
+                      }
                     />
-                  ) : (
-                    <Clapperboard className="h-10 w-10 text-cyan-300" />
-                  )}
-                </div>
-
-                <div className="flex min-w-0 flex-1 flex-col justify-center gap-3">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-cyan-300">
-                    Featured Movie
-                  </span>
-
-                  <h2 className="text-xl font-bold sm:text-2xl">
-                    {featuredMovie.title}
-                  </h2>
-
-                  <p className="text-xs leading-6 text-slate-400">
-                    {featuredMovie.year || "Chưa rõ năm"}
-                    {" · "}
-                    {featuredMovie.genres.slice(0, 3).join(", ")}
-                  </p>
-
-                  <p className="flex items-center gap-2 text-sm text-[#F5BD66]">
-                    <Star className="h-4 w-4 fill-current" />
-                    <span className="font-bold">
-                      {featuredMovie.ratingsCount > 0
-                        ? featuredMovie.avgRating.toFixed(1)
-                        : "--"}
-                    </span>
-                    <span className="text-xs text-slate-400">
-                      ({featuredMovie.ratingsCount} đánh giá)
-                    </span>
-                  </p>
-                </div>
+                  ))}
               </div>
-
-              <p className="mt-5 line-clamp-2 text-xs leading-6 text-slate-400">
-                {featuredMovie.synopsis?.trim() ||
-                  "Khám phá thông tin chi tiết về bộ phim nổi bật."}
-              </p>
 
               <button
                 type="button"
-                onClick={() => onSelectMovie(featuredMovie)}
-                className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl border border-cyan-300/25 bg-cyan-300/10 px-4 py-3 text-sm font-semibold text-cyan-100 hover:bg-cyan-300/20"
+                onClick={() => changeFeatured(1)}
+                className="cm-arrow"
+                aria-label="Phim nổi bật tiếp theo"
               >
-                Xem chi tiết phim
-                <ArrowRight className="h-4 w-4" />
+                <ChevronRight size={18} />
               </button>
             </div>
           )}
-        </div>
-      </section>
+        </section>
+      )}
 
-      {/* DATASET STATISTICS */}
-      <section className="mx-auto max-w-[1440px] px-6 pt-8">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          {[
-            { label: "Bộ phim", value: "9.742", icon: Film },
-            { label: "Người dùng", value: "610", icon: Users },
-            { label: "Lượt đánh giá", value: "100.836", icon: Star },
-          ].map((stat) => {
-            const Icon = stat.icon;
+      <main className="relative mx-auto max-w-[1500px] space-y-14 px-5 pb-20 pt-8 sm:px-8 lg:space-y-20 lg:px-12">
+        <div
+          className="cm-ambient-light -left-56 top-[15%] -z-10"
+          aria-hidden="true"
+        />
 
-            return (
-              <div
-                key={stat.label}
-                className={`${panelClass} flex items-center gap-4 p-5`}
-              >
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-cyan-400/10 text-cyan-300">
-                  <Icon className="h-5 w-5" />
-                </div>
+        {/* FEATURED MOVIES */}
+        <MovieRail
+          title="Phim không thể bỏ lỡ"
+          subtitle="Tuyển chọn cho bạn"
+          movies={featuredMovies}
+          currentUser={currentUser}
+          bookmarkedMovieIds={bookmarkedMovieIds}
+          onToggleBookmark={onToggleBookmark}
+          onSelectMovie={onSelectMovie}
+          onViewAll={() =>
+            onNavigateTab("explore")
+          }
+        />
 
-                <div>
-                  <p className="text-xs text-slate-400">{stat.label}</p>
-                  <p className="mt-1 text-2xl font-extrabold">
-                    {stat.value}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
+        {/* POPULAR MOVIES */}
+        <MovieRail
+          title="Được yêu thích nhất"
+          subtitle="Những bộ phim được đánh giá cao"
+          movies={popularMovies}
+          currentUser={currentUser}
+          bookmarkedMovieIds={bookmarkedMovieIds}
+          onToggleBookmark={onToggleBookmark}
+          onSelectMovie={onSelectMovie}
+          onViewAll={() =>
+            onNavigateTab("explore")
+          }
+        />
 
-      <div className="mx-auto mt-14 max-w-[1440px] space-y-16 px-6">
+        {/* GENRE DISCOVERY */}
+        <section className="cm-reveal">
+          <div className="mb-8 flex items-end justify-between gap-4">
+            <div>
+              <p className="cm-eyebrow mb-3 flex items-center gap-2">
+                <span className="cm-eyebrow-line" />
+                Khám phá thế giới điện ảnh
+              </p>
 
-        {/* GET STARTED */}
-        <section className="space-y-6">
-          <div>
-            <span className="text-xs font-bold uppercase tracking-widest text-cyan-300">
-              Getting Started
-            </span>
+              <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
+                Hôm nay bạn muốn xem gì?
+              </h2>
+            </div>
 
-            <h2 className="mt-2 text-2xl font-bold sm:text-3xl">
-              Bạn muốn làm gì hôm nay?
-            </h2>
-
-            <p className="mt-2 text-sm text-slate-400">
-              Chọn một cách bắt đầu phù hợp với bạn.
-            </p>
+            <button
+              type="button"
+              onClick={() =>
+                onNavigateTab("explore")
+              }
+              className="group hidden items-center gap-2 text-sm font-semibold text-[#E7BC7A] transition hover:text-white sm:inline-flex"
+            >
+              Khám phá tất cả
+              <ArrowRight
+                size={16}
+                className="transition-transform group-hover:translate-x-1"
+              />
+            </button>
           </div>
 
-          <div className="grid gap-5 md:grid-cols-2">
-            <button
-              type="button"
-              onClick={() => onNavigateTab("explore")}
-              className={`${panelClass} group p-6 text-left transition hover:border-cyan-300/40 hover:bg-[#102237]`}
-            >
-              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-400/10 text-cyan-300">
-                <Clapperboard className="h-6 w-6" />
-              </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-6">
+            {genreCards.map((category) => (
+              <button
+                key={category.genre}
+                type="button"
+                onClick={() =>
+                  onNavigateTab("explore")
+                }
+                className="cm-genre-card group text-left"
+                title={`Khám phá phim ${category.name}`}
+              >
+                {category.movie?.backdropUrl ||
+                category.movie?.posterUrl ? (
+                  <img
+                    src={
+                      category.movie.backdropUrl ||
+                      category.movie.posterUrl
+                    }
+                    alt=""
+                    loading="lazy"
+                    className="absolute inset-0 -z-20 h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="absolute inset-0 -z-20 bg-gradient-to-br from-[#3B2A19] to-[#100E0B]" />
+                )}
 
-              <h3 className="text-lg font-bold">Khám phá phim</h3>
+                <div className="absolute inset-x-0 bottom-0 z-10 p-4">
+                  <p className="text-base font-bold text-white drop-shadow-lg">
+                    {category.name}
+                  </p>
 
-              <p className="mt-3 text-sm leading-7 text-slate-400">
-                Tìm kiếm phim, xem poster, thể loại,
-                điểm đánh giá và thông tin chi tiết.
-              </p>
-
-              <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#F5BD66]">
-                Mở thư viện phim
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onNavigateTab("content-based")}
-              className={`${panelClass} group p-6 text-left transition hover:border-cyan-300/40 hover:bg-[#102237]`}
-            >
-              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-400/10 text-cyan-300">
-                <BrainCircuit className="h-6 w-6" />
-              </div>
-
-              <h3 className="text-lg font-bold">Trải nghiệm gợi ý phim</h3>
-
-              <p className="mt-3 text-sm leading-7 text-slate-400">
-                Thử hai phương pháp gợi ý:
-                Content-Based và User-Based Collaborative Filtering.
-              </p>
-
-              <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#F5BD66]">
-                Xem hệ thống gợi ý
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </span>
-            </button>
+                  <span className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-[#E8C28B] transition-all group-hover:gap-2">
+                    Khám phá
+                    <ArrowRight size={13} />
+                  </span>
+                </div>
+              </button>
+            ))}
           </div>
         </section>
 
-        {/* USER GUIDANCE */}
+        {/* PERSONALIZED ML RECOMMENDATIONS */}
+        {validMovieLensUser && (
+          <>
+            {contentMovies.length > 0 ? (
+              <MovieRail
+                title="Có thể bạn sẽ thích"
+                subtitle="Dành riêng cho bạn"
+                movies={contentMovies}
+                currentUser={currentUser}
+                bookmarkedMovieIds={
+                  bookmarkedMovieIds
+                }
+                onToggleBookmark={
+                  onToggleBookmark
+                }
+                onSelectMovie={onSelectMovie}
+                onViewAll={() =>
+                  onNavigateTab("content-based")
+                }
+              />
+            ) : (
+              <section className="cm-reveal">
+                <div className="rounded-2xl border border-[#D7AA61]/20 bg-[#17130F] p-6">
+                  <p className="flex items-center gap-2 font-semibold">
+                    <Sparkles
+                      size={18}
+                      className="text-[#E7BC7A]"
+                    />
+                    Có thể bạn sẽ thích
+                  </p>
+
+                  <p className="mt-2 text-sm text-[#AFA395]">
+                    {recsLoading
+                      ? "Đang tìm phim phù hợp với bạn..."
+                      : "Chưa có gợi ý. Hãy thử khám phá thêm phim."}
+                  </p>
+
+                  {!recsLoading && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onNavigateTab(
+                          "content-based"
+                        )
+                      }
+                      className="mt-4 text-sm font-semibold text-[#E7BC7A] transition hover:text-white"
+                    >
+                      Khám phá gợi ý →
+                    </button>
+                  )}
+                </div>
+              </section>
+            )}
+
+            <MovieRail
+              title="Người cùng gu cũng thích"
+              subtitle="Thêm lựa chọn thú vị"
+              movies={cfMovies}
+              currentUser={currentUser}
+              bookmarkedMovieIds={
+                bookmarkedMovieIds
+              }
+              onToggleBookmark={
+                onToggleBookmark
+              }
+              onSelectMovie={onSelectMovie}
+              onViewAll={() =>
+                onNavigateTab("collaborative")
+              }
+            />
+          </>
+        )}
+
+        {/* DEMO USER NOTICE */}
         {!validMovieLensUser && (
-          <section className="rounded-2xl border border-amber-300/20 bg-amber-300/[0.06] p-6">
-            <div className="flex items-start gap-4">
-              <Users className="mt-1 h-6 w-6 shrink-0 text-[#F5BD66]" />
+          <section className="cm-reveal rounded-2xl border border-[#D7AA61]/20 bg-[#17130F] px-6 py-5">
+            <div className="flex items-start gap-3">
+              <Users
+                size={20}
+                className="mt-1 shrink-0 text-[#E7BC7A]"
+              />
 
               <div>
-                <h3 className="text-lg font-bold text-white">
-                  Bạn đang sử dụng tài khoản demo
+                <h3 className="font-semibold">
+                  Khám phá phim theo sở thích
                 </h3>
 
-                <p className="mt-2 text-sm leading-7 text-slate-300">
-                  User #{currentUser.userId} không thuộc 610
-                  người dùng trong tập MovieLens.
-                  Để thử kết quả gợi ý từ mô hình đã xây dựng,
-                  hãy chọn một User ID từ 1 đến 610
-                  trong danh sách người dùng được hỗ trợ.
-                </p>
-
-                <p className="mt-2 text-xs text-slate-400">
-                  Việc đánh giá phim trên giao diện chưa được xác nhận
-                  là sẽ cập nhật trực tiếp mô hình ở backend.
+                <p className="mt-2 text-sm leading-6 text-[#B6AA99]">
+                  Chọn một hồ sơ từ 1 đến 610 ở
+                  thanh trên để xem những bộ phim
+                  được gợi ý riêng.
                 </p>
               </div>
             </div>
           </section>
         )}
 
-        {/* FEATURED COLLECTION */}
-        <section className="space-y-6">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <span className="text-xs font-bold uppercase tracking-widest text-cyan-300">
-                Movie Collection
-              </span>
+        {/* CINEMATIC PROMOTION */}
+        <section className="cm-reveal cm-promo rounded-[28px] border border-[#D7AA61]/25 px-6 py-12 shadow-[0_20px_70px_rgba(0,0,0,.2)] sm:px-10 lg:px-14 lg:py-20">
+          <div
+            className="cm-promo-glow"
+            aria-hidden="true"
+          />
 
-              <h2 className="mt-2 text-2xl font-bold sm:text-3xl">
-                Phim <span className="text-[#F5BD66]">nổi bật</span>
-              </h2>
-
-              <p className="mt-2 text-sm text-slate-400">
-                Những bộ phim được tuyển chọn từ thư viện CineMatch.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => onNavigateTab("explore")}
-              className="flex items-center gap-2 text-sm font-semibold text-[#F5BD66]"
-            >
-              Xem tất cả
-              <ArrowRight className="h-4 w-4" />
-            </button>
-          </div>
-
-          {renderMovieCards(mainCollection)}
-        </section>
-
-        {/* CONTENT-BASED RECOMMENDATIONS */}
-        {validMovieLensUser && (
-          <section className="space-y-6">
-            <div className="flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-widest text-cyan-300">
-                  Content-Based Filtering
-                </span>
-
-                <h2 className="mt-2 text-2xl font-bold sm:text-3xl">
-                  Gợi ý theo sở thích
-                </h2>
-
-                <p className="mt-2 text-sm text-slate-400">
-                  Kết quả dành cho MovieLens User #{currentUser.userId},
-                  dựa trên hồ sơ thể loại.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => onNavigateTab("content-based")}
-                className="flex items-center gap-2 text-sm font-semibold text-[#F5BD66]"
-              >
-                Xem đầy đủ
-                <ArrowRight className="h-4 w-4" />
-              </button>
-            </div>
-
-            {contentMovies.length > 0 ? (
-              renderMovieCards(contentMovies)
-            ) : (
-              <div className={`${panelClass} p-6 text-sm text-slate-400`}>
-                {recsLoading
-                  ? "Đang tải kết quả gợi ý..."
-                  : "Chưa có phim gợi ý để hiển thị trên trang chủ. Hãy mở trang Content-Based để kiểm tra kết quả."}
-              </div>
-            )}
-          </section>
-        )}
-
-        {/* USER-BASED CF RECOMMENDATIONS */}
-        {validMovieLensUser && (
-          <section className="space-y-6">
-            <div className="flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-widest text-cyan-300">
-                  User-Based CF · K = 20
-                </span>
-
-                <h2 className="mt-2 text-2xl font-bold sm:text-3xl">
-                  Người giống bạn cũng thích
-                </h2>
-
-                <p className="mt-2 text-sm text-slate-400">
-                  Gợi ý dựa trên lịch sử đánh giá
-                  của những người dùng tương đồng.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => onNavigateTab("collaborative")}
-                className="flex items-center gap-2 text-sm font-semibold text-[#F5BD66]"
-              >
-                Xem đầy đủ
-                <ArrowRight className="h-4 w-4" />
-              </button>
-            </div>
-
-            {cfMovies.length > 0 ? (
-              renderMovieCards(cfMovies)
-            ) : (
-              <div className={`${panelClass} p-6 text-sm text-slate-400`}>
-                {recsLoading
-                  ? "Đang tải kết quả gợi ý..."
-                  : "Chưa có phim gợi ý để hiển thị trên trang chủ. Hãy mở trang User-Based CF để kiểm tra kết quả."}
-              </div>
-            )}
-          </section>
-        )}
-
-        {/* ML LAB */}
-        <section className={`${panelClass} p-6 sm:p-9`}>
-          <div className="flex flex-col items-start justify-between gap-6 lg:flex-row lg:items-center">
+          <div className="relative z-10 flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-center">
             <div className="max-w-2xl">
-              <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-cyan-300">
-                <BarChart3 className="h-4 w-4" />
-                Machine Learning Lab
-              </span>
-
-              <h2 className="mt-3 text-2xl font-bold sm:text-3xl">
-                Công nghệ phía sau mỗi gợi ý
-              </h2>
-
-              <p className="mt-3 text-sm leading-7 text-slate-400">
-                Tìm hiểu hai thuật toán gợi ý phim,
-                dữ liệu MovieLens và các kết quả đánh giá
-                Precision@10, Recall@10, MAE và RMSE.
+              <p className="cm-eyebrow mb-5 flex items-center gap-2">
+                <Clapperboard size={16} />
+                CineMatch Experience
               </p>
 
-              <p className="mt-4 flex items-center gap-2 text-xs text-slate-500">
-                <Database className="h-4 w-4 text-cyan-300" />
-                MovieLens Latest Small
+              <h2 className="text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
+                Bộ phim tiếp theo
+                <span className="mt-2 block bg-gradient-to-r from-[#FFF0D0] via-[#E7BC7A] to-[#BD874B] bg-clip-text text-transparent">
+                  đang chờ bạn khám phá.
+                </span>
+              </h2>
+
+              <p className="mt-6 max-w-lg text-sm leading-7 text-[#D0C0AB]">
+                Bước vào thế giới điện ảnh đầy
+                cảm xúc. Tìm một câu chuyện mới,
+                lưu phim yêu thích và khám phá
+                những lựa chọn hợp gu của bạn.
               </p>
             </div>
 
             <button
               type="button"
-              onClick={() => onNavigateTab("dashboard")}
-              className="inline-flex items-center gap-2 rounded-xl border border-cyan-300/25 bg-cyan-300/10 px-6 py-3.5 text-sm font-bold text-cyan-100 hover:bg-cyan-300/20"
+              onClick={() =>
+                onNavigateTab("explore")
+              }
+              className="cm-promo-button group inline-flex shrink-0 items-center gap-3 rounded-xl bg-[#E7BC7A] px-8 py-4 font-bold text-[#1A130A]"
             >
-              Mở ML Lab
-              <ArrowRight className="h-4 w-4" />
+              <Play
+                size={18}
+                fill="currentColor"
+              />
+              Khám phá ngay
+              <ArrowRight
+                size={18}
+                className="transition-transform group-hover:translate-x-1"
+              />
             </button>
           </div>
         </section>
-      </div>
+
+        {/* QUICK ACTIONS */}
+        <section className="cm-reveal grid gap-4 sm:grid-cols-3">
+          {[
+            {
+              icon: Compass,
+              title: "Khám phá phim",
+              description:
+                "Tìm phim theo sở thích",
+              tab: "explore" as NavTab,
+            },
+            {
+              icon: Heart,
+              title: "Dành cho bạn",
+              description:
+                "Những gợi ý hợp gu",
+              tab: "content-based" as NavTab,
+            },
+            {
+              icon: Bookmark,
+              title: "Đánh giá phim",
+              description:
+                "Chia sẻ cảm nhận của bạn",
+              tab: "rate" as NavTab,
+            },
+          ].map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <button
+                key={item.title}
+                type="button"
+                onClick={() =>
+                  onNavigateTab(item.tab)
+                }
+                className="cm-quick-action group flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[.025] p-5 text-left"
+              >
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#D7AA61]/10 text-[#E7BC7A]">
+                  <Icon size={22} />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-semibold text-[#F8F1E6]">
+                    {item.title}
+                  </h3>
+
+                  <p className="mt-1 text-xs text-[#AFA395]">
+                    {item.description}
+                  </p>
+                </div>
+
+                <ChevronRight
+                  size={18}
+                  className="shrink-0 text-[#E7BC7A] transition-transform group-hover:translate-x-1"
+                />
+              </button>
+            );
+          })}
+        </section>
+      </main>
     </div>
   );
 }

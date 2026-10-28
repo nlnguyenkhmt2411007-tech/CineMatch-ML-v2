@@ -1,11 +1,21 @@
-﻿import { useEffect, useState } from "react";
+﻿
+import { useEffect, useMemo, useState } from "react";
 import {
+  ArrowRight,
   BrainCircuit,
-  Users,
-  Star,
-  ChartNoAxesCombined,
+  CheckCircle2,
+  ChevronDown,
+  Film,
+  FlaskConical,
+  Info,
+  Loader2,
+  Play,
+  RefreshCw,
   Search,
+  Sparkles,
+  Star,
   Trash2,
+  Users,
 } from "lucide-react";
 
 import { cineMatchApi } from "../../services/api";
@@ -24,6 +34,58 @@ interface RatedMovie {
   rating: number;
 }
 
+const PANEL =
+  "rounded-2xl border border-white/10 bg-[#151413]";
+
+const INPUT =
+  "w-full rounded-xl border border-white/15 bg-[#211E1A] px-4 py-3 text-sm text-[#F6F0E7] outline-none transition focus:border-[#E8BF82]";
+
+const RATING_VALUES = Array.from(
+  { length: 10 },
+  (_, index) => (index + 1) * 0.5
+);
+
+function getPoster(movie: ApiMovie): string | undefined {
+  const candidate = movie as ApiMovie & {
+    posterUrl?: string | null;
+    poster_url?: string | null;
+  };
+
+  return candidate.posterUrl || candidate.poster_url || undefined;
+}
+
+function RatingStars({
+  value,
+  onChange,
+  label,
+}: {
+  value?: number;
+  onChange: (value: number) => void;
+  label: string;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-1">
+      {RATING_VALUES.map((rating) => (
+        <button
+          key={rating}
+          type="button"
+          onClick={() => onChange(rating)}
+          title={`${rating.toFixed(1)} / 5 sao`}
+          aria-label={`${label}: ${rating.toFixed(1)} sao`}
+          aria-pressed={value === rating}
+          className={`rounded-md px-1.5 py-1.5 text-[11px] font-semibold transition ${
+            value === rating
+              ? "bg-[#E8BF82] text-[#18120B]"
+              : "bg-white/[0.05] text-[#A99C8B] hover:bg-[#E8BF82]/20 hover:text-[#E8BF82]"
+          }`}
+        >
+          {rating.toFixed(1)}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export const ABLabView = () => {
   const [search, setSearch] = useState("");
   const [movies, setMovies] = useState<ApiMovie[]>([]);
@@ -32,17 +94,47 @@ export const ABLabView = () => {
 
   const [ratingsA, setRatingsA] = useState<Ratings>({});
   const [ratingsB, setRatingsB] = useState<Ratings>({});
-  const [movieTitles, setMovieTitles] = useState<Record<number, string>>({});
+  const [movieTitles, setMovieTitles] = useState<
+    Record<number, string>
+  >({});
 
-  const [targetMovieId, setTargetMovieId] = useState<number | null>(null);
+  const [targetMovieId, setTargetMovieId] =
+    useState<number | null>(null);
   const [targetSearch, setTargetSearch] = useState("");
   const [targetMovies, setTargetMovies] = useState<ApiMovie[]>([]);
   const [targetLoading, setTargetLoading] = useState(false);
+
   const [k, setK] = useState(20);
-  const [predictionLoading, setPredictionLoading] = useState(false);
-  const [predictionError, setPredictionError] = useState<string | null>(null);
+  const [predictionLoading, setPredictionLoading] =
+    useState(false);
+  const [predictionError, setPredictionError] =
+    useState<string | null>(null);
   const [predictionResult, setPredictionResult] =
     useState<MLLabPredictionResponse | null>(null);
+
+  const [showDetails, setShowDetails] = useState(false);
+  const [activeParticipant, setActiveParticipant] =
+    useState<Participant>("A");
+
+  const [movieImages, setMovieImages] = useState<
+    Record<number, string>
+  >({});
+
+  const ratedCountA = Object.keys(ratingsA).length;
+  const ratedCountB = Object.keys(ratingsB).length;
+
+  const selectedRatings =
+    activeParticipant === "A" ? ratingsA : ratingsB;
+
+  const selectedRatedMovies = useMemo<RatedMovie[]>(
+    () =>
+      Object.entries(selectedRatings).map(([id, rating]) => ({
+        movieId: Number(id),
+        title: movieTitles[Number(id)] ?? `Movie #${id}`,
+        rating,
+      })),
+    [selectedRatings, movieTitles]
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -58,18 +150,14 @@ export const ABLabView = () => {
           search.trim()
         );
 
-        if (!cancelled) {
-          setMovies(result.items);
-        }
+        if (!cancelled) setMovies(result.items);
       } catch {
         if (!cancelled) {
           setError("Không thể tải danh sách phim từ FastAPI.");
           setMovies([]);
         }
       } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
+        if (!cancelled) setLoading(false);
       }
     }
 
@@ -96,17 +184,11 @@ export const ABLabView = () => {
           targetSearch.trim()
         );
 
-        if (!cancelled) {
-          setTargetMovies(result.items);
-        }
+        if (!cancelled) setTargetMovies(result.items);
       } catch {
-        if (!cancelled) {
-          setTargetMovies([]);
-        }
+        if (!cancelled) setTargetMovies([]);
       } finally {
-        if (!cancelled) {
-          setTargetLoading(false);
-        }
+        if (!cancelled) setTargetLoading(false);
       }
     }
 
@@ -120,16 +202,118 @@ export const ABLabView = () => {
     };
   }, [targetSearch]);
 
+  // Poster enrichment is optional. Failure must not block the lab.
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadPosters() {
+      const missing = movies.filter(
+        (movie) =>
+          !getPoster(movie) &&
+          movieImages[movie.movieId] === undefined
+      );
+
+      if (missing.length === 0) return;
+
+      const baseUrl =
+        import.meta.env.VITE_API_URL ||
+        "http://127.0.0.1:8000";
+
+      const results = await Promise.all(
+        missing.map(async (movie) => {
+          try {
+            const response = await fetch(
+              `${baseUrl}/api/movies/enriched/${movie.movieId}`
+            );
+
+            if (!response.ok) return null;
+
+            const enriched = (await response.json()) as ApiMovie;
+            const poster = getPoster(enriched);
+
+            return poster
+              ? ([movie.movieId, poster] as const)
+              : null;
+          } catch {
+            return null;
+          }
+        })
+      );
+
+      if (cancelled) return;
+
+      const next: Record<number, string> = {};
+
+      results.forEach((item) => {
+        if (item) next[item[0]] = item[1];
+      });
+
+      if (Object.keys(next).length > 0) {
+        setMovieImages((previous) => ({
+          ...previous,
+          ...next,
+        }));
+      }
+    }
+
+    void loadPosters();
+
+    return () => {
+      cancelled = true;
+    };
+    // Reload posters only when the movie search result changes.
+  }, [movies]);
+
   const invalidatePrediction = () => {
     setPredictionResult(null);
     setPredictionError(null);
+    setShowDetails(false);
+  };
+
+  const rateMovie = (
+    participant: Participant,
+    movie: ApiMovie,
+    rating: number
+  ) => {
+    invalidatePrediction();
+
+    setMovieTitles((previous) => ({
+      ...previous,
+      [movie.movieId]: movie.title,
+    }));
+
+    const setter =
+      participant === "A" ? setRatingsA : setRatingsB;
+
+    setter((previous) => ({
+      ...previous,
+      [movie.movieId]: rating,
+    }));
+  };
+
+  const removeRating = (
+    participant: Participant,
+    movieId: number
+  ) => {
+    invalidatePrediction();
+
+    const setter =
+      participant === "A" ? setRatingsA : setRatingsB;
+
+    setter((previous) => {
+      const next = { ...previous };
+      delete next[movieId];
+      return next;
+    });
   };
 
   const runPrediction = async () => {
     if (predictionLoading) return;
 
-    if (Object.keys(ratingsB).length === 0) {
-      setPredictionError("Người dùng B cần đánh giá ít nhất một phim.");
+    if (ratedCountB === 0) {
+      setPredictionError(
+        "Người dùng B cần đánh giá ít nhất một phim."
+      );
       return;
     }
 
@@ -139,7 +323,9 @@ export const ABLabView = () => {
     }
 
     if (ratingsB[targetMovieId] !== undefined) {
-      setPredictionError("B đã đánh giá phim này. Hãy chọn phim chưa xem.");
+      setPredictionError(
+        "B đã đánh giá phim này. Hãy chọn phim chưa xem."
+      );
       return;
     }
 
@@ -156,10 +342,10 @@ export const ABLabView = () => {
       });
 
       setPredictionResult(result);
-    } catch (error) {
+    } catch (err) {
       setPredictionError(
-        error instanceof Error
-          ? error.message
+        err instanceof Error
+          ? err.message
           : "Không thể chạy dự đoán ML."
       );
     } finally {
@@ -167,243 +353,337 @@ export const ABLabView = () => {
     }
   };
 
-  const rateMovie = (
-    participant: Participant,
-    movie: ApiMovie,
-    rating: number
-  ) => {
-    invalidatePrediction();
-
-    setMovieTitles((previous) => ({
-      ...previous,
-      [movie.movieId]: movie.title,
-    }));
-
-    if (participant === "A") {
-      setRatingsA((previous) => ({
-        ...previous,
-        [movie.movieId]: rating,
-      }));
-    } else {
-      setRatingsB((previous) => ({
-        ...previous,
-        [movie.movieId]: rating,
-      }));
-    }
-  };
-
-  const removeRating = (
-    participant: Participant,
-    movieId: number
-  ) => {
-    invalidatePrediction();
-
-    const setter = participant === "A" ? setRatingsA : setRatingsB;
-
-    setter((previous) => {
-      const next = { ...previous };
-      delete next[movieId];
-      return next;
-    });
-  };
-
-  const getRatedMovies = (ratings: Ratings): RatedMovie[] =>
-    Object.entries(ratings).map(([id, rating]) => ({
-      movieId: Number(id),
-      title: movieTitles[Number(id)] ?? `Movie #${id}`,
-      rating,
-    }));
-
-  const renderParticipant = (
-    participant: Participant,
-    ratings: Ratings
-  ) => {
-    const isA = participant === "A";
-    const ratedMovies = getRatedMovies(ratings);
-
-    return (
-      <div
-        className={`rounded-2xl border bg-[#0D1728] p-6 ${
-          isA ? "border-cyan-400/20" : "border-purple-400/20"
-        }`}
-      >
-        <div className="mb-4 flex items-center gap-3">
-          {isA ? (
-            <Users className="h-6 w-6 text-cyan-300" />
-          ) : (
-            <Star className="h-6 w-6 text-purple-300" />
-          )}
-
-          <h2 className="text-lg font-bold text-white">
-            Người dùng {participant}
-          </h2>
-        </div>
-
-        <p className="mb-4 text-sm text-slate-400">
-          Đã đánh giá {ratedMovies.length} phim.
-          Chọn số sao cho từng phim trong kết quả tìm kiếm.
-        </p>
-
-        <div className="max-h-[340px] space-y-3 overflow-y-auto pr-1">
-          {movies.map((movie) => (
-            <div
-              key={movie.movieId}
-              className="rounded-xl border border-white/10 bg-white/[0.03] p-3"
-            >
-              <div className="mb-2 text-sm font-medium text-white">
-                {movie.title}
-                {movie.year ? ` (${movie.year})` : ""}
-              </div>
-
-              <select
-                aria-label={`Điểm của người dùng ${participant} cho ${movie.title}`}
-                value={ratings[movie.movieId] ?? ""}
-                onChange={(event) => {
-                  const value = Number(event.target.value);
-
-                  if (value === 0) {
-                    removeRating(participant, movie.movieId);
-                  } else {
-                    rateMovie(participant, movie, value);
-                  }
-                }}
-                className="w-full rounded-lg border border-cyan-400/20 bg-[#111A2A] px-3 py-2 text-sm text-white"
-              >
-                <option value="">Chưa đánh giá</option>
-                {Array.from({ length: 10 }, (_, index) => {
-                  const rating = (index + 1) * 0.5;
-
-                  return (
-                    <option key={rating} value={rating}>
-                      {rating.toFixed(1)} / 5 sao
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-          ))}
-        </div>
-
-        <h3 className="mb-3 mt-6 text-sm font-semibold text-cyan-200">
-          Danh sách đã đánh giá
-        </h3>
-
-        {ratedMovies.length === 0 ? (
-          <p className="text-sm text-slate-500">
-            Chưa có phim nào được đánh giá.
-          </p>
-        ) : (
-          <div className="space-y-2">
-            {ratedMovies.map((movie) => (
-              <div
-                key={movie.movieId}
-                className="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/[0.03] p-3"
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm text-white">
-                    {movie.title}
-                  </p>
-                  <p className="text-xs text-amber-300">
-                    {movie.rating.toFixed(1)} / 5 sao
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => removeRating(participant, movie.movieId)}
-                  aria-label={`Xóa đánh giá ${movie.title}`}
-                  className="rounded-lg p-2 text-slate-400 hover:bg-red-400/10 hover:text-red-300"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  };
+  const availableTargets = targetMovies.filter(
+    (movie) => ratingsB[movie.movieId] === undefined
+  );
 
   return (
-    <section className="min-h-screen bg-[#050A13] px-4 py-12 text-[#F5F7FB] sm:px-6">
-      <div className="mx-auto max-w-[1280px]">
-        <div className="mb-10">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/5 px-4 py-2 text-xs font-semibold text-cyan-300">
-            <BrainCircuit className="h-4 w-4" />
-            USER-BASED COLLABORATIVE FILTERING
+    <div className="min-h-screen bg-[#090909] text-[#F6F0E7]">
+      {/* HERO */}
+      <section className="relative overflow-hidden border-b border-white/10 bg-[radial-gradient(ellipse_at_80%_10%,#46311C_0%,#18130E_35%,#090909_75%)]">
+        <div className="mx-auto max-w-[1440px] px-5 py-12 sm:px-8 lg:px-12 lg:py-16">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#D7AA61]/30 bg-[#D7AA61]/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#E8BF82]">
+            <FlaskConical className="h-4 w-4" />
+            CineMatch · ML Laboratory
           </div>
 
-          <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-            Phòng thực nghiệm{" "}
-            <span className="bg-gradient-to-r from-cyan-300 to-purple-400 bg-clip-text text-transparent">
-              ML
+          <h1 className="font-display text-4xl font-bold leading-tight sm:text-5xl">
+            Phòng thực nghiệm
+            <span className="block text-[#E8BF82]">
+              trí tuệ nhân tạo.
             </span>
           </h1>
 
-          <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-400">
-            Đánh giá phim với vai trò người dùng A và B để
-            khám phá Cosine Similarity và User-Based CF.
+          <p className="mt-5 max-w-2xl text-sm leading-7 text-[#C4B9AB] sm:text-base">
+            Tự tạo sở thích xem phim cho hai người dùng,
+            khám phá mức độ giống nhau và xem AI dự đoán
+            điểm yêu thích của một bộ phim chưa xem.
           </p>
-        </div>
 
-        <div className="mb-6 rounded-2xl border border-cyan-400/15 bg-[#0D1728] p-6">
-          <label
-            htmlFor="ab-movie-search"
-            className="mb-3 block text-sm font-semibold text-white"
-          >
-            Tìm kiếm phim MovieLens
-          </label>
-
-          <div className="relative">
-            <Search className="absolute left-3 top-3 h-5 w-5 text-cyan-300" />
-
-            <input
-              id="ab-movie-search"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Nhập tên phim, ví dụ: Toy Story"
-              className="w-full rounded-xl border border-cyan-400/20 bg-[#050A13] py-3 pl-11 pr-4 text-sm text-white outline-none focus:border-cyan-300/60"
-            />
+          <div className="mt-7 flex flex-wrap gap-3">
+            {[
+              "01 · Đánh giá phim",
+              "02 · Chọn phim dự đoán",
+              "03 · Xem kết quả AI",
+            ].map((step) => (
+              <span
+                key={step}
+                className="rounded-full border border-white/10 bg-black/25 px-4 py-2 text-xs text-[#D8C6AE]"
+              >
+                {step}
+              </span>
+            ))}
           </div>
-
-          {loading && (
-            <p className="mt-3 text-xs text-cyan-300">
-              Đang tìm kiếm phim...
-            </p>
-          )}
-
-          {error && (
-            <p className="mt-3 text-xs text-red-300">
-              {error}
-            </p>
-          )}
         </div>
+      </section>
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          {renderParticipant("A", ratingsA)}
-          {renderParticipant("B", ratingsB)}
-        </div>
+      <main className="mx-auto max-w-[1440px] space-y-8 px-5 py-10 sm:px-8 lg:px-12">
+        {/* STEP 1 */}
+        <section className={`${PANEL} overflow-hidden`}>
+          <div className="border-b border-white/10 p-5 sm:p-7">
+            <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#E8BF82]">
+              <Star className="h-4 w-4" />
+              Bước 01 · Xây dựng sở thích
+            </div>
 
-        <div className="mt-6 rounded-2xl border border-cyan-400/15 bg-[#0D1728] p-6">
-          <div className="mb-4 flex items-center gap-3">
-            <ChartNoAxesCombined className="h-6 w-6 text-cyan-300" />
-            <h2 className="text-lg font-bold text-white">
-              Kết quả thực nghiệm
+            <h2 className="font-display text-2xl font-bold">
+              Hai người xem, hai gu điện ảnh
             </h2>
+
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-[#AFA497]">
+              Tìm phim rồi cho điểm từ 0.5 đến 5 sao.
+              Hãy thử đánh giá một vài phim cho cả A và B
+              để khám phá sự tương đồng.
+            </p>
           </div>
 
-          <p className="mb-6 text-sm text-slate-400">
-            A đã đánh giá {Object.keys(ratingsA).length} phim;
-            B đã đánh giá {Object.keys(ratingsB).length} phim.
-          </p>
+          <div className="p-5 sm:p-7">
+            {/* USER TABS */}
+            <div className="mb-6 grid grid-cols-2 gap-3">
+              {(["A", "B"] as const).map((participant) => {
+                const active =
+                  activeParticipant === participant;
 
-          <div className="grid gap-5 lg:grid-cols-2">
-            <div>
+                const count =
+                  participant === "A"
+                    ? ratedCountA
+                    : ratedCountB;
+
+                return (
+                  <button
+                    key={participant}
+                    type="button"
+                    onClick={() =>
+                      setActiveParticipant(participant)
+                    }
+                    className={`rounded-xl border p-4 text-left transition ${
+                      active
+                        ? "border-[#E8BF82]/60 bg-[#D7AA61]/10"
+                        : "border-white/10 bg-[#211E1A] hover:border-[#D7AA61]/30"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Users
+                        className={`h-5 w-5 ${
+                          active
+                            ? "text-[#E8BF82]"
+                            : "text-[#AFA497]"
+                        }`}
+                      />
+
+                      <span className="text-sm font-semibold">
+                        Người dùng {participant}
+                      </span>
+                    </div>
+
+                    <p className="mt-2 text-xs text-[#AFA497]">
+                      Đã đánh giá {count} phim
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+
+            <label
+              htmlFor="ab-movie-search"
+              className="mb-2 block text-xs font-semibold text-[#C8BBA9]"
+            >
+              Tìm phim để đánh giá cho người dùng{" "}
+              {activeParticipant}
+            </label>
+
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#E8BF82]" />
+
+              <input
+                id="ab-movie-search"
+                value={search}
+                onChange={(event) =>
+                  setSearch(event.target.value)
+                }
+                placeholder="Nhập tên phim, ví dụ: Toy Story"
+                className={`${INPUT} pl-12`}
+              />
+            </div>
+
+            {loading && (
+              <p className="mt-3 flex items-center gap-2 text-xs text-[#E8BF82]">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Đang tìm phim...
+              </p>
+            )}
+
+            {error && (
+              <p role="alert" className="mt-3 text-xs text-red-300">
+                {error}
+              </p>
+            )}
+
+            {/* MOVIE RESULTS */}
+            <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {movies.map((movie) => {
+                const poster =
+                  getPoster(movie) ||
+                  movieImages[movie.movieId];
+
+                const rating = selectedRatings[movie.movieId];
+
+                return (
+                  <div
+                    key={movie.movieId}
+                    className={`overflow-hidden rounded-xl border bg-[#211E1A] transition ${
+                      rating !== undefined
+                        ? "border-[#E8BF82]/45"
+                        : "border-white/[0.07]"
+                    }`}
+                  >
+                    <div className="flex gap-3 p-3">
+                      <div className="h-28 w-[74px] shrink-0 overflow-hidden rounded-lg bg-[#30271D]">
+                        {poster ? (
+                          <img
+                            src={poster}
+                            alt={movie.title}
+                            loading="lazy"
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full items-center justify-center">
+                            <Film className="h-7 w-7 text-[#D7AA61]/50" />
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <p className="line-clamp-3 text-sm font-semibold leading-5">
+                          {movie.title}
+                        </p>
+
+                        {movie.year && (
+                          <p className="mt-1 text-xs text-[#938779]">
+                            {movie.year}
+                          </p>
+                        )}
+
+                        {rating !== undefined && (
+                          <p className="mt-3 flex items-center gap-1 text-xs font-semibold text-[#E8BF82]">
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            {rating.toFixed(1)} / 5 sao
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="border-t border-white/[0.07] px-3 py-3">
+                      <p className="mb-2 text-[11px] text-[#AFA497]">
+                        Chọn điểm đánh giá
+                      </p>
+
+                      <RatingStars
+                        value={rating}
+                        label={`Người dùng ${activeParticipant}, phim ${movie.title}`}
+                        onChange={(value) =>
+                          rateMovie(
+                            activeParticipant,
+                            movie,
+                            value
+                          )
+                        }
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {!loading && !error && movies.length === 0 && (
+              <p className="py-10 text-center text-sm text-[#AFA497]">
+                Không tìm thấy phim phù hợp.
+              </p>
+            )}
+
+            {/* RATED MOVIES */}
+            <div className="mt-8 border-t border-white/10 pt-6">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <h3 className="text-sm font-semibold">
+                  Phim người dùng {activeParticipant} đã đánh giá
+                </h3>
+
+                <span className="rounded-full bg-[#D7AA61]/10 px-3 py-1 text-xs text-[#E8BF82]">
+                  {selectedRatedMovies.length} phim
+                </span>
+              </div>
+
+              {selectedRatedMovies.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-white/10 p-6 text-center">
+                  <Film className="mx-auto h-7 w-7 text-[#786E62]" />
+
+                  <p className="mt-3 text-xs text-[#AFA497]">
+                    Chưa có phim nào được đánh giá.
+                  </p>
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {selectedRatedMovies.map((movie) => (
+                    <div
+                      key={movie.movieId}
+                      className="flex max-w-full items-center gap-3 rounded-lg border border-[#D7AA61]/20 bg-[#D7AA61]/[0.06] px-3 py-2"
+                    >
+                      <span className="max-w-[180px] truncate text-xs">
+                        {movie.title}
+                      </span>
+
+                      <span className="flex shrink-0 items-center gap-1 text-xs font-semibold text-[#E8BF82]">
+                        <Star className="h-3 w-3 fill-current" />
+                        {movie.rating.toFixed(1)}
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          removeRating(
+                            activeParticipant,
+                            movie.movieId
+                          )
+                        }
+                        aria-label={`Xóa đánh giá ${movie.title}`}
+                        className="text-[#938779] transition hover:text-red-300"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[#211E1A] p-4">
+              <div className="flex items-center gap-2 text-xs text-[#BFB2A2]">
+                <Users className="h-4 w-4 text-[#E8BF82]" />
+                A: {ratedCountA} phim · B: {ratedCountB} phim
+              </div>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setActiveParticipant(
+                    activeParticipant === "A" ? "B" : "A"
+                  )
+                }
+                className="flex items-center gap-2 text-xs font-semibold text-[#E8BF82] hover:text-white"
+              >
+                Chuyển sang người dùng{" "}
+                {activeParticipant === "A" ? "B" : "A"}
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* STEP 2 */}
+        <section className={`${PANEL} p-5 sm:p-7`}>
+          <div className="mb-6">
+            <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#E8BF82]">
+              <Search className="h-4 w-4" />
+              Bước 02 · Chuẩn bị dự đoán
+            </div>
+
+            <h2 className="font-display text-2xl font-bold">
+              B sẽ thích bộ phim nào?
+            </h2>
+
+            <p className="mt-3 text-sm leading-6 text-[#AFA497]">
+              Chọn một bộ phim mà người dùng B chưa đánh giá.
+              Mô hình sẽ dự đoán B có thể chấm bao nhiêu sao.
+            </p>
+          </div>
+
+          <div className="grid gap-5 lg:grid-cols-[1.5fr_1fr]">
+            <div className="space-y-3">
               <label
                 htmlFor="ab-target-search"
-                className="mb-2 block text-sm font-semibold text-white"
+                className="block text-xs font-semibold text-[#C8BBA9]"
               >
-                Tìm phim cần dự đoán cho B
+                Tìm phim muốn dự đoán
               </label>
 
               <input
@@ -414,8 +694,8 @@ export const ABLabView = () => {
                   setTargetMovieId(null);
                   invalidatePrediction();
                 }}
-                placeholder="Ví dụ: Shawshank"
-                className="mb-3 w-full rounded-xl border border-cyan-400/20 bg-[#050A13] p-3 text-sm text-white outline-none focus:border-cyan-300/60"
+                placeholder="Ví dụ: The Shawshank Redemption"
+                className={INPUT}
               />
 
               <select
@@ -429,34 +709,31 @@ export const ABLabView = () => {
                   );
                   invalidatePrediction();
                 }}
-                className="w-full rounded-xl border border-cyan-400/20 bg-[#111A2A] p-3 text-sm text-white"
+                className={INPUT}
               >
                 <option value="">
-                  {targetLoading ? "Đang tải phim..." : "Chọn phim chưa đánh giá"}
+                  {targetLoading
+                    ? "Đang tải phim..."
+                    : "Chọn phim chưa được B đánh giá"}
                 </option>
 
-                {targetMovies
-                  .filter((movie) => ratingsB[movie.movieId] === undefined)
-                  .map((movie) => (
-                    <option key={movie.movieId} value={movie.movieId}>
-                      {movie.title} ({movie.movieId})
-                    </option>
-                  ))}
+                {availableTargets.map((movie) => (
+                  <option
+                    key={movie.movieId}
+                    value={movie.movieId}
+                  >
+                    {movie.title}
+                  </option>
+                ))}
               </select>
-
-              {targetMovieId !== null && (
-                <p className="mt-2 text-xs text-cyan-300">
-                  Movie ID: {targetMovieId}
-                </p>
-              )}
             </div>
 
             <div>
               <label
                 htmlFor="ab-neighbor-k"
-                className="mb-2 block text-sm font-semibold text-white"
+                className="mb-3 block text-xs font-semibold text-[#C8BBA9]"
               >
-                Số hàng xóm K
+                Số người dùng tương tự (K)
               </label>
 
               <select
@@ -466,7 +743,7 @@ export const ABLabView = () => {
                   setK(Number(event.target.value));
                   invalidatePrediction();
                 }}
-                className="w-full rounded-xl border border-cyan-400/20 bg-[#111A2A] p-3 text-sm text-white"
+                className={INPUT}
               >
                 {[1, 3, 5, 10, 15, 20].map((value) => (
                   <option key={value} value={value}>
@@ -475,152 +752,343 @@ export const ABLabView = () => {
                 ))}
               </select>
 
-              <p className="mt-3 text-xs leading-5 text-slate-400">
-                Thuật toán chọn tối đa K người dùng có độ tương đồng
-                dương và đã đánh giá phim cần dự đoán.
+              <p className="mt-3 text-xs leading-5 text-[#938779]">
+                Mô hình sử dụng tối đa K người dùng tương tự
+                có đánh giá phim cần dự đoán.
               </p>
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => void runPrediction()}
-            disabled={predictionLoading}
-            className="mt-6 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:cursor-wait disabled:opacity-50"
-          >
-            {predictionLoading ? "Đang tính toán..." : "Chạy thực nghiệm ML"}
-          </button>
+          <div className="mt-7 flex flex-wrap items-center gap-4">
+            <button
+              type="button"
+              onClick={() => void runPrediction()}
+              disabled={predictionLoading}
+              className="inline-flex items-center justify-center gap-3 rounded-xl bg-[#E8BF82] px-7 py-3.5 text-sm font-bold text-[#18120B] transition hover:bg-[#F5D49C] disabled:cursor-wait disabled:opacity-50"
+            >
+              {predictionLoading ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <Play className="h-5 w-5 fill-current" />
+              )}
+
+              {predictionLoading
+                ? "Đang tính toán..."
+                : "Chạy thực nghiệm AI"}
+            </button>
+
+            <span className="flex items-center gap-2 text-xs text-[#938779]">
+              <BrainCircuit className="h-4 w-4" />
+              Kết quả được tính bởi mô hình Python
+            </span>
+          </div>
 
           {predictionError && (
-            <p role="alert" className="mt-4 text-sm text-red-300">
+            <p
+              role="alert"
+              className="mt-5 rounded-xl border border-red-500/20 bg-red-950/15 p-4 text-sm text-red-300"
+            >
               {predictionError}
             </p>
           )}
+        </section>
 
-          {predictionResult && (
-            <div className="mt-8 space-y-6">
+        {/* STEP 3 */}
+        <section className={`${PANEL} overflow-hidden`}>
+          <div className="border-b border-white/10 p-5 sm:p-7">
+            <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#E8BF82]">
+              <Sparkles className="h-4 w-4" />
+              Bước 03 · Kết quả thực nghiệm
+            </div>
+
+            <h2 className="font-display text-2xl font-bold">
+              AI đã tìm ra điều gì?
+            </h2>
+
+            <p className="mt-3 text-sm text-[#AFA497]">
+              Khám phá độ tương đồng giữa A và B cùng
+              điểm sao dự đoán cho bộ phim đã chọn.
+            </p>
+          </div>
+
+          {!predictionResult ? (
+            <div className="flex min-h-52 flex-col items-center justify-center p-8 text-center">
+              {predictionLoading ? (
+                <Loader2 className="h-9 w-9 animate-spin text-[#E8BF82]" />
+              ) : (
+                <FlaskConical className="h-10 w-10 text-[#D7AA61]/50" />
+              )}
+
+              <p className="mt-4 text-sm text-[#AFA497]">
+                {predictionLoading
+                  ? "Mô hình đang xử lý dữ liệu..."
+                  : "Chưa có kết quả thực nghiệm."}
+              </p>
+
+              {!predictionLoading && (
+                <p className="mt-2 text-xs text-[#786E62]">
+                  Hoàn thành các bước phía trên rồi chạy AI.
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-6 p-5 sm:p-7">
+              <div className="flex items-center gap-2 text-sm text-[#BFB2A2]">
+                <CheckCircle2 className="h-5 w-5 text-[#E8BF82]" />
+                Đã tính toán thành công cho phim:
+              </div>
+
+              <h3 className="font-display text-xl font-bold text-[#F6F0E7]">
+                {predictionResult.title}
+              </h3>
+
               <div className="grid gap-4 sm:grid-cols-3">
-                <div className="rounded-xl border border-cyan-400/20 bg-cyan-400/5 p-5">
-                  <p className="text-xs text-slate-400">
-                    Cosine Similarity A–B
+                <div className="rounded-xl border border-[#D7AA61]/25 bg-[#D7AA61]/[0.07] p-5">
+                  <p className="text-xs text-[#BFB2A2]">
+                    Độ tương đồng A – B
                   </p>
-                  <p className="mt-2 text-2xl font-bold text-cyan-300">
+
+                  <p className="mt-3 text-3xl font-bold text-[#E8BF82]">
                     {predictionResult.comparison.similarity.toFixed(4)}
                   </p>
+
+                  <p className="mt-3 text-xs text-[#938779]">
+                    Cosine Similarity
+                  </p>
                 </div>
 
-                <div className="rounded-xl border border-purple-400/20 bg-purple-400/5 p-5">
-                  <p className="text-xs text-slate-400">
+                <div className="rounded-xl border border-[#D7AA61]/40 bg-[#D7AA61]/10 p-5">
+                  <p className="text-xs text-[#BFB2A2]">
                     Điểm dự đoán cho B
                   </p>
-                  <p className="mt-2 text-2xl font-bold text-purple-300">
-                    {predictionResult.prediction.predictedRating.toFixed(2)} ★
+
+                  <p className="mt-3 flex items-center gap-2 text-3xl font-bold text-[#E8BF82]">
+                    <Star className="h-7 w-7 fill-current" />
+                    {predictionResult.prediction.predictedRating.toFixed(
+                      2
+                    )}
+                  </p>
+
+                  <p className="mt-3 text-xs text-[#938779]">
+                    Trên thang 5 sao
                   </p>
                 </div>
 
-                <div className="rounded-xl border border-amber-400/20 bg-amber-400/5 p-5">
-                  <p className="text-xs text-slate-400">
-                    Số hàng xóm thực tế
+                <div className="rounded-xl border border-white/10 bg-[#211E1A] p-5">
+                  <p className="text-xs text-[#BFB2A2]">
+                    Người dùng tham gia dự đoán
                   </p>
-                  <p className="mt-2 text-2xl font-bold text-amber-300">
+
+                  <p className="mt-3 text-3xl font-bold text-[#F6F0E7]">
                     {predictionResult.prediction.neighborCount}
                   </p>
-                </div>
-              </div>
 
-              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
-                <h3 className="mb-3 text-base font-bold text-white">
-                  Giải thích dự đoán
-                </h3>
-
-                <p className="text-sm text-slate-300">
-                  Phim: {predictionResult.title}
-                </p>
-
-                <p className="mt-2 text-sm text-slate-400">
-                  Số phim A và B cùng đánh giá:{" "}
-                  {predictionResult.comparison.commonCount}
-                </p>
-
-                <p className="mt-2 text-sm text-slate-400">
-                  Điểm trung bình của B:{" "}
-                  {predictionResult.prediction.baseline.toFixed(4)}
-                </p>
-
-                <div className="mt-4 rounded-lg bg-[#050A13] p-4 font-mono text-xs leading-7 text-cyan-200">
-                  <p>Prediction = Mean(B) + Numerator / Denominator</p>
-                  <p>
-                    = {predictionResult.prediction.baseline.toFixed(4)}
-                    {" + "}
-                    {predictionResult.prediction.numerator.toFixed(4)}
-                    {" / "}
-                    {predictionResult.prediction.denominator.toFixed(4)}
-                  </p>
-                  <p className="text-slate-400">
-                    Kết quả được giới hạn trong thang 0,5–5 sao.
+                  <p className="mt-3 text-xs text-[#938779]">
+                    Tối đa K = {k}
                   </p>
                 </div>
               </div>
 
-              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
-                <h3 className="mb-4 text-base font-bold text-white">
-                  Top-K hàng xóm đóng góp
-                </h3>
+              <div className="rounded-xl bg-[#211E1A] p-5">
+                <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-[#E8BF82]">
+                  <Info className="h-4 w-4" />
+                  Cách hiểu kết quả
+                </div>
 
-                {predictionResult.prediction.neighbors.length === 0 ? (
-                  <p className="text-sm text-slate-400">
-                    Không có hàng xóm có độ tương đồng dương.
-                    Kết quả sử dụng điểm trung bình của B.
-                  </p>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
-                      <thead className="border-b border-white/10 text-slate-400">
-                        <tr>
-                          <th className="px-3 py-3">Người dùng</th>
-                          <th className="px-3 py-3">Similarity</th>
-                          <th className="px-3 py-3">Điểm phim</th>
-                          <th className="px-3 py-3">Độ lệch</th>
-                          <th className="px-3 py-3">Đóng góp</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {predictionResult.prediction.neighbors.map(
-                          (neighbor, index) => (
-                            <tr
-                              key={`${neighbor.source}-${neighbor.userId}-${index}`}
-                              className="border-b border-white/5 text-slate-200"
-                            >
-                              <td className="px-3 py-3">
-                                {neighbor.source === "A"
-                                  ? "Người dùng A"
-                                  : `MovieLens #${neighbor.userId}`}
-                              </td>
-                              <td className="px-3 py-3">
-                                {neighbor.similarity.toFixed(4)}
-                              </td>
-                              <td className="px-3 py-3">
-                                {neighbor.rating.toFixed(1)}
-                              </td>
-                              <td className="px-3 py-3">
-                                {neighbor.deviation.toFixed(4)}
-                              </td>
-                              <td className="px-3 py-3">
-                                {neighbor.weightedContribution.toFixed(4)}
-                              </td>
-                            </tr>
-                          )
+                <p className="text-sm leading-7 text-[#C4B9AB]">
+                  A và B có{" "}
+                  <strong className="text-[#F6F0E7]">
+                    {
+                      predictionResult.comparison.commonCount
+                    }{" "}
+                    phim cùng đánh giá
+                  </strong>
+                  . Dựa trên dữ liệu đánh giá và những người
+                  dùng tương tự, mô hình ước tính B có thể
+                  chấm{" "}
+                  <strong className="text-[#E8BF82]">
+                    {predictionResult.prediction.predictedRating.toFixed(
+                      2
+                    )}{" "}
+                    sao
+                  </strong>{" "}
+                  cho phim đã chọn.
+                </p>
+              </div>
+
+              {/* TECHNICAL DETAILS */}
+              <div className="overflow-hidden rounded-xl border border-white/10">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowDetails((value) => !value)
+                  }
+                  aria-expanded={showDetails}
+                  className="flex w-full items-center justify-between gap-3 bg-[#211E1A] p-5 text-left"
+                >
+                  <span className="flex items-center gap-2 text-sm font-semibold">
+                    <BrainCircuit className="h-5 w-5 text-[#E8BF82]" />
+                    Xem cách mô hình tính toán
+                  </span>
+
+                  <ChevronDown
+                    className={`h-5 w-5 text-[#E8BF82] transition-transform ${
+                      showDetails ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {showDetails && (
+                  <div className="space-y-6 p-5">
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div className="rounded-lg bg-[#211E1A] p-4">
+                        <p className="text-xs text-[#AFA497]">
+                          Điểm trung bình của B
+                        </p>
+
+                        <p className="mt-2 text-lg font-semibold text-[#E8BF82]">
+                          {predictionResult.prediction.baseline.toFixed(
+                            4
+                          )}
+                        </p>
+                      </div>
+
+                      <div className="rounded-lg bg-[#211E1A] p-4">
+                        <p className="text-xs text-[#AFA497]">
+                          Số phim A và B cùng đánh giá
+                        </p>
+
+                        <p className="mt-2 text-lg font-semibold text-[#E8BF82]">
+                          {
+                            predictionResult.comparison
+                              .commonCount
+                          }
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl bg-[#211E1A] p-4 font-mono text-xs leading-7 text-[#D8C6AE]">
+                      <p className="text-[#E8BF82]">
+                        Prediction = Mean(B) + Numerator / Denominator
+                      </p>
+
+                      <p>
+                        ={" "}
+                        {predictionResult.prediction.baseline.toFixed(
+                          4
+                        )}{" "}
+                        +{" "}
+                        {predictionResult.prediction.numerator.toFixed(
+                          4
+                        )}{" "}
+                        /{" "}
+                        {predictionResult.prediction.denominator.toFixed(
+                          4
                         )}
-                      </tbody>
-                    </table>
+                      </p>
+
+                      <p className="text-[#938779]">
+                        Kết quả được giới hạn trong thang
+                        0.5–5 sao.
+                      </p>
+                    </div>
+
+                    <div>
+                      <h4 className="mb-4 text-sm font-semibold">
+                        Những người dùng đóng góp vào dự đoán
+                      </h4>
+
+                      {predictionResult.prediction.neighbors.length ===
+                      0 ? (
+                        <p className="rounded-xl bg-[#211E1A] p-4 text-sm text-[#AFA497]">
+                          Không có láng giềng có độ tương đồng
+                          dương. Mô hình sử dụng điểm trung bình
+                          của B.
+                        </p>
+                      ) : (
+                        <div className="overflow-x-auto rounded-xl border border-white/10">
+                          <table className="w-full min-w-[620px] text-left text-xs">
+                            <thead className="bg-[#211E1A] text-[#E8BF82]">
+                              <tr>
+                                <th className="p-3">
+                                  Người dùng
+                                </th>
+                                <th className="p-3">
+                                  Tương đồng
+                                </th>
+                                <th className="p-3">
+                                  Điểm phim
+                                </th>
+                                <th className="p-3">
+                                  Độ lệch
+                                </th>
+                                <th className="p-3">
+                                  Đóng góp
+                                </th>
+                              </tr>
+                            </thead>
+
+                            <tbody>
+                              {predictionResult.prediction.neighbors.map(
+                                (neighbor, index) => (
+                                  <tr
+                                    key={`${neighbor.source}-${neighbor.userId}-${index}`}
+                                    className="border-t border-white/[0.06] text-[#D6CBBE]"
+                                  >
+                                    <td className="p-3">
+                                      {neighbor.source === "A"
+                                        ? "Người dùng A"
+                                        : `MovieLens #${neighbor.userId}`}
+                                    </td>
+
+                                    <td className="p-3">
+                                      {neighbor.similarity.toFixed(
+                                        4
+                                      )}
+                                    </td>
+
+                                    <td className="p-3">
+                                      {neighbor.rating.toFixed(1)}
+                                    </td>
+
+                                    <td className="p-3">
+                                      {neighbor.deviation.toFixed(
+                                        4
+                                      )}
+                                    </td>
+
+                                    <td className="p-3">
+                                      {neighbor.weightedContribution.toFixed(
+                                        4
+                                      )}
+                                    </td>
+                                  </tr>
+                                )
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
+
+              <p className="flex items-start gap-2 text-xs leading-6 text-[#887E71]">
+                <Info className="mt-1 h-3.5 w-3.5 shrink-0" />
+                Đây là điểm do mô hình ước tính, không phải
+                đánh giá thực tế của người dùng B.
+              </p>
             </div>
           )}
+        </section>
+
+        <div className="flex items-center justify-center gap-2 pb-4 text-xs text-[#786E62]">
+          <RefreshCw className="h-3.5 w-3.5" />
+          Thử thay đổi điểm đánh giá hoặc K để quan sát
+          kết quả khác nhau.
         </div>
-      </div>
-    </section>
+      </main>
+    </div>
   );
 };
-
