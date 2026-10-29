@@ -1,4 +1,4 @@
-﻿
+
 from pathlib import Path
 from functools import lru_cache
 import sys
@@ -64,6 +64,7 @@ allowed_origins = [
     "http://127.0.0.1:3003",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "https://cinematch-ml.vercel.app",
 ]
 
 frontend_url = os.environ.get("FRONTEND_URL", "").strip().rstrip("/")
