@@ -1,4 +1,4 @@
-﻿
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
@@ -589,61 +589,58 @@ export function HomeView({
     [allMovies]
   );
 
-  // Load high-quality TMDb artwork for featured movies.
-  // Requests run in parallel and failures do not block the page.
+  // Load featured TMDb artwork progressively.
+  // Update each movie as soon as its request finishes.
   useEffect(() => {
     let cancelled = false;
 
-    async function loadFeaturedImages() {
-      const results = await Promise.allSettled(
-        FEATURED_IDS.map((movieId) =>
-          cineMatchApi.getEnrichedMovie(movieId)
-        )
-      );
+    setEnrichedFeatured(new Map<number, Movie>());
 
-      if (cancelled) return;
+    FEATURED_IDS.forEach((movieId) => {
+      void cineMatchApi
+        .getEnrichedMovie(movieId)
+        .then((movie) => {
+          if (cancelled) return;
 
-      const enriched = new Map<number, Movie>();
+          const original = movieMap.get(movieId);
 
-      results.forEach((result, index) => {
-        if (result.status !== "fulfilled") return;
+          const posterUrl = isValidTmdbImage(movie.posterUrl)
+            ? movie.posterUrl
+            : original?.posterUrl;
 
-        const movie = result.value;
-        const movieId = FEATURED_IDS[index];
+          const backdropUrl = isValidTmdbImage(movie.backdropUrl)
+            ? movie.backdropUrl
+            : original?.backdropUrl;
 
-        const original = movieMap.get(movieId);
+          const merged = {
+            ...(original ?? {}),
+            ...movie,
+            posterUrl,
+            backdropUrl,
+          } as Movie;
 
-        const posterUrl = isValidTmdbImage(
-          movie.posterUrl
-        )
-          ? movie.posterUrl
-          : original?.posterUrl;
+          if (
+            !isValidTmdbImage(merged.backdropUrl) &&
+            !isValidTmdbImage(merged.posterUrl)
+          ) {
+            return;
+          }
 
-        const backdropUrl = isValidTmdbImage(
-          movie.backdropUrl
-        )
-          ? movie.backdropUrl
-          : original?.backdropUrl;
-
-        const merged = {
-          ...(original ?? {}),
-          ...movie,
-          posterUrl,
-          backdropUrl,
-        } as Movie;
-
-        if (
-          isValidTmdbImage(merged.backdropUrl) ||
-          isValidTmdbImage(merged.posterUrl)
-        ) {
-          enriched.set(movieId, merged);
-        }
-      });
-
-      setEnrichedFeatured(enriched);
-    }
-
-    void loadFeaturedImages();
+          setEnrichedFeatured((previous) => {
+            const next = new Map(previous);
+            next.set(movieId, merged);
+            return next;
+          });
+        })
+        .catch((error) => {
+          if (!cancelled) {
+            console.warn(
+              `Cannot load featured artwork for movie ${movieId}:`,
+              error
+            );
+          }
+        });
+    });
 
     return () => {
       cancelled = true;
