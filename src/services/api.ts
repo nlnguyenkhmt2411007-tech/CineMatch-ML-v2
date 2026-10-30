@@ -72,6 +72,34 @@ async function request<T>(path: string): Promise<T> {
     return response.json() as Promise<T>;
 }
 
+type EnrichedMovie = Movie & {
+    posterUrl?: string | null;
+    backdropUrl?: string | null;
+    synopsis?: string | null;
+    imdbId?: string | null;
+    tmdbId?: number | null;
+};
+
+const enrichedMovieCache = new Map<number, Promise<EnrichedMovie>>();
+
+function getCachedEnrichedMovie(movieId: number): Promise<EnrichedMovie> {
+    const cached = enrichedMovieCache.get(movieId);
+
+    if (cached) {
+        return cached;
+    }
+
+    const pending = request<EnrichedMovie>(
+        `/api/movies/enriched/${movieId}`
+    ).catch((error) => {
+        enrichedMovieCache.delete(movieId);
+        throw error;
+    });
+
+    enrichedMovieCache.set(movieId, pending);
+
+    return pending;
+}
 export const cineMatchApi = {
     health: () => request<{
         status: string;
@@ -88,13 +116,7 @@ export const cineMatchApi = {
     getMovie: (movieId: number) =>
         request<Movie>(`/api/movies/${movieId}`),
     getEnrichedMovie: (movieId: number) =>
-        request<Movie & {
-            posterUrl?: string | null;
-            backdropUrl?: string | null;
-            synopsis?: string | null;
-            imdbId?: string | null;
-            tmdbId?: number | null;
-        }>(`/api/movies/enriched/${movieId}`),
+        getCachedEnrichedMovie(movieId),
 
     getSimilarMovies: (movieId: number, topN = 10) =>
         request<{

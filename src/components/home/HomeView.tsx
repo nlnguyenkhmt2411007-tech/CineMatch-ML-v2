@@ -164,6 +164,7 @@ function MovieRail({
             <div className="cm-poster-frame">
               <MovieCard
                 movie={movie}
+                priority={index < 4}
                 onClick={() => onSelectMovie(movie)}
                 isBookmarked={bookmarkedMovieIds.has(
                   movie.movieId

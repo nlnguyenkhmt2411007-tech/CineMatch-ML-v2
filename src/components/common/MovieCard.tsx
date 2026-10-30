@@ -16,6 +16,8 @@ interface MovieCardProps {
   onToggleBookmark?: (event: React.MouseEvent) => void;
 
   userRating?: number;
+
+  priority?: boolean;
 }
 
 function getSafePosterUrl(
@@ -39,6 +41,7 @@ export const MovieCard: React.FC<MovieCardProps> = ({
   isBookmarked = false,
   onToggleBookmark,
   userRating,
+  priority = false,
 }) => {
   const [imageError, setImageError] = useState(false);
 
@@ -76,7 +79,8 @@ export const MovieCard: React.FC<MovieCardProps> = ({
           <img
             src={posterUrl}
             alt={`Poster ${movie.title}`}
-            loading="lazy"
+            loading={priority ? "eager" : "lazy"}
+            fetchPriority={priority ? "high" : "auto"}
             decoding="async"
             onError={() => setImageError(true)}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.07]"
