@@ -1,0 +1,364 @@
+/* CineMatch Step 6 — Netflix-inspired ML method pages. Scoped to .cm-cinema-. */
+.cm-cinema-page{--cm-red:#ed243e;--cm-ink:#090a0d;--cm-panel:#14151a;--cm-muted:#a1a3ae;color:#f8f8fa;background:#08090c;min-height:80vh;font-family:inherit;overflow:hidden}
+.cm-cinema-page *{box-sizing:border-box}
+.cm-cinema-page button{cursor:pointer}
+.cm-cinema-hero{position:relative;min-height:245px;display:flex;align-items:center;overflow:hidden;background:radial-gradient(ellipse at 80% 10%,#5d1424 0,transparent 47%),linear-gradient(108deg,#10090d 0%,#200e16 52%,#0c0c10 100%);border-bottom:1px solid #ffffff19}
+.cm-cinema-knn .cm-cinema-hero{background:radial-gradient(ellipse at 82% 10%,#34204b 0,transparent 48%),linear-gradient(108deg,#110b13 0%,#21101f 52%,#0b0c12 100%)}
+.cm-cinema-hero-backdrop{position:absolute;inset:-16px 0 -16px 46%;background-position:center 40%;background-size:cover;opacity:.22;filter:blur(6px) saturate(.85);mask-image:linear-gradient(90deg,transparent,black 28%)}
+.cm-cinema-hero-shade{position:absolute;inset:0;background:linear-gradient(90deg,#0d0a0e 5%,#0d0a0eab 52%,#07080b66)}
+.cm-cinema-hero-content{position:relative;width:min(1470px,100%);margin:0 auto;padding:34px 34px 33px}
+.cm-cinema-crumb{display:flex;align-items:center;gap:9px;color:#d6b2b5;letter-spacing:.13em;font-weight:750;font-size:11px;margin-bottom:22px}
+.cm-cinema-crumb span{color:#5d5358}
+.cm-cinema-heading{display:flex;align-items:center;gap:16px}
+.cm-cinema-heading>svg{flex-shrink:0;color:#f33a56}
+.cm-cinema-heading h1{font-size:clamp(28px,3vw,48px);letter-spacing:-.045em;font-weight:800;line-height:1.15;margin:0}
+.cm-cinema-heading em{color:#f33a56;font-style:normal}
+.cm-cinema-knn .cm-cinema-heading em,.cm-cinema-knn .cm-cinema-heading>svg{color:#d1a6ef}
+.cm-cinema-hero-content>p{font-size:15px;line-height:1.7;color:#d0cbd0;max-width:870px;margin:12px 0 0}
+.cm-cinema-hero-pills{display:flex;gap:9px;flex-wrap:wrap;margin-top:20px}
+.cm-cinema-hero-pills span{font-size:11px;color:#edcbd0;background:#ffffff0d;border:1px solid #ffffff20;border-radius:100px;padding:6px 12px}
+.cm-cinema-container{max-width:1470px;margin:auto;padding:29px 34px 50px}
+.cm-cinema-mode-switch{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 21px}
+.cm-cinema-mode-switch button{display:flex;align-items:center;justify-content:center;gap:9px;background:#17171b;color:#d5d2d6;border:1px solid #ffffff23;border-radius:11px;padding:13px 20px;font-size:14px;font-weight:700;transition:.2s}
+.cm-cinema-mode-switch button:hover{border-color:#e13e51;transform:translateY(-1px)}
+.cm-cinema-mode-switch button.active{background:#dd2339;border-color:#f13d50;color:white;box-shadow:0 8px 22px #bf1f3145}
+.cm-cinema-columns{display:grid;grid-template-columns:minmax(280px,355px) minmax(0,1fr);gap:19px;align-items:start}
+.cm-cinema-side{background:linear-gradient(145deg,#1d1419,#121317 60%);border:1px solid #71344364;border-radius:19px;padding:25px 23px;min-width:0}
+.cm-cinema-knn .cm-cinema-side{background:linear-gradient(145deg,#19151f,#121317 60%);border-color:#78526f6b}
+.cm-cinema-side-title{display:flex;align-items:center;gap:10px;color:#f33852;margin:1px 0 17px}
+.cm-cinema-knn .cm-cinema-side-title{color:#d0a0e8}
+.cm-cinema-side-title h2{font-size:20px;color:white;letter-spacing:-.03em;font-weight:780;margin:0}
+.cm-cinema-side-copy{font-size:12px;color:#aab0b8;line-height:1.6;margin:-6px 0 20px}
+.cm-cinema-side label{display:block;color:#f3f0f2;font-size:12px;font-weight:700;margin:15px 0 8px}
+.cm-cinema-form-row{display:flex;align-items:center;gap:8px;min-width:0}
+.cm-cinema-form-row input{min-width:0;width:100%;background:#0c0e13;color:#f7f8fa;border-radius:11px;border:1px solid #4a4148;padding:13px 13px;font-size:14px;outline:none;transition:border-color .2s}
+.cm-cinema-form-row input:focus{border-color:#ed4861;box-shadow:0 0 0 3px #ef34451a}
+.cm-cinema-form-row button{display:grid;place-items:center;flex-shrink:0;border-radius:10px;background:#29272e;border:1px solid #484049;color:white;width:45px;height:45px}
+.cm-cinema-form-row button:hover{background:#463039}
+.cm-cinema-form-row button.cm-cinema-action{background:#e12b40;border-color:#e12b40}
+.cm-cinema-wide-cta{display:flex;align-items:center;justify-content:center;gap:10px;border-radius:11px;background:#e5233b;color:#fff;font-size:14px;font-weight:800;min-height:48px;padding:12px 16px;margin:19px 0 4px;width:100%;box-shadow:0 12px 27px #dc1d342d}
+.cm-cinema-wide-cta:hover{background:#f3374d}
+.cm-cinema-error{color:#f8a6b2;font-size:12px;margin:8px 0}
+.cm-cinema-search-items{background:#1d1b21;border:1px solid #4c4149;border-radius:10px;max-height:220px;overflow-y:auto;margin-top:8px}
+.cm-cinema-search-items button{display:flex;justify-content:space-between;gap:8px;width:100%;text-align:left;padding:10px 12px;color:#f4f0f2;font-size:12px;border-bottom:1px solid #ffffff0e}
+.cm-cinema-search-items button:hover{background:#ffffff14}
+.cm-cinema-search-items small{color:#a0a0a9}
+.cm-cinema-current-film{display:flex;gap:14px;margin-top:18px;border:1px solid #ffffff16;border-radius:12px;background:#ffffff07;padding:10px;align-items:center;min-width:0}
+.cm-cinema-current-poster{display:grid;place-items:center;width:79px;min-width:79px;aspect-ratio:2/3;background:#22212a;border-radius:7px;overflow:hidden;color:#e6c1c7}
+.cm-cinema-current-poster img{width:100%;height:100%;object-fit:cover}
+.cm-cinema-current-film strong{display:block;font-size:14px;line-height:1.5}
+.cm-cinema-current-film span{color:#b8b7bb;font-size:11px}
+.cm-cinema-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:9px}
+.cm-cinema-tags b{border:1px solid #b7677447;border-radius:8px;padding:4px 6px;font-size:10px;font-weight:500;color:#e4c0c5}
+.cm-cinema-divider{height:1px;background:#ffffff21;margin:20px 0}
+.cm-cinema-profile h3,.cm-cinema-neighbors h3{display:flex;align-items:center;gap:8px;font-size:14px;margin:0 0 11px;font-weight:800;line-height:1.5}
+.cm-cinema-profile>p,.cm-cinema-neighbors>p{color:#989ca6;line-height:1.55;font-size:11px;margin:9px 0}
+.cm-cinema-profile>small{font-size:11px;color:#ada2ab;line-height:1.5;display:block;margin-top:14px}
+.cm-cinema-profile-row{display:grid;grid-template-columns:75px minmax(0,1fr) 52px;gap:8px;align-items:center;margin:12px 0;font-size:12px}
+.cm-cinema-profile-row>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cm-cinema-profile-row strong{text-align:right;color:#fff;font-size:11px;font-variant-numeric:tabular-nums}
+.cm-cinema-bar{height:7px;border-radius:10px;background:#46414b;overflow:hidden}
+.cm-cinema-bar i{display:block;height:100%;border-radius:10px;background:linear-gradient(90deg,#f73a4d,#ce1e42)}
+.cm-cinema-old-link{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;margin-top:17px;border:none;background:none;color:#b7aeb3;font-size:11px;text-decoration:underline;text-underline-offset:4px}
+.cm-cinema-old-link:hover{color:#fff}
+.cm-cinema-neighbors h3>span{display:inline-flex;color:#a2a2ad}
+.cm-cinema-neighbor{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid #ffffff14;font-size:12px}
+.cm-cinema-person-icon{width:26px;height:26px;flex-shrink:0;display:grid;place-items:center;border-radius:100%;background:#5d344f5e;color:#e8b5db}
+.cm-cinema-neighbor>span:nth-child(2){flex:1}
+.cm-cinema-neighbor small{font-size:10px;color:#a8a5af}
+.cm-cinema-neighbor strong{font-variant-numeric:tabular-nums;color:#f5b7e5}
+.cm-cinema-results{background:#101116;border-radius:20px;border:1px solid #ffffff1b;min-width:0;padding:23px 22px 22px;box-shadow:0 12px 46px #00000024}
+.cm-cinema-results-head{display:flex;justify-content:space-between;gap:13px;align-items:start;margin-bottom:18px}
+.cm-cinema-kicker{display:flex;align-items:center;gap:7px;color:#e93d54;font-weight:800;font-size:10px;letter-spacing:.13em;margin-bottom:8px}
+.cm-cinema-results-head h2{font-size:clamp(19px,2vw,26px);font-weight:800;letter-spacing:-.025em;line-height:1.25;margin:0}
+.cm-cinema-results-head p{font-size:12px;line-height:1.6;color:#999ba8;margin:9px 0 0}
+.cm-cinema-arrows{display:flex;gap:7px;flex-shrink:0}
+.cm-cinema-arrows button{width:34px;height:34px;border:1px solid #ffffff26;color:white;border-radius:100%;background:#24242d;display:grid;place-items:center}
+.cm-cinema-arrows button:hover{background:#d9233b;border-color:#d9233b}
+.cm-cinema-track{display:flex;gap:15px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:thin;scrollbar-color:#69363f #111216;padding-bottom:16px;min-height:410px}
+.cm-cinema-movie{flex:0 0 clamp(142px,15vw,180px);width:clamp(142px,15vw,180px);scroll-snap-align:start;text-align:left;color:inherit;background:transparent;border:0;padding:0;min-width:0;transition:transform .2s}
+.cm-cinema-movie:hover{transform:translateY(-5px)}
+.cm-cinema-poster{aspect-ratio:2/3;width:100%;border-radius:12px;overflow:hidden;position:relative;background:#25252c;border:1px solid #ffffff27}
+.cm-cinema-poster img{height:100%;width:100%;object-fit:cover;transition:transform .3s}
+.cm-cinema-movie:hover .cm-cinema-poster img{transform:scale(1.06)}
+.cm-cinema-poster-missing{display:flex;height:100%;flex-direction:column;align-items:center;justify-content:center;gap:13px;padding:13px;color:#aab0bb;text-align:center;font-size:12px}
+.cm-cinema-rank{position:absolute;top:9px;left:9px;background:#ed243e;border-radius:9px;color:white;font-size:12px;font-weight:850;padding:5px 9px}
+.cm-cinema-movie-name{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;min-height:37px;margin:11px 0 4px;line-height:1.45;font-size:12px;font-weight:760}
+.cm-cinema-movie-score{display:flex;flex-wrap:wrap;align-items:center;gap:4px;color:#bbb9c1;font-size:10px;line-height:1.4}
+.cm-cinema-movie-score svg{color:#f6b83d}
+.cm-cinema-movie-score b{color:#f13750;font-size:12px;font-variant-numeric:tabular-nums}
+.cm-cinema-movie-genres{display:block;color:#8d919b;font-size:10px;line-height:1.5;margin-top:6px}
+.cm-cinema-message{display:flex;align-items:center;justify-content:center;gap:12px;min-height:310px;color:#b1b2c0;font-size:13px}
+.cm-cinema-message.error{color:#fa9caa;text-align:center}
+.cm-cinema-spin{animation:cm-cinema-spin 1s linear infinite}
+@keyframes cm-cinema-spin{to{transform:rotate(360deg)}}
+.cm-cinema-how{border-radius:16px;border:1px solid #8f304455;background:linear-gradient(100deg,#28111b,#171116 55%,#28131e);margin-top:22px;padding:22px 25px}
+.cm-cinema-knn .cm-cinema-how{border-color:#91517a55;background:linear-gradient(100deg,#22131f,#171116 55%,#251326)}
+.cm-cinema-how-label{font-size:15px;font-weight:850;color:#f7f1f2;margin-bottom:16px}
+.cm-cinema-how-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.cm-cinema-how-step{display:flex;gap:10px;align-items:flex-start}
+.cm-cinema-how-num{display:grid;place-items:center;flex-shrink:0;width:28px;height:28px;background:#d92842;border-radius:100%;font-weight:850;font-size:13px}
+.cm-cinema-how-step strong{display:block;font-size:12px;margin:0 0 4px}
+.cm-cinema-how-step span{display:block;font-size:11px;color:#b2a9af;line-height:1.55}
+.cm-cinema-how>p{font-size:11px;color:#aea0a8;margin:14px 0 0;line-height:1.55}
+.cm-cinema-footer-note{display:flex;gap:8px;align-items:center;color:#a5a4ae;font-size:11px;padding:20px 4px;line-height:1.55}
+.cm-cinema-legacy{background:#08090e;min-height:80vh;padding-top:20px}
+.cm-cinema-return{display:flex;align-items:center;gap:8px;margin:0 0 20px 3%;padding:12px 16px;border-radius:12px;border:1px solid #ffffff20;color:#fff;background:#24151b;font-weight:700;font-size:13px}
+@media(max-width:950px){.cm-cinema-columns{grid-template-columns:1fr}.cm-cinema-track{min-height:0}.cm-cinema-hero-content,.cm-cinema-container{padding-left:20px;padding-right:20px}.cm-cinema-side{max-width:none}.cm-cinema-how-steps{grid-template-columns:1fr}}
+@media(max-width:560px){.cm-cinema-hero{min-height:220px}.cm-cinema-hero-content{padding-top:27px;padding-bottom:27px}.cm-cinema-heading{gap:10px}.cm-cinema-heading>svg{width:26px;height:26px}.cm-cinema-hero-content>p{font-size:13px}.cm-cinema-mode-switch{display:grid;grid-template-columns:1fr 1fr}.cm-cinema-mode-switch button{padding:12px 7px;font-size:11px}.cm-cinema-results{padding:19px 14px}.cm-cinema-movie{flex-basis:138px;width:138px}.cm-cinema-results-head h2{font-size:19px}.cm-cinema-arrows button{width:31px;height:31px}.cm-cinema-crumb{letter-spacing:.03em;font-size:10px}}
+@media(prefers-reduced-motion:reduce){.cm-cinema-page *, .cm-cinema-page *::before, .cm-cinema-page *::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+/* Step 7 — Nền tảng phim: tìm bằng tên và danh sách poster nằm NGANG.
+   Dùng selector cụ thể để không bị CSS cũ từ những trang MovieLens ghi đè. */
+.cm-cinema-page .cm-cinema-columns,
+.cm-cinema-page .cm-cinema-columns > *,
+.cm-cinema-page .cm-cinema-results,
+.cm-cinema-page .cm-cinema-results-head {min-width:0;max-width:100%}
+.cm-cinema-page .cm-cinema-results {overflow:hidden}
+.cm-cinema-page .cm-cinema-results .cm-cinema-track {
+  display:grid !important;
+  grid-auto-flow:column !important;
+  grid-auto-columns:clamp(138px,14vw,185px);
+  grid-template-rows:minmax(0,auto);
+  width:100%;max-width:100%;
+  gap:15px;
+  overflow-x:auto !important;overflow-y:hidden !important;
+  align-items:start;justify-content:start;
+  scroll-snap-type:x mandatory;
+  overscroll-behavior-inline:contain;
+  min-height:0;max-height:425px;
+  padding:0 1px 15px;
+}
+.cm-cinema-page .cm-cinema-results .cm-cinema-movie {
+  display:block !important;
+  width:100% !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  height:auto !important;
+  margin:0 !important;
+  align-self:start;
+  text-align:left;
+}
+.cm-cinema-page .cm-cinema-results .cm-cinema-poster {
+  position:relative;
+  width:100%;height:auto;max-height:none;
+  aspect-ratio:2/3;overflow:hidden;
+}
+.cm-cinema-page .cm-cinema-results .cm-cinema-poster > img {
+  display:block;position:absolute;inset:0;
+  width:100% !important;height:100% !important;
+  max-width:100%;max-height:100%;object-fit:cover;
+}
+.cm-cinema-page .cm-cinema-results .cm-cinema-movie-name,
+.cm-cinema-page .cm-cinema-results .cm-cinema-movie-score,
+.cm-cinema-page .cm-cinema-results .cm-cinema-movie-genres {
+  position:relative;display:block;max-width:100%;overflow-wrap:anywhere;
+}
+.cm-cinema-page .cm-cinema-results .cm-cinema-movie-name {
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;
+  overflow:hidden;min-height:35px;
+}
+.cm-cinema-page .cm-cinema-results .cm-cinema-movie-score {
+  display:flex;align-items:center;flex-wrap:wrap;
+}
+.cm-cinema-page .cm-cinema-autocomplete {position:relative;min-width:0;isolation:isolate}
+.cm-cinema-page .cm-cinema-autocomplete-input {
+  display:flex;align-items:center;gap:10px;
+  background:#0c0e13;border:1px solid #5b4149;border-radius:11px;
+  padding:0 12px;color:#b5a5ad;min-width:0;
+}
+.cm-cinema-page .cm-cinema-autocomplete-input:focus-within {
+  border-color:#ed4861;box-shadow:0 0 0 3px #ef34451a;
+}
+.cm-cinema-page .cm-cinema-autocomplete-input input {
+  flex:1;min-width:0;width:100%;border:0;background:transparent;
+  box-shadow:none !important;padding:13px 0;color:white;font-size:13px;
+  outline:0;appearance:none;
+}
+.cm-cinema-page .cm-cinema-autocomplete-input input::-webkit-search-cancel-button {cursor:pointer}
+.cm-cinema-page .cm-cinema-autocomplete-input > svg {flex-shrink:0}
+.cm-cinema-page .cm-cinema-suggestion-panel {
+  position:absolute;top:calc(100% - 10px);left:0;right:0;z-index:40;
+  border-radius:12px;border:1px solid #65414c;
+  background:#161419;box-shadow:0 22px 60px #000d;
+  max-height:min(400px,65vh);overflow-x:hidden;overflow-y:auto;
+  padding:6px;
+}
+.cm-cinema-page .cm-cinema-suggestion {
+  width:100%;display:flex !important;align-items:center;gap:11px;
+  color:#fff;text-align:left;background:transparent;
+  border:0;border-radius:9px;padding:7px;
+}
+.cm-cinema-page .cm-cinema-suggestion:is(:hover,.active,[aria-selected="true"]) {
+  background:#39232c;
+}
+.cm-cinema-page .cm-cinema-suggestion-poster {
+  width:42px;height:61px;flex:0 0 42px;border-radius:6px;
+  background:#32313a;overflow:hidden;display:grid;place-items:center;color:#bfb0b7;
+}
+.cm-cinema-page .cm-cinema-suggestion-poster img {
+  display:block;width:100%;height:100%;object-fit:cover;
+}
+.cm-cinema-page .cm-cinema-suggestion-info {flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.cm-cinema-page .cm-cinema-suggestion-info strong {
+  font-size:12px;font-weight:730;line-height:1.35;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.cm-cinema-page .cm-cinema-suggestion-info small {
+  font-size:10px;color:#b4a5ad;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+}
+.cm-cinema-page .cm-cinema-suggestion-empty {padding:14px;color:#c3b6bf;font-size:12px}
+.cm-cinema-page .cm-cinema-search-hint {font-size:11px;line-height:1.5;color:#ada1aa;margin:9px 0 0}
+.cm-cinema-page .cm-cinema-wide-cta:disabled {opacity:.48;cursor:not-allowed;box-shadow:none}
+@media(max-width:650px) {
+  .cm-cinema-page .cm-cinema-results .cm-cinema-track {grid-auto-columns:140px;max-height:385px;gap:12px}
+  .cm-cinema-page .cm-cinema-suggestion-panel {max-height:280px}
+}
+
+
+/* CINEMATCH_STEP9_FIX_STATIC_ML_POSTERS */
+/* Auth reel may animate; ML recommendations must remain in normal document flow. */
+.cm-cinema-page .cm-cinema-results .cm-cinema-track {
+  animation: none !important;
+  transform: none !important;
+  will-change: auto !important;
+}
+
+
+/* =============================================================
+   CINEMATCH STEP 11A2 - SHARED CINEMATIC DARK / CHAMPAGNE GOLD
+   Visual-only overrides for the active Content-Based + KNN pages.
+   Keep original sizing, poster grids, animations, state and API logic.
+   Error notices deliberately remain red (semantic error status).
+   ============================================================= */
+.cm-cinema-page {
+  --cm-cinema-gold: var(--cm-color-accent, #E8BF82);
+  --cm-cinema-gold-hover: var(--cm-color-accent-hover, #F4D3A2);
+  --cm-cinema-ink: var(--cm-color-on-accent, #17120B);
+  --cm-cinema-border: var(--cm-color-border, #2C3240);
+  color: var(--cm-color-text, #F5F2EA);
+  background: var(--cm-color-bg, #090A0E);
+}
+.cm-cinema-page .cm-cinema-hero,
+.cm-cinema-page.cm-cinema-knn .cm-cinema-hero {
+  background:
+    radial-gradient(ellipse at 82% 10%, rgba(232,191,130,.13), transparent 48%),
+    linear-gradient(108deg, #10141d 0%, #171821 50%, #090a0e 100%);
+  border-bottom-color: rgba(232,191,130,.17);
+}
+.cm-cinema-page .cm-cinema-hero-shade {
+  background: linear-gradient(90deg, #0a0b11 5%, rgba(10,11,17,.8) 56%, rgba(10,11,17,.25));
+}
+.cm-cinema-page .cm-cinema-crumb { color: #D1B58D; }
+.cm-cinema-page .cm-cinema-crumb span { color: #887B6C; }
+.cm-cinema-page .cm-cinema-heading em,
+.cm-cinema-page .cm-cinema-heading > svg,
+.cm-cinema-page.cm-cinema-knn .cm-cinema-heading em,
+.cm-cinema-page.cm-cinema-knn .cm-cinema-heading > svg,
+.cm-cinema-page .cm-cinema-side-title,
+.cm-cinema-page.cm-cinema-knn .cm-cinema-side-title,
+.cm-cinema-page .cm-cinema-kicker {
+  color: var(--cm-cinema-gold);
+}
+.cm-cinema-page .cm-cinema-hero-pills span {
+  color: #E8D2B1;
+  border-color: rgba(232,191,130,.22);
+  background: rgba(232,191,130,.07);
+}
+.cm-cinema-page .cm-cinema-mode-switch button {
+  color: #C8C3B9;
+  background: #171B23;
+  border-color: var(--cm-cinema-border);
+}
+.cm-cinema-page .cm-cinema-mode-switch button:hover {
+  border-color: var(--cm-cinema-gold);
+}
+.cm-cinema-page .cm-cinema-mode-switch button.active,
+.cm-cinema-page .cm-cinema-wide-cta,
+.cm-cinema-page .cm-cinema-form-row button.cm-cinema-action {
+  color: var(--cm-cinema-ink);
+  border-color: var(--cm-cinema-gold);
+  background: var(--cm-cinema-gold);
+  box-shadow: 0 9px 24px rgba(232,191,130,.13);
+}
+.cm-cinema-page .cm-cinema-wide-cta:hover,
+.cm-cinema-page .cm-cinema-form-row button.cm-cinema-action:hover {
+  color: var(--cm-cinema-ink);
+  background: var(--cm-cinema-gold-hover);
+  border-color: var(--cm-cinema-gold-hover);
+}
+.cm-cinema-page .cm-cinema-side,
+.cm-cinema-page.cm-cinema-knn .cm-cinema-side {
+  background: linear-gradient(155deg, #191D27, #11141C 65%);
+  border-color: var(--cm-cinema-border);
+}
+.cm-cinema-page .cm-cinema-results {
+  background: #11141C;
+  border-color: var(--cm-cinema-border);
+}
+.cm-cinema-page .cm-cinema-form-row input,
+.cm-cinema-page .cm-cinema-autocomplete-input {
+  background: var(--cm-color-input, #1B2030);
+  border-color: var(--cm-cinema-border);
+  color: var(--cm-color-text, #F5F2EA);
+}
+.cm-cinema-page .cm-cinema-form-row input:focus,
+.cm-cinema-page .cm-cinema-autocomplete-input:focus-within {
+  border-color: var(--cm-cinema-gold);
+  box-shadow: 0 0 0 3px rgba(232,191,130,.15);
+}
+.cm-cinema-page .cm-cinema-form-row button:not(.cm-cinema-action) {
+  background: #242936;
+  border-color: var(--cm-cinema-border);
+}
+.cm-cinema-page .cm-cinema-form-row button:not(.cm-cinema-action):hover {
+  background: #30394b;
+}
+.cm-cinema-page .cm-cinema-search-items,
+.cm-cinema-page .cm-cinema-suggestion-panel {
+  background: #191D27;
+  border-color: var(--cm-cinema-border);
+}
+.cm-cinema-page .cm-cinema-suggestion:is(:hover,.active,[aria-selected="true"]) {
+  background: rgba(232,191,130,.13);
+}
+.cm-cinema-page .cm-cinema-tags b {
+  color: #E8D2B1;
+  border-color: rgba(232,191,130,.26);
+}
+.cm-cinema-page .cm-cinema-bar { background: #303744; }
+.cm-cinema-page .cm-cinema-bar i {
+  background: linear-gradient(90deg, #BA894B, var(--cm-cinema-gold));
+}
+.cm-cinema-page .cm-cinema-person-icon {
+  background: rgba(232,191,130,.11);
+  color: var(--cm-cinema-gold);
+}
+.cm-cinema-page .cm-cinema-neighbor strong,
+.cm-cinema-page .cm-cinema-movie-score b { color: var(--cm-cinema-gold); }
+.cm-cinema-page .cm-cinema-arrows button:hover {
+  color: var(--cm-cinema-ink);
+  border-color: var(--cm-cinema-gold);
+  background: var(--cm-cinema-gold);
+}
+.cm-cinema-page .cm-cinema-track {
+  scrollbar-color: #967348 #11141C;
+}
+.cm-cinema-page .cm-cinema-rank,
+.cm-cinema-page .cm-cinema-how-num {
+  background: var(--cm-cinema-gold);
+  color: var(--cm-cinema-ink);
+}
+.cm-cinema-page .cm-cinema-how,
+.cm-cinema-page.cm-cinema-knn .cm-cinema-how {
+  background: linear-gradient(100deg, #211d19, #15171d 55%, #221e19);
+  border-color: rgba(232,191,130,.24);
+}
+.cm-cinema-page .cm-cinema-return {
+  background: #1b1b20;
+  border-color: var(--cm-cinema-border);
+}
+.cm-cinema-page :is(button, input, select, a):focus-visible {
+  outline: 2px solid var(--cm-cinema-gold);
+  outline-offset: 2px;
+}

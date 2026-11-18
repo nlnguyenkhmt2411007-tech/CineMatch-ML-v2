@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 282 64" role="img" aria-label="CineMatch">
+<defs><linearGradient id="wordGold" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#F6DBA9"/><stop offset="1" stop-color="#D8A65B"/></linearGradient></defs>
+<svg x="0" y="0" width="64" height="64" viewBox="0 0 64 64">
+<defs><linearGradient id="bronze" x1=".1" y1="0" x2=".92" y2="1"><stop offset="0" stop-color="#FAE4BC"/><stop offset=".48" stop-color="#E6BE79"/><stop offset="1" stop-color="#B57B39"/></linearGradient><linearGradient id="tile" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#211B15"/><stop offset="1" stop-color="#0D0E10"/></linearGradient></defs>
+<rect x="1" y="1" width="62" height="62" rx="17" fill="url(#tile)" stroke="#805C34" stroke-width="1.15"/>
+<path d="M45.2 18.0 C39.7 13.1 31.2 11.6 24.8 14.2 C16.7 17.3 12.8 24.1 13.3 31.8 C13.7 39.4 18.8 46.1 26.0 48.1 C33.6 50.3 40.5 47.8 45.2 43.0" fill="none" stroke="#735022" stroke-width="12" stroke-linecap="round"/>
+<path d="M45.2 18.0 C39.7 13.1 31.2 11.6 24.8 14.2 C16.7 17.3 12.8 24.1 13.3 31.8 C13.7 39.4 18.8 46.1 26.0 48.1 C33.6 50.3 40.5 47.8 45.2 43.0" fill="none" stroke="url(#bronze)" stroke-width="10" stroke-linecap="round"/>
+<!-- restrained perforations that define the film strip -->
+<g fill="#3B2A19"><rect x="23.5" y="10.6" width="3.3" height="4.1" rx=".65" transform="rotate(-23 25.2 12.6)"/><rect x="34.0" y="11.2" width="3.3" height="4.2" rx=".65" transform="rotate(17 35.7 13.3)"/><rect x="10.7" y="22.8" width="3.2" height="4.2" rx=".65" transform="rotate(-5 12.3 24.9)"/><rect x="11.1" y="35.1" width="3.2" height="4.2" rx=".65" transform="rotate(15 12.7 37.2)"/><rect x="23.0" y="47.7" width="3.3" height="4.0" rx=".65" transform="rotate(22 24.7 49.7)"/><rect x="34.1" y="47.2" width="3.3" height="4.1" rx=".65" transform="rotate(-17 35.7 49.2)"/></g>
+<path d="M28.6 24.6 C28.6 23.4 29.9 22.7 30.9 23.3 L40 29.0 C41.1 29.7 41.1 31.2 40 31.9 L30.9 37.7 C29.9 38.3 28.6 37.6 28.6 36.4 Z" fill="#F4D59C" stroke="#A5763B" stroke-width=".6"/>
+</svg>
+<text x="76" y="41.5" font-family="Manrope,Inter,'Segoe UI',Arial,sans-serif" font-size="27" letter-spacing="-.85" font-weight="800"><tspan fill="#F6F2EB">Cine</tspan><tspan fill="url(#wordGold)">Match</tspan></text>
+</svg>

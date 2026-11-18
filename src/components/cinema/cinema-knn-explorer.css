@@ -1,0 +1,87 @@
+/* Step 10 · Only the User-Based KNN neighbor explorer; no shared poster animation. */
+.cm-knn-explorer .cm-knn-main{display:flex;flex-direction:column;gap:16px;min-width:0;max-width:100%}
+.cm-knn-explorer .cm-knn-mode{display:flex;gap:7px;flex-wrap:wrap;border:1px solid #ffffff24;background:#151319;border-radius:13px;padding:6px}
+.cm-knn-explorer .cm-knn-mode button{border:0;border-radius:9px;padding:12px 16px;color:#c9c0ca;background:transparent;font-size:12px;font-weight:750}
+.cm-knn-explorer .cm-knn-mode button.active{background:#de2846;color:#fff;box-shadow:0 7px 17px #db233033}
+.cm-knn-explorer .cm-knn-mode button:focus-visible,.cm-knn-neighbor-option:focus-visible{outline:2px solid #f6b4c5;outline-offset:2px}
+.cm-knn-explorer .cm-knn-range{display:block;width:100%;accent-color:#e83451;cursor:pointer;margin:12px 0 2px}
+.cm-knn-explorer .cm-knn-range-label{display:flex;justify-content:space-between;color:#b7aeb7;font-size:11px;margin-bottom:4px}
+.cm-knn-explorer .cm-knn-explainer{font-size:11px;color:#bbb2ba;line-height:1.6;margin:9px 0 10px}
+.cm-knn-explorer .cm-knn-neighbor-scroll{max-height:310px;overflow-y:auto;overscroll-behavior:contain;border:1px solid #ffffff1e;border-radius:12px;padding:5px;scrollbar-color:#674052 #18161c;scrollbar-width:thin}
+.cm-knn-explorer .cm-knn-neighbor-option{display:flex;align-items:center;gap:8px;border:1px solid transparent;color:#f4eef3;background:transparent;border-radius:8px;width:100%;text-align:left;padding:9px 6px;font-size:12px;min-height:51px}
+.cm-knn-explorer .cm-knn-neighbor-option:hover{background:#342630}
+.cm-knn-explorer .cm-knn-neighbor-option.selected{background:#462033;border-color:#c14f75}
+.cm-knn-explorer .cm-knn-neighbor-index{flex:0 0 22px;display:grid;place-items:center;color:#d6b9c7;font-size:10px}
+.cm-knn-explorer .cm-knn-neighbor-name{flex:1;min-width:0;font-weight:760}
+.cm-knn-explorer .cm-knn-neighbor-name small{display:block;font-size:10px;font-weight:500;margin-top:3px;color:#b6a6b1}
+.cm-knn-explorer .cm-knn-neighbor-option strong{font-variant-numeric:tabular-nums;color:#f3b1d7}
+.cm-knn-explorer .cm-knn-neighbor-option svg{flex-shrink:0;color:#f2bdd1}
+.cm-knn-explorer .cm-knn-note{display:flex;align-items:flex-start;gap:6px;font-size:11px;color:#c5b6bd;line-height:1.5;margin-top:12px}
+.cm-knn-explorer .cm-knn-note svg{flex-shrink:0;margin-top:2px}
+.cm-knn-explorer .cm-knn-evidence{background:#141419;border:1px solid #ffffff24;border-radius:16px;padding:18px 20px;color:#f7f4f6}
+.cm-knn-explorer .cm-knn-evidence-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.cm-knn-explorer .cm-knn-evidence h3{font-size:16px;line-height:1.3;margin:0;font-weight:790}
+.cm-knn-explorer .cm-knn-evidence-heading>span{color:#f7b5cc;border:1px solid #a34d6a66;border-radius:30px;padding:6px 10px;font-size:11px}
+.cm-knn-explorer .cm-knn-evidence p{color:#adacb5;font-size:11px;line-height:1.6;margin:10px 0 13px}
+.cm-knn-explorer .cm-knn-table-wrap{overflow:auto;max-width:100%;border:1px solid #ffffff18;border-radius:11px}
+.cm-knn-explorer .cm-knn-table{width:100%;border-collapse:collapse;min-width:500px;font-size:11px}
+.cm-knn-explorer .cm-knn-table th{text-align:left;background:#221b23;color:#bcb9c0;font-weight:720;padding:11px 12px;white-space:nowrap}
+.cm-knn-explorer .cm-knn-table td{padding:11px 12px;border-top:1px solid #ffffff13;color:#e8e4e7;line-height:1.4}
+.cm-knn-explorer .cm-knn-table td:nth-child(n+2){white-space:nowrap;font-variant-numeric:tabular-nums}
+.cm-knn-explorer .cm-knn-table td strong{color:#fb849e}
+.cm-knn-explorer .cm-knn-table tr:hover{background:#ffffff09}
+@media(max-width:560px){.cm-knn-explorer .cm-knn-mode{display:grid;grid-template-columns:1fr 1fr}.cm-knn-explorer .cm-knn-mode button{font-size:10px;padding:11px 6px}.cm-knn-explorer .cm-knn-evidence{padding:14px 12px}}
+
+
+/* STEP 11A2 - matches Content-Based page and shared gold controls.
+   Selected neighbor remains visually distinct; prediction data unchanged. */
+.cm-knn-explorer .cm-knn-mode {
+  background: #191D27;
+  border-color: var(--cm-color-border, #2C3240);
+}
+.cm-knn-explorer .cm-knn-mode button { color: #C4C1BA; }
+.cm-knn-explorer .cm-knn-mode button.active {
+  color: var(--cm-color-on-accent, #17120B);
+  background: var(--cm-color-accent, #E8BF82);
+  box-shadow: 0 7px 17px rgba(232,191,130,.15);
+}
+.cm-knn-explorer .cm-knn-mode button:focus-visible,
+.cm-knn-explorer .cm-knn-neighbor-option:focus-visible {
+  outline-color: var(--cm-color-accent, #E8BF82);
+}
+.cm-knn-explorer .cm-knn-range {
+  accent-color: var(--cm-color-accent, #E8BF82);
+}
+.cm-knn-explorer .cm-knn-neighbor-scroll {
+  border-color: var(--cm-color-border, #2C3240);
+  scrollbar-color: #8e724b #11141C;
+}
+.cm-knn-explorer .cm-knn-neighbor-option:hover {
+  background: rgba(232,191,130,.08);
+}
+.cm-knn-explorer .cm-knn-neighbor-option.selected {
+  background: rgba(232,191,130,.13);
+  border-color: rgba(232,191,130,.55);
+}
+.cm-knn-explorer .cm-knn-neighbor-option strong,
+.cm-knn-explorer .cm-knn-neighbor-option svg,
+.cm-knn-explorer .cm-knn-evidence-heading > span,
+.cm-knn-explorer .cm-knn-table td strong {
+  color: var(--cm-color-accent, #E8BF82);
+}
+.cm-knn-explorer .cm-knn-evidence {
+  color: var(--cm-color-text, #F5F2EA);
+  background: var(--cm-color-surface, #11141C);
+  border-color: var(--cm-color-border, #2C3240);
+}
+.cm-knn-explorer .cm-knn-evidence-heading > span {
+  border-color: rgba(232,191,130,.32);
+  background: rgba(232,191,130,.07);
+}
+.cm-knn-explorer .cm-knn-table th {
+  background: #1B2030;
+  color: #D9D4C9;
+}
+.cm-knn-explorer .cm-knn-table tr:hover {
+  background: rgba(232,191,130,.05);
+}

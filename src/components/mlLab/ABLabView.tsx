@@ -358,26 +358,24 @@ export const ABLabView = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#090909] text-[#F6F0E7]">
+    <div className="cm-film-ab-lab min-h-screen bg-[#090A0E] text-[#F6F0E7]">
       {/* HERO */}
       <section className="relative overflow-hidden border-b border-white/10 bg-[radial-gradient(ellipse_at_80%_10%,#46311C_0%,#18130E_35%,#090909_75%)]">
         <div className="mx-auto max-w-[1440px] px-5 py-12 sm:px-8 lg:px-12 lg:py-16">
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#D7AA61]/30 bg-[#D7AA61]/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#E8BF82]">
             <FlaskConical className="h-4 w-4" />
-            CineMatch · ML Laboratory
+            CINEMATCH · KHÁM PHÁ AI
           </div>
 
           <h1 className="font-display text-4xl font-bold leading-tight sm:text-5xl">
-            Phòng thực nghiệm
+            Tự khám phá cách phim
             <span className="block text-[#E8BF82]">
-              trí tuệ nhân tạo.
+              được gợi ý.
             </span>
           </h1>
 
           <p className="mt-5 max-w-2xl text-sm leading-7 text-[#C4B9AB] sm:text-base">
-            Tự tạo sở thích xem phim cho hai người dùng,
-            khám phá mức độ giống nhau và xem AI dự đoán
-            điểm yêu thích của một bộ phim chưa xem.
+            Đánh giá phim cho hai hồ sơ, chọn một phim và xem hệ thống gợi ý kết quả ra sao.
           </p>
 
           <div className="mt-7 flex flex-wrap gap-3">

@@ -1,0 +1,164 @@
+/* CineMatch cinema identity. All selectors are prefixed to avoid changing ML pages. */
+.cm-cinema-auth-root, .cm-genre-page {
+  --cm-ink: #080a10;
+  --cm-surface: #10131b;
+  --cm-gold: #e8bf82;
+  --cm-line: rgba(255, 255, 255, .12);
+  min-height: 100vh;
+  min-height: 100svh;
+  color: #f6f4f1;
+  background: var(--cm-ink);
+}
+.cm-cinema-auth-root *,.cm-genre-page * {box-sizing:border-box}
+.cm-cinema-auth-layout {display:grid;grid-template-columns:minmax(0, 1.27fr) minmax(420px,.73fr);min-height:100svh;max-width:1900px;margin:auto;box-shadow:0 0 90px #0009}
+.cm-cinema-showcase {position:relative;min-height:720px;isolation:isolate;overflow:hidden;background:linear-gradient(115deg,#080b13,#111727 65%,#11151b)}
+.cm-cinema-showcase-content {position:relative;z-index:5;display:flex;flex-direction:column;justify-content:space-between;height:100%;min-height:720px;padding:clamp(32px,4.1vw,72px);pointer-events:none}
+.cm-cinema-wordmark {display:inline-flex;align-items:center;gap:11px;font-size:26px;letter-spacing:-1.2px;font-weight:850;color:#fafafa}
+.cm-cinema-wordmark > span:last-child > span, .cm-cinema-mobile-brand > span {color:var(--cm-gold,#e8bf82)}
+.cm-cinema-brand-icon {display:inline-flex;align-items:center;justify-content:center;color:var(--cm-gold,#e8bf82);width:42px;height:42px;border:1px solid #e8bf8244;border-radius:12px;background:#e8bf8210}
+.cm-cinema-hero-copy {max-width:600px;padding:20px 0 10px;position:relative}
+.cm-cinema-eyebrow, .cm-cinema-auth-overline {color:#e8bf82;letter-spacing:.21em;font-size:11px;font-weight:800}
+.cm-cinema-hero-copy h1 {font-size:clamp(45px,4.15vw,76px);line-height:1.09;letter-spacing:-.055em;font-weight:800;margin:20px 0 22px;text-wrap:balance;text-shadow:0 4px 24px #0008}
+.cm-cinema-hero-copy h1 em, .cm-genre-headline h1 em {color:#e8bf82;font-family:Georgia,'Times New Roman',serif;font-style:italic;letter-spacing:-.038em;font-weight:500}
+.cm-cinema-hero-copy > p:not(.cm-cinema-eyebrow) {max-width:400px;line-height:1.8;font-size:15px;color:#dddfe5;text-shadow:0 2px 18px #000a}
+.cm-cinema-hero-rule {width:64px;height:2px;margin-top:36px;margin-bottom:16px;background:#e8bf82}
+.cm-cinema-movie-note {font-size:11px;color:#aaaeb9;letter-spacing:.04em}
+.cm-cinema-showcase-posters {position:absolute;z-index:1;top:-5%;bottom:-5%;right:-5%;width:59%;opacity:.95;transform:rotate(7deg) scale(1.05);transform-origin:center}
+.cm-cinema-showcase-vignette {position:absolute;z-index:2;inset:0;pointer-events:none;background:linear-gradient(90deg,#080b13 4%,#080b13ef 27%,#080b13a8 49%,#080b131a 90%),linear-gradient(0deg,#080b13d0,transparent 30%,transparent 76%,#080b13a0)}
+.cm-cinema-reel {height:100%;width:100%;overflow:hidden;position:relative;mask-image:linear-gradient(180deg,transparent,black 12%,black 86%,transparent);-webkit-mask-image:linear-gradient(180deg,transparent,black 12%,black 86%,transparent)}
+.cm-cinema-reel-grid {position:absolute;inset:-8% 0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;overflow:hidden}
+.cm-cinema-column {overflow:hidden;min-width:0}
+.cm-cinema-reel .cm-cinema-track {display:flex;flex-direction:column;gap:13px;animation:cm-poster-up 35s linear infinite;will-change:transform}
+.cm-cinema-reel .cm-cinema-column--2 .cm-cinema-track {animation-name:cm-poster-down;animation-duration:43s;transform:translateY(-50%)}
+.cm-cinema-reel .cm-cinema-column--3 .cm-cinema-track {animation-duration:39s}
+.cm-cinema-track-set {display:flex;flex-direction:column;gap:13px;flex-shrink:0}
+.cm-cinema-reel .cm-cinema-poster {position:relative;aspect-ratio:2/3;overflow:hidden;border-radius:11px;background:#1a2030;border:1px solid #ffffff18;box-shadow:0 15px 30px #0008;min-height:0}
+.cm-cinema-reel .cm-cinema-poster img {display:block;width:100%;height:100%;object-fit:cover;transition:transform .65s ease}
+.cm-cinema-reel .cm-cinema-poster:hover img {transform:scale(1.05)}
+.cm-cinema-poster-caption {position:absolute;left:0;right:0;bottom:0;padding:30px 9px 10px;color:#f4f1ef;font-size:11px;font-weight:700;line-height:1.3;background:linear-gradient(transparent,#000e);text-shadow:0 1px 2px #000a;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.cm-cinema-reel--empty {display:grid;place-items:center;background:linear-gradient(130deg,#0d1420,#1b2232,#121018)}
+.cm-cinema-empty {display:grid;gap:16px;justify-items:center;color:#d0b88f;font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+@keyframes cm-poster-up {from {transform:translateY(0)} to {transform:translateY(calc(-50% - 6.5px))}}
+@keyframes cm-poster-down {from {transform:translateY(calc(-50% - 6.5px))} to {transform:translateY(0)}}
+.cm-cinema-auth-aside {display:flex;flex-direction:column;justify-content:center;position:relative;z-index:4;background:linear-gradient(152deg,#121620 0%,#0c0f17 58%,#0c0d14 100%);border-left:1px solid #ffffff10;padding:70px clamp(32px,4.4vw,88px) 25px}
+.cm-cinema-auth-form-area {width:100%;max-width:460px;margin:auto}
+.cm-cinema-mobile-brand {display:none}
+.cm-cinema-auth-heading h2 {font-size:clamp(30px,2.4vw,43px);line-height:1.16;letter-spacing:-.045em;font-weight:760;margin:16px 0 13px}
+.cm-cinema-auth-heading > p:last-child {color:#9ba2b3;font-size:14px;line-height:1.8;max-width:350px}
+.cm-cinema-auth-tabs {display:flex;gap:30px;border-bottom:1px solid #ffffff22;margin-top:38px;margin-bottom:31px}
+.cm-cinema-auth-tabs button {position:relative;background:transparent;color:#8993a4;padding:0 0 16px;font-size:14px;font-weight:650;cursor:pointer;transition:color .2s}
+.cm-cinema-auth-tabs button:hover,.cm-cinema-auth-tabs button.active {color:#f4f2ef}
+.cm-cinema-auth-tabs button.active:after {content:"";position:absolute;bottom:-1px;left:0;right:0;height:2px;background:#e8bf82}
+.cm-cinema-auth-form {display:grid;gap:19px}
+.cm-cinema-auth-form > label {display:block;color:#dfe1e8;font-size:13px;font-weight:620}
+.cm-cinema-auth-form > label > span:first-child {display:block;margin-bottom:10px}
+.cm-cinema-input-wrap {display:flex;align-items:center;gap:12px;min-height:54px;border:1px solid #ffffff1f;border-radius:10px;padding:0 15px;background:#181c27;color:#7f8a9f;transition:border-color .2s,box-shadow .2s}
+.cm-cinema-input-wrap:focus-within {border-color:#e8bf82aa;box-shadow:0 0 0 3px #e8bf8216}
+.cm-cinema-input-wrap > svg {flex-shrink:0}
+.cm-cinema-input-wrap input {font-size:14px;min-width:0;flex:1;color:#f5f5f7;background:transparent;outline:0;border:0;height:50px;width:100%}
+.cm-cinema-input-wrap input::placeholder {color:#778094}
+.cm-cinema-password-eye {display:grid;place-items:center;color:#9ca6b4;padding:5px;cursor:pointer;background:transparent}
+.cm-cinema-password-eye:hover {color:#fff}
+.cm-cinema-submit {display:inline-flex;justify-content:center;align-items:center;gap:14px;min-height:55px;padding:13px 24px;border:1px solid #e8bf82;border-radius:10px;background:#e8bf82;color:#15130f;font-weight:770;font-size:15px;transition:transform .2s,background-color .2s;cursor:pointer;box-shadow:0 7px 20px #0005}
+.cm-cinema-auth-form .cm-cinema-submit {width:100%;margin-top:12px}
+.cm-cinema-submit:hover:not(:disabled) {background:#f2d4a6;transform:translateY(-1px)}
+.cm-cinema-submit:disabled {opacity:.55;cursor:not-allowed}
+.cm-cinema-auth-switch {margin-top:28px;text-align:center;color:#adb0bc;font-size:13px}
+.cm-cinema-auth-switch button {margin-left:6px;color:#ebc58c;text-decoration:underline;text-underline-offset:4px;background:none;cursor:pointer;font-weight:670}
+.cm-cinema-auth-footnote {font-size:11px;color:#777e8b;text-align:center;line-height:1.7;margin-top:35px}
+.cm-cinema-error {background:#621c2b55;color:#ffb9c5;border:1px solid #d73d5b55;padding:12px 14px;border-radius:9px;font-size:13px;line-height:1.5}
+.cm-cinema-aside-footer {display:flex;gap:8px;justify-content:space-between;margin-top:56px;font-size:10px;letter-spacing:.11em;color:#545d6c}
+/* Consistent onboarding typography, gold accents, poster wall and cards. */
+.cm-genre-page {background:radial-gradient(ellipse at 80% -10%,#20283a 0%,transparent 55%),#080a10;padding:0 28px 80px}
+.cm-genre-shell {max-width:1230px;margin:auto}
+.cm-genre-navbar {height:88px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ffffff1a}
+.cm-genre-nav-actions {display:flex;align-items:center;gap:18px}
+.cm-genre-page-tag {color:#9b9eab;font-size:11px;letter-spacing:.13em}
+.cm-genre-nav-actions button {font-size:13px;color:#d4d5db;background:transparent;cursor:pointer}
+.cm-genre-nav-actions button:hover {color:#e8bf82}
+.cm-genre-headline {height:305px;position:relative;display:flex;overflow:hidden;align-items:center;justify-content:space-between;border-bottom:1px solid #ffffff14}
+.cm-genre-headline-copy {position:relative;z-index:2;max-width:760px;padding:25px 0}
+.cm-genre-headline h1 {margin:13px 0 12px;font-size:clamp(35px,4vw,58px);font-weight:780;letter-spacing:-.052em}
+.cm-genre-headline-copy > p:not(.cm-cinema-eyebrow) {max-width:620px;font-size:15px;line-height:1.7;color:#b8bbc8}
+.cm-genre-selected-count {display:inline-flex;gap:9px;align-items:center;margin-top:25px;color:#e7c18a;font-size:13px}
+.cm-genre-dot {display:inline-block;width:6px;height:6px;background:#e8bf82;border-radius:100%}
+.cm-genre-poster-window {height:330px;width:350px;align-self:stretch;opacity:.62;transform:rotate(7deg);mask-image:linear-gradient(90deg,transparent,black 40%);-webkit-mask-image:linear-gradient(90deg,transparent,black 40%)}
+.cm-cinema-reel--small .cm-cinema-reel-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.cm-cinema-reel--small .cm-cinema-track, .cm-cinema-reel--small .cm-cinema-track-set {gap:10px}
+.cm-cinema-reel--small .cm-cinema-poster {border-radius:8px}
+.cm-genre-selection {padding:36px 0 0}
+.cm-genre-selection-title {display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:23px}
+.cm-genre-selection-title h2 {font-size:21px;font-weight:750;letter-spacing:-.02em}
+.cm-genre-selection-title > span {font-size:10px;letter-spacing:.13em;color:#979ba8}
+.cm-genre-grid {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}
+.cm-genre-choice {display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:84px;padding:15px 18px;background:#141821;color:#edeef2;border:1px solid #ffffff15;border-radius:11px;cursor:pointer;text-align:left;transition:background .2s,border-color .2s,transform .2s}
+.cm-genre-choice:hover {border-color:#ffffff55;transform:translateY(-2px)}
+.cm-genre-choice--active,.cm-genre-choice--active:hover {border-color:#dcb175;background:#34291f}
+.cm-genre-choice strong {font-size:14px;font-weight:700;display:block}
+.cm-genre-choice small {font-size:11px;display:block;color:#8892a0;margin-top:6px}
+.cm-genre-choice--active small {color:#c9ad83}
+.cm-genre-checkbox {display:grid;place-items:center;flex-shrink:0;width:24px;height:24px;border:1px solid #606671;border-radius:50%;color:#15130d}
+.cm-genre-choice--active .cm-genre-checkbox {background:#e8bf82;border-color:#e8bf82}
+.cm-genre-info {color:#a3a7b6;font-size:13px;margin-bottom:20px}
+.cm-genre-error {margin-top:20px}
+.cm-genre-actions {border-top:1px solid #ffffff1c;margin-top:32px;padding-top:25px;display:flex;justify-content:space-between;align-items:center;gap:18px}
+.cm-genre-actions > p {font-size:12px;color:#929aaa}
+.cm-genre-actions > div {display:flex;gap:12px}
+.cm-genre-continue {min-width:175px}
+.cm-genre-cancel {display:flex;align-items:center;gap:9px;background:transparent;border:1px solid #ffffff32;border-radius:10px;padding:0 20px;color:#eff0f4;cursor:pointer}
+.cm-genre-cancel:hover {background:#ffffff12}
+@media (max-width:1150px) {
+  .cm-cinema-auth-layout {grid-template-columns:minmax(0,1fr) minmax(390px,.95fr)}
+  .cm-cinema-showcase-content {padding:40px}
+  .cm-cinema-showcase-posters {width:62%;right:-12%}
+  .cm-cinema-hero-copy h1 {font-size:48px}
+  .cm-cinema-auth-aside {padding-left:40px;padding-right:40px}
+}
+@media (max-width:820px) {
+  .cm-cinema-auth-layout {display:flex;flex-direction:column}
+  .cm-cinema-showcase {height:285px;min-height:285px}
+  .cm-cinema-showcase-content {min-height:285px;padding:25px}
+  .cm-cinema-wordmark {font-size:20px}
+  .cm-cinema-brand-icon {width:37px;height:37px}
+  .cm-cinema-hero-copy {padding:8px 0}
+  .cm-cinema-eyebrow {font-size:10px}
+  .cm-cinema-hero-copy h1 {font-size:37px;margin:9px 0}
+  .cm-cinema-hero-copy > p:not(.cm-cinema-eyebrow), .cm-cinema-hero-rule,.cm-cinema-movie-note {display:none}
+  .cm-cinema-showcase-posters {width:56%;right:-3%;top:-20%;bottom:-30%}
+  .cm-cinema-showcase-vignette {background:linear-gradient(90deg,#080b13 4%,#080b13dc 50%,#080b131a 94%)}
+  .cm-cinema-auth-aside {padding:40px 24px 30px}
+  .cm-cinema-auth-form-area {max-width:560px}
+  .cm-cinema-auth-heading h2 {font-size:32px}
+  .cm-cinema-aside-footer {margin-top:38px}
+  .cm-genre-poster-window {width:220px;opacity:.35}
+  .cm-genre-grid {grid-template-columns:repeat(3,1fr)}
+}
+@media (max-width:560px) {
+  .cm-cinema-showcase {height:245px;min-height:245px}
+  .cm-cinema-showcase-content {min-height:245px;padding:18px 22px}
+  .cm-cinema-hero-copy h1 {font-size:32px}
+  .cm-cinema-showcase-posters {width:58%;right:-9%}
+  .cm-cinema-auth-aside {padding:30px 23px 22px}
+  .cm-cinema-aside-footer {font-size:9px}
+  .cm-genre-page {padding:0 17px 50px}
+  .cm-genre-navbar {height:73px}
+  .cm-genre-page-tag {display:none}
+  .cm-genre-headline {height:auto;min-height:258px}
+  .cm-genre-headline h1 {font-size:37px}
+  .cm-genre-headline-copy > p:not(.cm-cinema-eyebrow) {font-size:13px}
+  .cm-genre-poster-window {position:absolute;right:-35px;top:-25px;width:180px;height:300px;z-index:0;opacity:.20}
+  .cm-genre-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .cm-genre-choice {padding:12px;min-height:78px}
+  .cm-genre-selection-title {flex-wrap:wrap}
+  .cm-genre-actions {flex-direction:column;align-items:stretch}
+  .cm-genre-actions > div {justify-content:stretch}
+  .cm-genre-continue {flex:1}
+}
+@media (prefers-reduced-motion:reduce) {
+  .cm-cinema-reel .cm-cinema-track {animation:none!important;transform:none!important;will-change:auto}
+  .cm-cinema-poster img,.cm-cinema-submit,.cm-genre-choice {transition:none!important}
+}
+/* STEP 12: Three authentication modes, consistent Champagne Gold underline. */
+.cm-cinema-auth-tabs{gap:clamp(12px,2.6vw,30px);flex-wrap:wrap}
+.cm-cinema-auth-tabs button{white-space:nowrap}
+@media(max-width:480px){.cm-cinema-auth-tabs{gap:15px}.cm-cinema-auth-tabs button{font-size:12px}}

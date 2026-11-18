@@ -1,4 +1,4 @@
-﻿
+
 import React, { useState } from "react";
 import {
   Clapperboard,
@@ -19,6 +19,8 @@ import type { UserProfile } from "../../types";
 
 export type NavTab =
   | "home"
+  | "personal"
+  | "methods"
   | "explore"
   | "content-based"
   | "collaborative"
@@ -35,6 +37,11 @@ interface NavbarProps {
   onOpenFastApiModal: () => void;
   onSearchClick: () => void;
   isFastApiConnected: boolean;
+  accountName?: string;
+  avatarUrl?: string | null;
+  onOpenAccountSwitcher?: () => void;
+  onLogout?: () => void;
+  onEditGenres?: () => void;
 }
 
 type Dropdown = "recommendations" | "more" | null;
@@ -85,6 +92,11 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenFastApiModal,
   onSearchClick,
   isFastApiConnected,
+  accountName,
+  avatarUrl,
+  onOpenAccountSwitcher,
+  onLogout,
+  onEditGenres,
 }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openDropdown, setOpenDropdown] =
@@ -134,14 +146,13 @@ export const Navbar: React.FC<NavbarProps> = ({
           aria-label="CineMatch - Trang chủ"
           className="group flex shrink-0 items-center gap-2.5"
         >
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#E8BF82]/25 bg-[#201A14] text-[#E8BF82] transition group-hover:border-[#E8BF82]">
-            <Clapperboard className="h-5 w-5" />
-          </span>
-
-          <span className="whitespace-nowrap text-lg font-extrabold tracking-tight text-white">
-            Cine<span className="text-[#E8BF82]">Match</span>
-          </span>
-        </button>
+          <img
+            src="/branding/cinematch-lockup.svg"
+            alt="CineMatch"
+            width={282}
+            height={64}
+            className="block h-10 w-auto max-w-[190px] object-contain transition-transform duration-200 group-hover:scale-[1.02] sm:h-[42px]"
+          /></button>
 
         {/* DESKTOP NAV */}
         <nav
@@ -162,6 +173,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             className={navClass(currentTab === "explore")}
           >
             Khám phá
+          </button>
+
+          <button
+            type="button"
+            onClick={() => navigate("personal")}
+            className={navClass(currentTab === "personal")}
+          >
+            Gợi ý của bạn
           </button>
 
           {/* RECOMMENDATIONS */}
@@ -229,6 +248,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             className={navClass(currentTab === "rate")}
           >
             Đánh giá
+          </button>
+
+          <button
+            type="button"
+            onClick={() => navigate("methods")}
+            className={navClass(currentTab === "methods")}
+          >
+            Cách hoạt động
           </button>
 
           {/* MORE */}
@@ -299,8 +326,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             <Search className="h-5 w-5" />
           </button>
 
+          {accountName && (
+            <button type="button" onClick={onOpenAccountSwitcher} title="Chuyển đổi tài khoản và đổi ảnh đại diện" className="flex max-w-[210px] items-center gap-2 rounded-full border border-[#E8BF82]/35 bg-[#E8BF82]/10 p-1.5 pr-3 text-xs font-semibold text-[#E8BF82] transition hover:bg-[#E8BF82]/20">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#E8BF82]/45 bg-[#211a12]">{avatarUrl ? <img className="h-full w-full object-cover" src={avatarUrl} alt=""/> : <Users size={15}/>}</span>
+              <span className="hidden max-w-[105px] truncate sm:block">{accountName}</span>
+              <ChevronDown size={14}/>
+            </button>
+          )}
+          {onEditGenres && <button type="button" onClick={onEditGenres} className="hidden rounded-full border border-white/10 px-3 py-2 text-xs text-slate-300 hover:bg-white/10 xl:inline-flex">Sở thích</button>}
+          {onLogout && <button type="button" onClick={onLogout} className="hidden rounded-full border border-white/10 px-3 py-2 text-xs text-slate-300 hover:bg-white/10 lg:inline-flex">Đăng xuất</button>}
+
           {/* USER SELECTOR */}
-          <div className="relative hidden xl:block">
+          <div className={`relative hidden xl:block ${accountName ? "!hidden" : ""}`}>
             <Sparkles className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#E8BF82]" />
 
             <select
@@ -369,6 +406,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           <nav className="mx-auto grid max-w-[1440px] grid-cols-2 gap-2">
             {[
               { id: "home" as NavTab, label: "Trang chủ" },
+              { id: "personal" as NavTab, label: "Gợi ý của bạn" },
+              { id: "methods" as NavTab, label: "Cách hoạt động" },
               { id: "explore" as NavTab, label: "Khám phá" },
               ...recommendations.map((item) => ({
                 id: item.id,
@@ -395,7 +434,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             ))}
           </nav>
 
-          <div className="mx-auto mt-4 max-w-[1440px] border-t border-white/10 pt-4 xl:hidden">
+          {accountName && (
+            <div className="mx-auto mt-4 flex max-w-[1440px] flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-4">
+              <span className="text-sm text-[#E8BF82]">{accountName}</span>
+              <div className="flex gap-2">
+                {onOpenAccountSwitcher && <button type="button" onClick={onOpenAccountSwitcher} className="rounded-lg border border-[#E8BF82]/50 px-3 py-2 text-xs text-[#E8BF82]">Chuyển tài khoản</button>}
+                {onEditGenres && <button onClick={onEditGenres} className="rounded-lg border border-white/10 px-3 py-2 text-xs text-white">Sở thích</button>}
+                {onLogout && <button onClick={onLogout} className="rounded-lg border border-white/10 px-3 py-2 text-xs text-white">Đăng xuất</button>}
+              </div>
+            </div>
+          )}
+          {!accountName && <div className="mx-auto mt-4 max-w-[1440px] border-t border-white/10 pt-4 xl:hidden">
             <label
               htmlFor="mobile-user-select"
               className="mb-2 block text-xs text-[#A99E90]"
@@ -417,7 +466,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </option>
               ))}
             </select>
-          </div>
+          </div>}
         </div>
       )}
     </header>

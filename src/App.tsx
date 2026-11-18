@@ -1,19 +1,25 @@
-﻿
+
 import { useEffect, useState } from "react";
+import "./styles/cinematch-film-ui.css";
 
 import { cineMatchApi } from "./services/api";
 import { adaptApiMovie } from "./services/movieAdapter";
 import { fetchFeaturedMovies } from "./services/featuredApi";
 
 import { Navbar } from "./components/layout/Navbar";
+import { MethodLabView } from "./components/methods/MethodLabView";
+import { AuthGate, useCineMatchAccount } from "./components/auth/AuthGate";
+import { PersonalRecommendations } from "./components/auth/PersonalRecommendations";
+import { MovieLensPersonal } from "./components/auth/MovieLensPersonal";
+import { KnnUnlockProgress } from "./components/auth/KnnUnlockProgress";
 import type { NavTab } from "./components/layout/Navbar";
 import { Footer } from "./components/layout/Footer";
 import { CinematicIntro } from "./components/intro/CinematicIntro";
 
 import { HomeView } from "./components/home/HomeView";
 import { ExploreView } from "./components/explore/ExploreView";
-import { ContentBasedView } from "./components/contentBased/ContentBasedView";
-import { CollaborativeView } from "./components/collaborative/CollaborativeView";
+import { CinemaContentView as ContentBasedView } from "./components/cinema/CinemaContentView";
+import { CinemaKnnView as CollaborativeView } from "./components/cinema/CinemaKnnView";
 import { RateMoviesView } from "./components/rating/RateMoviesView";
 import { MLDashboardView } from "./components/dashboard/MLDashboardView";
 import { ABLabView } from "./components/mlLab/ABLabView";
@@ -22,14 +28,11 @@ import { MovieModal } from "./components/common/MovieModal";
 import { FastApiModal } from "./components/fastapi/FastApiModal";
 
 import { MOCK_MOVIES } from "./data/mockMovies";
-import {
-  MOCK_USERS,
-  CURRENT_LOCAL_USER,
-} from "./data/mockUsers";
+
 
 import type { Movie, UserProfile } from "./types";
 
-export default function App() {
+function CineMatchApp() {
   const [showCinematicIntro, setShowCinematicIntro] = useState(
     () => {
       try {
@@ -53,7 +56,7 @@ export default function App() {
   // ========================================================
 
   const [currentTab, setCurrentTab] =
-    useState<NavTab>("home");
+    useState<NavTab>("personal");
 
   const [allMovies, setAllMovies] =
     useState<Movie[]>(MOCK_MOVIES);
@@ -77,14 +80,20 @@ export default function App() {
   // 2. USER
   // ========================================================
 
-  const [availableUsers, setAvailableUsers] =
-    useState<UserProfile[]>([
-      CURRENT_LOCAL_USER,
-      ...MOCK_USERS,
-    ]);
+  const { account, avatarUrl, openAccountSwitcher, rateMovie, removeRating, resetRatings, logout, editGenres } =
+    useCineMatchAccount();
 
-  const [currentUser, setCurrentUser] =
-    useState<UserProfile>(CURRENT_LOCAL_USER);
+  const [accountActionError, setAccountActionError] = useState<string | null>(null);
+
+  const currentUser: UserProfile = {
+    userId: account.userId,
+    name: account.name,
+    avatar: avatarUrl || "",
+    bio: account.accountType === "movielens" ? `MovieLens User ${account.movieLensUserId}` : "Tài khoản CineMatch",
+    preferredGenres: account.preferredGenres,
+    ratings: account.ratings,
+    avgRating: account.avgRating,
+  };
 
   // ========================================================
   // 3. MODAL VA FASTAPI
@@ -103,10 +112,17 @@ export default function App() {
   // 4. BOOKMARK
   // ========================================================
 
-  const [bookmarkedMovieIds, setBookmarkedMovieIds] =
-    useState<Set<number>>(
-      new Set([79132, 2571])
-    );
+  const bookmarkKey = `cinematch_bookmarks_v2_${account.accountType === "movielens" ? "ml" : "personal"}_${account.accountId}`;
+  const [bookmarkedMovieIds, setBookmarkedMovieIds] = useState<Set<number>>(() => {
+    try {
+      const saved: unknown = JSON.parse(localStorage.getItem(bookmarkKey) || "[]");
+      return new Set(Array.isArray(saved) ? saved.filter((v): v is number => Number.isSafeInteger(v)) : []);
+    } catch { return new Set<number>(); }
+  });
+  useEffect(() => {
+    try { localStorage.setItem(bookmarkKey, JSON.stringify([...bookmarkedMovieIds])); }
+    catch { /* Browser storage may be unavailable. */ }
+  }, [bookmarkKey, bookmarkedMovieIds]);
 
   // ========================================================
   // 5. FASTAPI HEALTH CHECK
@@ -194,6 +210,8 @@ export default function App() {
     // Khong tai toan bo 9742 phim o hai trang nay.
     if (
       currentTab === "home" ||
+      currentTab === "personal" ||
+      currentTab === "methods" ||
       currentTab === "explore" ||
       currentTab === "dashboard"
     ) {
@@ -329,111 +347,66 @@ export default function App() {
   };
 
   // ========================================================
-  // 9. CHON USER
+  // 10-12. RATING THUC - LUU TREN BACKEND TAI KHOAN
   // ========================================================
 
-  const handleSelectUser = (user: UserProfile) => {
-    setCurrentUser(user);
+  const handleRateMovie = (movieId: number, rating: number) => {
+    void rateMovie(movieId, rating)
+      .then(() => setAccountActionError(null))
+      .catch((error: unknown) => setAccountActionError(
+        error instanceof Error ? error.message : "Không lưu được đánh giá."
+      ));
   };
-
-  // ========================================================
-  // 10. DANH GIA PHIM
-  // ========================================================
-
-  const handleRateMovie = (
-    movieId: number,
-    rating: number
-  ) => {
-    const updatedRatings = {
-      ...currentUser.ratings,
-      [movieId]: rating,
-    };
-
-    const values = Object.values(updatedRatings);
-
-    const average =
-      values.length > 0
-        ? values.reduce((sum, value) => sum + value, 0) /
-          values.length
-        : 0;
-
-    const updatedUser: UserProfile = {
-      ...currentUser,
-      ratings: updatedRatings,
-      avgRating: Math.round(average * 100) / 100,
-    };
-
-    setCurrentUser(updatedUser);
-
-    setAvailableUsers((previous) =>
-      previous.map((user) =>
-        user.userId === updatedUser.userId
-          ? updatedUser
-          : user
-      )
-    );
-  };
-
-  // ========================================================
-  // 11. XOA DANH GIA
-  // ========================================================
 
   const handleRemoveRating = (movieId: number) => {
-    const updatedRatings = {
-      ...currentUser.ratings,
-    };
-
-    delete updatedRatings[movieId];
-
-    const values = Object.values(updatedRatings);
-
-    const average =
-      values.length > 0
-        ? values.reduce((sum, value) => sum + value, 0) /
-          values.length
-        : 3.5;
-
-    const updatedUser: UserProfile = {
-      ...currentUser,
-      ratings: updatedRatings,
-      avgRating: Math.round(average * 100) / 100,
-    };
-
-    setCurrentUser(updatedUser);
-
-    setAvailableUsers((previous) =>
-      previous.map((user) =>
-        user.userId === updatedUser.userId
-          ? updatedUser
-          : user
-      )
-    );
+    void removeRating(movieId)
+      .then(() => setAccountActionError(null))
+      .catch((error: unknown) => setAccountActionError(
+        error instanceof Error ? error.message : "Không xóa được đánh giá."
+      ));
   };
 
-  // ========================================================
-  // 12. RESET DANH GIA
-  // ========================================================
-
   const handleResetRatings = () => {
-    const original =
-      MOCK_USERS.find(
-        (user) => user.userId === currentUser.userId
-      ) || CURRENT_LOCAL_USER;
+    void resetRatings()
+      .then(() => setAccountActionError(null))
+      .catch((error: unknown) => setAccountActionError(
+        error instanceof Error ? error.message : "Không đặt lại được đánh giá."
+      ));
+  };
 
-    const resetUser: UserProfile = {
-      ...original,
-      ratings: { ...original.ratings },
-    };
+  // Rating Studio awaits these requests to show an accurate save state.
+  // The original non-blocking handlers above remain for other views.
+  const handleRateMovieConfirmed = async (movieId: number, rating: number): Promise<void> => {
+    try {
+      await rateMovie(movieId, rating);
+      setAccountActionError(null);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Không lưu được đánh giá.";
+      setAccountActionError(message);
+      throw new Error(message);
+    }
+  };
 
-    setCurrentUser(resetUser);
+  const handleRemoveRatingConfirmed = async (movieId: number): Promise<void> => {
+    try {
+      await removeRating(movieId);
+      setAccountActionError(null);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Không xóa được đánh giá.";
+      setAccountActionError(message);
+      throw new Error(message);
+    }
+  };
 
-    setAvailableUsers((previous) =>
-      previous.map((user) =>
-        user.userId === resetUser.userId
-          ? resetUser
-          : user
-      )
-    );
+  const handleResetRatingsConfirmed = async (): Promise<void> => {
+    try {
+      await resetRatings();
+      setAccountActionError(null);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Không đặt lại được đánh giá.";
+      setAccountActionError(message);
+      throw new Error(message);
+    }
   };
 
   // ========================================================
@@ -472,7 +445,7 @@ export default function App() {
   // ========================================================
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#050A13] font-sans text-[#F5F7FB] selection:bg-cyan-400/20 selection:text-cyan-100">
+    <div className="cm-film-app flex min-h-screen flex-col bg-[#090A0E] font-sans text-[#F5F2EA] selection:bg-[#E8BF82]/20 selection:text-white">
       {showCinematicIntro && (
         <CinematicIntro onComplete={completeCinematicIntro} />
       )}
@@ -481,8 +454,13 @@ export default function App() {
         currentTab={currentTab}
         onTabChange={navigateToTab}
         currentUser={currentUser}
-        availableUsers={availableUsers}
-        onSelectUser={handleSelectUser}
+        availableUsers={[currentUser]}
+        onSelectUser={() => openAccountSwitcher()}
+        accountName={account.name}
+        avatarUrl={avatarUrl}
+        onOpenAccountSwitcher={openAccountSwitcher}
+        onLogout={() => void logout()}
+        onEditGenres={editGenres}
         onOpenFastApiModal={() =>
           setIsFastApiModalOpen(true)
         }
@@ -491,6 +469,12 @@ export default function App() {
         }
         isFastApiConnected={isFastApiConnected}
       />
+
+      {accountActionError && (
+        <div role="alert" className="border-b border-rose-400/20 bg-rose-400/10 px-6 py-3 text-center text-sm text-rose-200">
+          {accountActionError}
+        </div>
+      )}
 
       {moviesLoading && (
         <div className="border-b border-cyan-400/15 bg-cyan-400/5 px-6 py-2 text-center text-xs text-cyan-200">
@@ -504,21 +488,30 @@ export default function App() {
         </div>
       )}
 
-      {moviesLoadedFromApi &&
-        !moviesLoading &&
-        currentTab !== "home" && (
-          <div className="border-b border-emerald-400/10 bg-emerald-400/5 px-6 py-2 text-center text-xs text-emerald-300">
-            Đã tải{" "}
-            {allMovies.length.toLocaleString("vi-VN")}{" "}
-            phim MovieLens.
-          </div>
-        )}
+
 
       <main className="flex-1">
+        {currentTab === "methods" && <MethodLabView />}
+        {currentTab === "personal" && (
+          account.accountType === "movielens" ?
+            <MovieLensPersonal account={account} onSelectMovie={handleSelectMovie} /> :
+            <>
+              <PersonalRecommendations
+                account={account}
+                onSelectMovie={handleSelectMovie}
+                onExplore={() => navigateToTab("explore")}
+                onRate={() => navigateToTab("rate")}
+                onEditGenres={editGenres}
+              />
+              <div className="mx-auto max-w-[1320px] px-5 pb-10 sm:px-9"><KnnUnlockProgress account={account} onRate={() => navigateToTab("rate")}/></div>
+            </>
+        )}
+
+
         {currentTab === "home" && (
           <HomeView
             currentUser={currentUser}
-            allUsers={availableUsers}
+            allUsers={[currentUser]}
             allMovies={allMovies}
             onSelectMovie={handleSelectMovie}
             onNavigateTab={navigateToTab}
@@ -543,8 +536,8 @@ export default function App() {
         {currentTab === "content-based" && (
           <ContentBasedView
             currentUser={currentUser}
-            availableUsers={availableUsers}
-            onSelectUser={handleSelectUser}
+            availableUsers={[currentUser]}
+            onSelectUser={() => openAccountSwitcher()}
             allMovies={allMovies}
             onSelectMovie={handleSelectMovie}
             bookmarkedMovieIds={bookmarkedMovieIds}
@@ -554,9 +547,10 @@ export default function App() {
 
         {currentTab === "collaborative" && (
           <CollaborativeView
+            onRate={() => navigateToTab("rate")}
             currentUser={currentUser}
-            availableUsers={availableUsers}
-            onSelectUser={handleSelectUser}
+            availableUsers={[currentUser]}
+            onSelectUser={() => openAccountSwitcher()}
             allMovies={allMovies}
             onSelectMovie={handleSelectMovie}
             bookmarkedMovieIds={bookmarkedMovieIds}
@@ -564,15 +558,21 @@ export default function App() {
           />
         )}
 
-        {currentTab === "rate" && (
+        {currentTab === "rate" && account.accountType === "movielens" && (
+          <section className="mx-auto max-w-5xl px-6 py-20 text-white"><h1 className="text-3xl font-bold">Lịch sử đánh giá MovieLens User {account.movieLensUserId}</h1><p className="mt-4 text-slate-300">Hồ sơ demo có {Object.keys(account.ratings).length} đánh giá trong Training. Dữ liệu này được giữ chỉ đọc để không làm thay đổi mô hình KNN K = 21 hay kết quả Colab.</p><button type="button" onClick={() => navigateToTab("personal")} className="mt-7 rounded-xl bg-[#e8bf82] px-5 py-3 font-bold text-[#201811]">Xem gợi ý từ cả hai mô hình</button></section>
+        )}
+        {currentTab === "rate" && account.accountType !== "movielens" && (
+          <>
+          <div className="mx-auto max-w-[1320px] px-5 pt-6 sm:px-9"><KnnUnlockProgress account={account} onRate={() => {document.querySelector<HTMLElement>("#cm-rating-studio")?.scrollIntoView({behavior:"smooth"});}} compact/></div>
           <RateMoviesView
             currentUser={currentUser}
             allMovies={allMovies}
-            onRateMovie={handleRateMovie}
-            onRemoveRating={handleRemoveRating}
-            onResetRatings={handleResetRatings}
+            onRateMovie={handleRateMovieConfirmed}
+            onRemoveRating={handleRemoveRatingConfirmed}
+            onResetRatings={handleResetRatingsConfirmed}
             onSelectMovie={handleSelectMovie}
           />
+          </>
         )}
 
         {currentTab === "dashboard" && (
@@ -627,3 +627,8 @@ export default function App() {
   );
 }
 
+
+// A separate authenticated gate keeps credentials out of MovieLens demo state.
+export default function App() {
+  return <AuthGate><CineMatchApp /></AuthGate>;
+}

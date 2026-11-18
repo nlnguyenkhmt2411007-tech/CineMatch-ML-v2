@@ -1,3 +1,4 @@
+import { authApi } from "../../services/authApi";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -767,21 +768,15 @@ export function HomeView({
 
       try {
         const results = await Promise.allSettled([
-          cineMatchApi.getContentUserRecommendations(
-            currentUser.userId,
-            12
-          ),
-          cineMatchApi.getUserRecommendations(
-            currentUser.userId,
-            12
-          ),
+          authApi.demoContent(12),
+          authApi.demoKnn(12),
         ]);
 
         if (cancelled) return;
 
         const [contentResult, cfResult] = results;
 
-        if (contentResult.status === "fulfilled") {
+        if (contentResult.status === "fulfilled" && contentResult.value.userId === currentUser.userId) {
           setContentIds(
             contentResult.value.items.map(
               (item) => item.movieId
@@ -789,7 +784,7 @@ export function HomeView({
           );
         }
 
-        if (cfResult.status === "fulfilled") {
+        if (cfResult.status === "fulfilled" && cfResult.value.userId === currentUser.userId && cfResult.value.k === 21) {
           setCfIds(
             cfResult.value.items.map(
               (item) => item.movieId

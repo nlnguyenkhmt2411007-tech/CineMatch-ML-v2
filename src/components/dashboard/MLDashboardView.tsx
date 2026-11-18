@@ -249,24 +249,22 @@ export const MLDashboardView: React.FC = () => {
   const isReady = evaluation !== null && !loading;
 
   return (
-    <div className="mx-auto max-w-[1440px] space-y-10 px-6 py-12 text-[#F5F2EA]">
+    <div className="cm-film-ml-dashboard mx-auto max-w-[1440px] space-y-8 px-6 py-10 text-[#F5F2EA]">
       {/* HEADER */}
       <section className="space-y-5 border-b border-white/[0.08] pb-7">
         <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-[#E8B65B]">
           <BarChart3 className="h-4 w-4" />
-          <span>CineMatch ML · Báo cáo Machine Learning</span>
+          <span>CINEMATCH · HIỆU QUẢ GỢI Ý</span>
         </div>
 
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-2">
             <h1 className="font-display text-3xl font-bold sm:text-4xl">
-              Machine Learning Evaluation Dashboard
+              Hệ thống gợi ý hoạt động ra sao?
             </h1>
 
             <p className="max-w-3xl text-sm leading-relaxed text-[#9EA3AE]">
-              Kết quả thực nghiệm trên MovieLens Latest Small.
-              So sánh Content-Based Filtering và User-Based
-              Collaborative Filtering bằng dữ liệu từ Python FastAPI.
+              Các con số giúp bạn hiểu cách hai phương pháp gợi ý phim hoạt động. Chi tiết đánh giá vẫn được giữ cho báo cáo.
             </p>
           </div>
 

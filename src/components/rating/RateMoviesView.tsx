@@ -10,6 +10,7 @@ import {
   ChevronRight,
   Info,
   CheckCircle2,
+  Loader2,
 } from "lucide-react";
 
 import type { Movie, UserProfile } from "../../types";
@@ -21,9 +22,9 @@ import type { Movie, UserProfile } from "../../types";
 interface RateMoviesViewProps {
   currentUser: UserProfile;
   allMovies: Movie[];
-  onRateMovie: (movieId: number, rating: number) => void;
-  onRemoveRating: (movieId: number) => void;
-  onResetRatings: () => void;
+  onRateMovie: (movieId: number, rating: number) => Promise<void>;
+  onRemoveRating: (movieId: number) => Promise<void>;
+  onResetRatings: () => Promise<void>;
   onSelectMovie: (movie: Movie) => void;
 }
 
@@ -63,13 +64,69 @@ async function getEnrichedMovie(movieId: number): Promise<Movie> {
 }
 const PAGE_SIZE = 18;
 
-const RATING_OPTIONS = [
-  0.5, 1.0, 1.5, 2.0, 2.5,
-  3.0, 3.5, 4.0, 4.5, 5.0,
-];
-
 const cardClass =
   "rounded-[10px] border border-white/[0.08] bg-[#11141C]";
+
+// Accessible half-star input (0.5 increments). No external dependency.
+const HalfStarRating: React.FC<{
+  movieTitle: string;
+  rating?: number;
+  disabled: boolean;
+  onChange: (rating: number) => void;
+}> = ({ movieTitle, rating, disabled, onChange }) => {
+  const [hover, setHover] = useState<number | null>(null);
+  const shown = hover ?? rating ?? 0;
+
+  return (
+    <div className="space-y-1.5" onMouseLeave={() => setHover(null)}>
+      <div
+        role="group"
+        aria-label={`Đánh giá ${movieTitle} theo thang 0,5 đến 5 sao`}
+        className="flex items-center gap-0.5"
+      >
+        {[1, 2, 3, 4, 5].map((star) => {
+          const fill = Math.max(0, Math.min(1, shown - (star - 1)));
+          return (
+            <div key={star} className="relative h-9 w-9 shrink-0">
+              <Star aria-hidden="true" className="pointer-events-none absolute left-1 top-1 h-7 w-7 text-[#747B88]" strokeWidth={1.6} />
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-y-0 left-0 overflow-hidden"
+                style={{ width: `${fill * 100}%` }}
+              >
+                <Star className="absolute left-1 top-1 h-7 w-7 fill-[#E8BF82] text-[#E8BF82]" strokeWidth={1.6} />
+              </div>
+              <div className="absolute inset-0 flex">
+                {[star - 0.5, star].map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    disabled={disabled}
+                    aria-label={`Chấm ${value.toFixed(1)} sao cho ${movieTitle}`}
+                    aria-pressed={rating === value}
+                    title={`${value.toFixed(1)} sao`}
+                    onMouseEnter={() => setHover(value)}
+                    onFocus={() => setHover(value)}
+                    onBlur={() => setHover(null)}
+                    onClick={() => onChange(value)}
+                    className="h-9 w-1/2 rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#E8BF82] disabled:cursor-wait"
+                  />
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <p className="text-[11px] text-[#A0A7B5]" aria-live="polite">
+        {hover !== null
+          ? `Chọn ${hover.toFixed(1)}/5 sao`
+          : rating !== undefined
+            ? `Điểm đã chấm: ${rating.toFixed(1)}/5 · Có thể chấm lại`
+            : "Chạm nửa ngôi sao để chọn bước 0,5"}
+      </p>
+    </div>
+  );
+};
 
 // ==========================================================
 // MAIN COMPONENT
@@ -105,6 +162,12 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
     useState<boolean>(false);
 
   const userRatings = currentUser.ratings ?? {};
+  const [pendingMovieId, setPendingMovieId] = useState<number | null>(null);
+  const [resetPending, setResetPending] = useState(false);
+  const [feedback, setFeedback] = useState<{
+    status: "success" | "error";
+    message: string;
+  } | null>(null);
 
   // ========================================================
   // THONG KE DIEM NGUOI DUNG
@@ -279,25 +342,53 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
   // DANH GIA PHIM
   // ========================================================
 
-  const handleRate = (
-    movieId: number,
-    rating: number
-  ) => {
+  const handleRate = async (movieId: number, rating: number) => {
     if (
-      rating < 0.5 ||
-      rating > 5 ||
-      !Number.isFinite(rating)
-    ) {
-      return;
-    }
+      rating < 0.5 || rating > 5 ||
+      !Number.isFinite(rating) || rating * 2 !== Math.round(rating * 2) ||
+      pendingMovieId !== null || resetPending
+    ) return;
 
-    onRateMovie(movieId, rating);
+    setPendingMovieId(movieId);
+    setFeedback(null);
+    try {
+      await onRateMovie(movieId, rating);
+      setFeedback({ status: "success", message: `Đã lưu ${rating.toFixed(1)}/5 sao vào tài khoản CineMatch.` });
+    } catch (error) {
+      setFeedback({ status: "error", message: error instanceof Error ? error.message : "Không lưu được đánh giá. Hãy thử lại." });
+    } finally {
+      setPendingMovieId(null);
+    }
   };
 
-  const handleReset = () => {
-    onResetRatings();
-    setShowResetConfirm(false);
-    setPage(1);
+  const handleRemove = async (movieId: number) => {
+    if (pendingMovieId !== null || resetPending) return;
+    setPendingMovieId(movieId);
+    setFeedback(null);
+    try {
+      await onRemoveRating(movieId);
+      setFeedback({ status: "success", message: "Đã xóa đánh giá khỏi tài khoản CineMatch." });
+    } catch (error) {
+      setFeedback({ status: "error", message: error instanceof Error ? error.message : "Không xóa được đánh giá." });
+    } finally {
+      setPendingMovieId(null);
+    }
+  };
+
+  const handleReset = async () => {
+    if (resetPending || pendingMovieId !== null) return;
+    setResetPending(true);
+    setFeedback(null);
+    try {
+      await onResetRatings();
+      setShowResetConfirm(false);
+      setPage(1);
+      setFeedback({ status: "success", message: "Đã xóa toàn bộ đánh giá của tài khoản CineMatch." });
+    } catch (error) {
+      setFeedback({ status: "error", message: error instanceof Error ? error.message : "Không thể đặt lại đánh giá." });
+    } finally {
+      setResetPending(false);
+    }
   };
 
   // ========================================================
@@ -305,39 +396,32 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
   // ========================================================
 
   return (
-    <div className="mx-auto max-w-[1440px] space-y-8 px-6 py-12">
+    <div id="cm-rating-studio" className="cm-rating-film-page mx-auto max-w-[1440px] space-y-7 px-6 py-9">
 
       {/* HEADER */}
 
       <section className="space-y-3 border-b border-white/[0.08] pb-6">
-        <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#E8B65B]">
+        <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#E8BF82]">
           <Star className="h-4 w-4" />
-          <span>CineMatch ML · Rating Studio</span>
+          <span>GÓC ĐIỆN ẢNH CỦA BẠN</span>
         </div>
 
         <h1 className="font-display text-3xl font-bold text-[#F5F2EA] sm:text-4xl">
-          Phòng Đánh Giá Phim
+          Đánh giá phim bạn đã xem
         </h1>
 
         <p className="max-w-3xl text-sm leading-relaxed text-[#9EA3AE]">
-          Khám phá thư viện MovieLens và chấm điểm các bộ phim
-          yêu thích theo thang từ 0,5 đến 5 sao, bước 0,5.
-          Đây là chức năng quản lý đánh giá trên giao diện,
-          chưa làm thay đổi mô hình Machine Learning Python.
+          Chọn số sao cho những bộ phim bạn đã xem để nhận gợi ý ngày càng hợp gu.
         </p>
 
         <div className="flex flex-wrap gap-2 pt-2">
-          <span className="rounded bg-[#191D27] px-3 py-1.5 font-mono text-[11px] text-[#9EA3AE]">
-            MovieLens Latest Small
-          </span>
+
 
           <span className="rounded bg-[#191D27] px-3 py-1.5 font-mono text-[11px] text-[#9EA3AE]">
             {allMovies.length.toLocaleString("vi-VN")} phim
           </span>
 
-          <span className="rounded border border-[#E8B65B]/20 bg-[#E8B65B]/10 px-3 py-1.5 font-mono text-[11px] text-[#E8B65B]">
-            Rating 0.5 - 5.0
-          </span>
+
         </div>
       </section>
 
@@ -355,8 +439,8 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
               {currentUser.name}
             </p>
 
-            <p className="font-mono text-xs text-[#E8B65B]">
-              User #{currentUser.userId}
+            <p className="font-mono text-xs text-[#E8BF82]">
+              Tài khoản CineMatch · Không phải User MovieLens
             </p>
           </div>
 
@@ -365,12 +449,12 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
               Số phim đã chấm
             </p>
 
-            <p className="font-display text-3xl font-bold text-[#E8B65B]">
+            <p className="font-display text-3xl font-bold text-[#E8BF82]">
               {ratingCount}
             </p>
 
             <p className="text-xs text-[#9EA3AE]">
-              Trong hồ sơ React hiện tại
+              Lưu theo tài khoản qua FastAPI
             </p>
           </div>
 
@@ -384,13 +468,13 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
                 ? "--"
                 : userMean.toFixed(2)}
 
-              <span className="ml-2 text-sm text-[#E8B65B]">
+              <span className="ml-2 text-sm text-[#E8BF82]">
                 ★
               </span>
             </p>
 
             <p className="text-xs text-[#9EA3AE]">
-              Tính từ điểm trong hồ sơ giao diện
+              Tính từ các đánh giá của tài khoản
             </p>
           </div>
 
@@ -400,6 +484,7 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
               onClick={() =>
                 setShowResetConfirm((value) => !value)
               }
+              disabled={pendingMovieId !== null || resetPending}
               className="flex items-center justify-center gap-2 rounded-[8px] border border-white/[0.08] bg-[#191D27] px-4 py-3 text-xs font-medium text-[#9EA3AE] transition-colors hover:border-red-500/30 hover:text-red-400"
             >
               <RotateCcw className="h-4 w-4" />
@@ -411,22 +496,24 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
         {showResetConfirm && (
           <div className="mt-5 space-y-3 rounded-[8px] border border-amber-500/20 bg-amber-950/10 p-4">
             <p className="text-sm text-amber-200">
-              Bạn muốn đặt lại đánh giá của tài khoản này
-              về dữ liệu hồ sơ DEMO ban đầu?
+              Bạn có chắc muốn xóa toàn bộ điểm đã lưu trong tài khoản CineMatch?
+              Thao tác này không thể hoàn tác.
             </p>
 
             <div className="flex flex-wrap gap-3">
               <button
                 type="button"
-                onClick={handleReset}
+                onClick={() => void handleReset()}
+                 disabled={resetPending}
                 className="rounded-[6px] bg-red-500/80 px-4 py-2 text-xs font-semibold text-white hover:bg-red-500"
               >
-                Xác nhận đặt lại
+                {resetPending ? "Đang xóa..." : "Xác nhận xóa tất cả"}
               </button>
 
               <button
                 type="button"
                 onClick={() => setShowResetConfirm(false)}
+                 disabled={resetPending}
                 className="rounded-[6px] border border-white/10 bg-[#191D27] px-4 py-2 text-xs text-[#F5F2EA]"
               >
                 Hủy
@@ -438,27 +525,38 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
 
       {/* IMPORTANT STATUS */}
 
-      <section className="flex items-start gap-3 rounded-[10px] border border-[#E8B65B]/20 bg-[#E8B65B]/[0.04] p-4">
-        <Info className="mt-0.5 h-5 w-5 shrink-0 text-[#E8B65B]" />
+      <details className="cm-film-method-note rounded-[10px] border border-[#E8BF82]/20 bg-[#E8BF82]/[0.04] p-4">
+        <summary><Info className="h-5 w-5 shrink-0 text-[#E8BF82]" /> Điểm đánh giá được lưu ở đâu?</summary>
+        <div className="space-y-2 mt-3">
 
-        <div className="space-y-2">
-          <p className="text-sm font-semibold text-[#F5F2EA]">
-            Trạng thái tích hợp Machine Learning
+          <p className="text-xs leading-relaxed text-[#9EA3AE]">
+            Khi chọn sao, CineMatch gửi điểm đến FastAPI và lưu trong
+            tài khoản đã đăng nhập. Chỉ thông báo “Đã lưu” khi máy chủ
+            xác nhận thành công. Điểm này có thể được sử dụng trong
+            gợi ý riêng cho tài khoản, nhưng không tự huấn luyện lại mô hình ML.
           </p>
 
           <p className="text-xs leading-relaxed text-[#9EA3AE]">
-            Các điểm chấm tại đây hiện chỉ được cập nhật
-            trong trạng thái React. Chúng chưa được gửi
-            vào FastAPI, chưa lưu trong cơ sở dữ liệu
-            và chưa thay đổi kết quả gợi ý của hai mô hình.
-          </p>
-
-          <p className="text-xs leading-relaxed text-[#9EA3AE]">
-            Tập Train / Validation / Test và các chỉ số
-            thực nghiệm trên ML Dashboard được giữ nguyên.
+            Hồ sơ CineMatch khác với các User 1–610 của MovieLens.
+            Train, Validation, Test và các chỉ số ML Dashboard giữ nguyên.
           </p>
         </div>
-      </section>
+      </details>
+
+      {feedback && (
+        <div
+          role={feedback.status === "error" ? "alert" : "status"}
+          aria-live={feedback.status === "error" ? "assertive" : "polite"}
+          className={`flex items-start gap-2 rounded-[10px] border p-3 text-sm ${
+            feedback.status === "success"
+              ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-200"
+              : "border-rose-400/20 bg-rose-400/10 text-rose-200"
+          }`}
+        >
+          {feedback.status === "success" ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" /> : <Info className="mt-0.5 h-4 w-4 shrink-0" />}
+          <span>{feedback.message}</span>
+        </div>
+      )}
 
       {/* FILTER BAR */}
 
@@ -473,7 +571,7 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
               onClick={() => setActiveTab("unrated")}
               className={`rounded-[6px] px-4 py-2 text-xs font-semibold transition-colors ${
                 activeTab === "unrated"
-                  ? "bg-[#E8B65B] text-[#090A0E]"
+                  ? "bg-[#E8BF82] text-[#090A0E]"
                   : "text-[#9EA3AE] hover:text-[#F5F2EA]"
               }`}
             >
@@ -486,7 +584,7 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
               onClick={() => setActiveTab("rated")}
               className={`rounded-[6px] px-4 py-2 text-xs font-semibold transition-colors ${
                 activeTab === "rated"
-                  ? "bg-[#E8B65B] text-[#090A0E]"
+                  ? "bg-[#E8BF82] text-[#090A0E]"
                   : "text-[#9EA3AE] hover:text-[#F5F2EA]"
               }`}
             >
@@ -506,7 +604,7 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
                   setQuickSearch(event.target.value)
                 }
                 placeholder="Tìm tên phim hoặc Movie ID..."
-                className="w-full rounded-[8px] border border-white/[0.08] bg-[#11141C] py-2.5 pl-9 pr-3 text-xs text-[#F5F2EA] outline-none placeholder:text-[#9EA3AE]/60 focus:border-[#E8B65B]"
+                className="w-full rounded-[8px] border border-white/[0.08] bg-[#11141C] py-2.5 pl-9 pr-3 text-xs text-[#F5F2EA] outline-none placeholder:text-[#9EA3AE]/60 focus:border-[#E8BF82]"
               />
             </div>
 
@@ -515,7 +613,7 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
               onChange={(event) =>
                 setFilterGenre(event.target.value)
               }
-              className="rounded-[8px] border border-white/[0.08] bg-[#11141C] px-3 py-2.5 text-xs text-[#F5F2EA] outline-none focus:border-[#E8B65B]"
+              className="rounded-[8px] border border-white/[0.08] bg-[#11141C] px-3 py-2.5 text-xs text-[#F5F2EA] outline-none focus:border-[#E8BF82]"
             >
               <option value="all">Tất cả thể loại</option>
 
@@ -531,7 +629,7 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
         <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-[#9EA3AE]">
           <span>
             Tìm thấy{" "}
-            <strong className="text-[#E8B65B]">
+            <strong className="text-[#E8BF82]">
               {filteredMovies.length.toLocaleString("vi-VN")}
             </strong>{" "}
             phim
@@ -547,7 +645,7 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
       {/* MOVIE RATING GRID */}
 
       {visibleMovies.length > 0 ? (
-        <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+        <section className="cm-rating-films-grid grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
 
           {visibleMovies.map((movie) => {
             const enrichedMovie =
@@ -557,7 +655,7 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
             return (
               <div
                 key={movie.movieId}
-                className={`${cardClass} flex gap-4 p-4 transition-colors hover:border-white/20`}
+                className={`${cardClass} cm-rating-film-card flex flex-col gap-2 p-2.5 transition-colors hover:border-[#E8BF82]/40`}
               >
 
                 {/* MOVIE THUMBNAIL */}
@@ -565,7 +663,7 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
                 <button
                   type="button"
                   onClick={() => onSelectMovie(enrichedMovie)}
-                  className="relative flex aspect-[2/3] w-20 shrink-0 items-center justify-center overflow-hidden rounded-[6px] border border-white/[0.06] bg-gradient-to-b from-[#191D27] to-[#090A0E]"
+                  className="cm-rating-film-poster relative flex aspect-[2/3] w-full shrink-0 items-center justify-center overflow-hidden rounded-[8px] border border-white/[0.06] bg-gradient-to-b from-[#191D27] to-[#090A0E]"
                   title={`Xem chi tiết ${movie.title}`}
                 >
                   {enrichedMovie.posterUrl ? (
@@ -575,19 +673,19 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <Film className="h-8 w-8 text-[#E8B65B]/60" />
+                    <Film className="h-8 w-8 text-[#E8BF82]/60" />
                   )}
                 </button>
 
                 {/* MOVIE DETAILS */}
 
-                <div className="flex min-w-0 flex-1 flex-col justify-between gap-3">
+                <div className="cm-rating-film-meta flex min-w-0 flex-1 flex-col justify-between gap-2 px-1 pb-1">
 
                   <div className="space-y-1.5">
                     <button
                       type="button"
                       onClick={() => onSelectMovie(enrichedMovie)}
-                      className="line-clamp-2 text-left font-display text-sm font-semibold text-[#F5F2EA] hover:text-[#E8B65B]"
+                      className="line-clamp-2 text-left font-display text-sm font-semibold text-[#F5F2EA] hover:text-[#E8BF82]"
                     >
                       {movie.title}
                     </button>
@@ -613,7 +711,7 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
                       </span>
 
                       {currentRating !== undefined ? (
-                        <span className="font-mono text-xs font-bold text-[#E8B65B]">
+                        <span className="font-mono text-xs font-bold text-[#E8BF82]">
                           {currentRating.toFixed(1)} ★
                         </span>
                       ) : (
@@ -623,50 +721,39 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
                       )}
                     </div>
 
-                    {/* RATING 0.5 - 5.0 */}
-
-                    <select
-                      aria-label={`Chấm điểm phim ${movie.title}`}
-                      value={currentRating ?? ""}
-                      onChange={(event) =>
-                        handleRate(
-                          movie.movieId,
-                          Number(event.target.value)
-                        )
-                      }
-                      className="w-full rounded-[6px] border border-[#E8B65B]/20 bg-[#191D27] px-3 py-2 text-xs text-[#F5F2EA] outline-none focus:border-[#E8B65B]"
-                    >
-                      <option value="" disabled>
-                        Chọn số sao...
-                      </option>
-
-                      {RATING_OPTIONS.map((rating) => (
-                        <option key={rating} value={rating}>
-                          {rating.toFixed(1)} ★
-                        </option>
-                      ))}
-                    </select>
+                    {/* HALF-STAR RATING (0.5 TO 5.0) */}
+                    <HalfStarRating
+                      movieTitle={movie.title}
+                      rating={currentRating}
+                      disabled={pendingMovieId !== null || resetPending}
+                      onChange={(value) => void handleRate(movie.movieId, value)}
+                    />
 
                     <div className="flex items-center justify-between gap-2">
-                      {currentRating !== undefined ? (
+                      {pendingMovieId === movie.movieId ? (
+                        <span className="flex items-center gap-1 text-[10px] text-[#E8BF82]" role="status">
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                          Đang đồng bộ với máy chủ...
+                        </span>
+                      ) : currentRating !== undefined ? (
                         <span className="flex items-center gap-1 text-[10px] text-emerald-400">
                           <CheckCircle2 className="h-3 w-3" />
-                          Đã cập nhật trên giao diện
+                          Đã có trong tài khoản
                         </span>
                       ) : (
                         <span className="text-[10px] text-[#9EA3AE]/70">
-                          Bước 0,5 sao
+                          Chưa chấm điểm
                         </span>
                       )}
 
                       {currentRating !== undefined && (
                         <button
                           type="button"
-                          onClick={() =>
-                            onRemoveRating(movie.movieId)
-                          }
+                          onClick={() => void handleRemove(movie.movieId)}
+                          disabled={pendingMovieId !== null || resetPending}
+                          aria-label={`Xóa đánh giá phim ${movie.title}`}
                           title="Xóa đánh giá"
-                          className="rounded-[6px] p-1.5 text-[#9EA3AE] hover:bg-red-500/10 hover:text-red-400"
+                          className="rounded-[6px] p-1.5 text-[#9EA3AE] hover:bg-red-500/10 hover:text-red-400 disabled:cursor-wait disabled:opacity-40"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -680,7 +767,7 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
         </section>
       ) : (
         <div className={`${cardClass} flex flex-col items-center gap-3 p-12 text-center`}>
-          <Film className="h-10 w-10 text-[#E8B65B]/40" />
+          <Film className="h-10 w-10 text-[#E8BF82]/40" />
 
           <p className="text-sm font-semibold text-[#F5F2EA]">
             Không tìm thấy phim phù hợp
@@ -697,7 +784,7 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
               setFilterGenre("all");
               setPage(1);
             }}
-            className="mt-2 rounded-[6px] bg-[#E8B65B] px-4 py-2 text-xs font-semibold text-[#090A0E]"
+            className="mt-2 rounded-[6px] bg-[#E8BF82] px-4 py-2 text-xs font-semibold text-[#090A0E]"
           >
             Xóa bộ lọc
           </button>
@@ -723,7 +810,7 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
             Trang trước
           </button>
 
-          <span className="font-mono text-xs text-[#E8B65B]">
+          <span className="font-mono text-xs text-[#E8BF82]">
             {safePage} / {totalPages}
           </span>
 

@@ -4,9 +4,9 @@
   --color-canvas: #090A0E;
   --color-surface: #11141C;
   --color-elevated: #191D27;
-  --color-accent: #E8B65B;
-  --color-accent-hover: #F0C475;
-  --color-accent-muted: rgba(232, 182, 91, 0.12);
+  --color-accent: #E8BF82;
+  --color-accent-hover: #F4D3A2;
+  --color-accent-muted: rgba(232, 191, 130, 0.12);
   --color-text-main: #F5F2EA;
   --color-text-muted: #9EA3AE;
   --color-border-subtle: rgba(255, 255, 255, 0.08);
@@ -19,12 +19,24 @@
 
 :root {
   color-scheme: dark;
+  /* STEP 11A2: shared Cinematic Dark / Champagne Gold design tokens. */
+  --cm-color-bg: #090A0E;
+  --cm-color-surface: #11141C;
+  --cm-color-surface-raised: #191D27;
+  --cm-color-input: #1B2030;
+  --cm-color-accent: #E8BF82;
+  --cm-color-accent-hover: #F4D3A2;
+  --cm-color-on-accent: #17120B;
+  --cm-color-text: #F5F2EA;
+  --cm-color-muted: #A0A7B5;
+  --cm-color-border: #2C3240;
+  --cm-color-success: #31C6A5;
 }
 
 body {
   font-family: var(--font-body), system-ui, sans-serif;
-  background-color: #090A0E;
-  color: #F5F2EA;
+  background-color: var(--cm-color-bg);
+  color: var(--cm-color-text);
   overflow-x: hidden;
 }
 
@@ -194,3 +206,18 @@ h1, h2, h3, h4, h5, h6, .font-display {
   }
 }
 
+
+
+/* STEP 11A2: uniform keyboard focus across shared browser controls.
+   Avoid overriding custom components' layout, shape or hover behaviour. */
+:where(button, a, input, select, textarea):focus-visible {
+  outline: 2px solid var(--cm-color-accent);
+  outline-offset: 3px;
+}
+:where(button, input, select, textarea):disabled {
+  cursor: not-allowed;
+}
+::selection {
+  color: var(--cm-color-on-accent);
+  background: var(--cm-color-accent);
+}

@@ -1,0 +1,176 @@
+/* CineMatch STEP 14 — Film-first visual refinement.
+   Scoped to non-Home/Explore pages. No ML, rating or authentication logic. */
+:root{--cm-film-gold:#E8BF82;--cm-film-bg:#090A0E;--cm-film-plate:#11141C;--cm-film-stroke:rgba(232,191,130,.14)}
+.cm-film-app :is(button,a,summary):focus-visible{outline:2px solid var(--cm-film-gold);outline-offset:3px}
+.cm-film-app :is(.cm-account-pinned,.cm-cinema-side,.cm-cinema-results,.cm-cinema-how,.cm-account-progress){box-shadow:none}
+.cm-film-app summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:9px}
+.cm-film-app summary::-webkit-details-marker{display:none}
+.cm-film-app details[open]>summary{margin-bottom:16px}
+.cm-film-app details>summary svg:last-child{transition:transform .2s}
+.cm-film-app details[open]>summary svg:last-child{transform:rotate(90deg)}
+
+/* Film recommendations — hero shorter, less chrome, posters take priority. */
+.cm-film-app .cm-cinema-page .cm-cinema-hero{min-height:196px;background:radial-gradient(ellipse at 88% 18%,rgba(204,154,81,.13),transparent 47%),linear-gradient(115deg,#12141c,#090a0e 80%);border-bottom-color:rgba(232,191,130,.1)}
+.cm-film-app .cm-cinema-page .cm-cinema-hero-content{padding-top:31px;padding-bottom:31px}
+.cm-film-app .cm-cinema-page .cm-cinema-heading{gap:11px}
+.cm-film-app .cm-cinema-page .cm-cinema-heading h1{font-size:clamp(27px,3.3vw,43px);font-weight:800;letter-spacing:-.04em}
+.cm-film-app .cm-cinema-page .cm-cinema-heading em{color:var(--cm-film-gold)}
+.cm-film-app .cm-cinema-page .cm-cinema-crumb{letter-spacing:.13em;color:#d7b682;font-size:10px;margin-bottom:12px}
+.cm-film-app .cm-cinema-page .cm-cinema-hero-content>p{margin-top:7px;color:#b3b6bf;font-size:14px;line-height:1.55}
+.cm-film-app .cm-cinema-page .cm-cinema-container{padding-top:20px}
+.cm-film-app .cm-cinema-page .cm-account-pinned{padding:11px 14px;background:#15171c;border:1px solid rgba(255,255,255,.09);border-radius:12px;margin-bottom:14px}
+.cm-film-app .cm-cinema-page .cm-account-pinned svg{width:17px;height:17px;color:var(--cm-film-gold)}
+.cm-film-app .cm-cinema-page .cm-account-pinned b{font-size:12px;color:#efe7da}
+.cm-film-app .cm-cinema-page .cm-account-pinned small{margin-top:2px;font-size:11px;line-height:1.4;color:#99a0ae}
+.cm-film-app .cm-cinema-page .cm-cinema-mode-switch{margin:0 0 17px;gap:7px}
+.cm-film-app .cm-cinema-page .cm-cinema-mode-switch button,.cm-film-app .cm-cinema-page .cm-knn-mode button{border-radius:100px;padding:10px 16px;font-size:12px;box-shadow:none;background:#171a21;border:1px solid #303038;color:#cdd0d6}
+.cm-film-app .cm-cinema-page .cm-cinema-mode-switch button.active,.cm-film-app .cm-cinema-page .cm-knn-mode button.active{background:var(--cm-film-gold);color:#21170d;border-color:var(--cm-film-gold);box-shadow:none}
+.cm-film-app .cm-cinema-page .cm-cinema-columns{gap:16px;grid-template-columns:minmax(220px,260px) minmax(0,1fr);align-items:start}
+.cm-film-app .cm-cinema-page .cm-cinema-side{border-radius:16px;background:#14161c;border:1px solid #272b34;padding:18px}
+.cm-film-app .cm-cinema-page .cm-cinema-side-title{gap:9px;margin-bottom:10px;color:#e8bf82}
+.cm-film-app .cm-cinema-page .cm-cinema-side-title h2{font-size:15px;font-weight:750}
+.cm-film-app .cm-cinema-page .cm-cinema-side-copy{color:#a6aab5;font-size:12px;line-height:1.55;margin:8px 0 14px}
+.cm-film-app .cm-cinema-page .cm-cinema-profile{background:#11151c;border:1px solid #2e3036;border-radius:12px;padding:13px}
+.cm-film-app .cm-cinema-page .cm-cinema-profile h3{font-size:14px}
+.cm-film-app .cm-cinema-page .cm-account-genre-tag{font-size:10px;padding:5px 8px}
+.cm-film-app .cm-cinema-page .cm-cinema-results{background:transparent;border:none;box-shadow:none;padding:2px 0 4px;overflow:hidden}
+.cm-film-app .cm-cinema-page .cm-cinema-results-head{gap:14px;margin:0 0 17px}
+.cm-film-app .cm-cinema-page .cm-cinema-kicker{letter-spacing:.12em;font-size:10px;color:#c9ac7b}
+.cm-film-app .cm-cinema-page .cm-cinema-results-head h2{font-size:clamp(21px,2.4vw,27px);line-height:1.25;margin-top:4px;letter-spacing:-.035em}
+.cm-film-app .cm-cinema-page .cm-cinema-results-head p{font-size:12px;color:#9da2b0;margin-top:5px;line-height:1.6}
+.cm-film-app .cm-cinema-page .cm-cinema-results .cm-cinema-track{grid-auto-columns:clamp(148px,16vw,199px);gap:13px;max-height:none;scroll-padding-left:2px}
+.cm-film-app .cm-cinema-page .cm-cinema-results .cm-cinema-movie{background:transparent!important;border:0!important;padding:0!important;box-shadow:none;transition:transform .2s ease}
+.cm-film-app .cm-cinema-page .cm-cinema-results .cm-cinema-movie:hover{transform:translateY(-3px)}
+.cm-film-app .cm-cinema-page .cm-cinema-results .cm-cinema-poster{border-radius:12px;border:1px solid rgba(255,255,255,.09);box-shadow:0 12px 24px rgba(0,0,0,.23)}
+.cm-film-app .cm-cinema-page .cm-cinema-results .cm-cinema-poster img{transition:transform .35s ease}
+.cm-film-app .cm-cinema-page .cm-cinema-results .cm-cinema-movie:hover img{transform:scale(1.045)}
+.cm-film-app .cm-cinema-page .cm-cinema-rank{background:rgba(7,9,12,.79);border:1px solid #e8bf8270;color:#e8bf82;border-radius:7px;font-size:10px}
+.cm-film-app .cm-cinema-page .cm-cinema-movie-name{font-size:13px!important;font-weight:700;min-height:36px;margin-top:10px}
+.cm-film-app .cm-cinema-page .cm-cinema-movie-score{font-size:11px;color:#d6bd97}
+.cm-film-app .cm-cinema-page .cm-cinema-movie-score b{color:#e8bf82;font-size:12px}
+.cm-film-app .cm-cinema-page .cm-cinema-movie-genres{font-size:10px;color:#89929f}
+.cm-film-app .cm-cinema-page .cm-cinema-how{margin-top:27px;border:1px solid #303039;border-radius:14px;padding:16px 20px;background:#12151b}
+.cm-film-app .cm-cinema-page .cm-cinema-how-label{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0;color:#c9cbd2;font-size:12px;font-weight:650}
+.cm-film-app .cm-cinema-page .cm-cinema-how[open] .cm-cinema-how-label{margin-bottom:18px;color:#e8bf82}
+.cm-film-app .cm-cinema-page .cm-cinema-how-steps{padding-top:3px}
+.cm-film-app .cm-cinema-page .cm-cinema-how-num{background:#3b3024;color:#e8bf82}
+.cm-film-app .cm-cinema-page .cm-cinema-how>p{color:#89939e}
+.cm-film-app .cm-cinema-page .cm-knn-mode{border-radius:13px;padding:6px;margin-bottom:18px}
+.cm-film-app .cm-cinema-page .cm-knn-mode button{font-size:12px}
+.cm-film-app .cm-cinema-page .cm-account-neighbor-list{max-height:295px;gap:5px}
+.cm-film-app .cm-cinema-page .cm-account-neighbor-list button{padding:10px 11px;border-radius:10px}
+.cm-film-app .cm-cinema-page .cm-account-neighbor-list button b{font-size:12px}
+.cm-film-app .cm-cinema-page .cm-account-neighbor-list button small{font-size:10px}
+.cm-film-app .cm-cinema-page .cm-knn-evidence{margin-top:15px;padding:15px 17px;background:#12151b;border-radius:14px;border:1px solid #31333a}
+.cm-film-app .cm-cinema-page .cm-knn-evidence-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:0}
+.cm-film-app .cm-cinema-page .cm-knn-evidence[open] .cm-knn-evidence-heading{margin-bottom:16px}
+.cm-film-app .cm-cinema-page .cm-knn-evidence-heading h3{font-size:12px;color:#d4d1c9}
+.cm-film-app .cm-cinema-page .cm-knn-note-details{padding:12px 3px;color:#b4bbc5;font-size:11px;line-height:1.6}
+.cm-film-app .cm-cinema-page .cm-knn-note-details summary{color:#d7b887;display:flex;align-items:center;font-size:11px}
+.cm-film-app .cm-cinema-page .cm-knn-note-details p{margin:8px 0}
+
+/* Eligibility is not a 'game unlock'. Make it a subtle account status card. */
+.cm-film-app .cm-account-progress.cm-rating-journey{margin:14px 0 20px;padding:17px 19px;border:1px solid rgba(232,191,130,.18);border-radius:17px;background:linear-gradient(112deg,#1b1b1d,#12151c 65%,#1a1715);box-shadow:none}
+.cm-film-app .cm-account-progress.cm-rating-journey.compact{padding:15px 18px}
+.cm-film-app .cm-rating-journey .cm-account-progress-icon{width:39px;height:39px;border-radius:11px;background:#302719;border:1px solid #645035}
+.cm-film-app .cm-rating-journey .cm-progress-heading-copy{flex:1;min-width:150px}
+.cm-film-app .cm-rating-journey .cm-progress-heading-copy h3{font-size:17px;font-weight:750;letter-spacing:-.02em}
+.cm-film-app .cm-rating-journey .cm-progress-heading-copy p{font-size:12px;line-height:1.55;margin-top:3px}
+.cm-film-app .cm-rating-journey .cm-account-state{border-radius:50px;margin-left:auto;white-space:nowrap;font-size:11px}
+.cm-film-app .cm-rating-journey .cm-account-meter-line{margin:12px 0 7px;font-size:11px}
+.cm-film-app .cm-rating-journey .cm-account-meter-line b{font-size:11px;font-weight:650;color:#b7bac5}
+.cm-film-app .cm-rating-journey .cm-account-meter{height:5px;background:#36323a}
+.cm-film-app .cm-rating-journey .cm-account-button{padding:9px 13px;border-radius:9px;margin-top:12px;font-size:12px}
+.cm-film-app .cm-progress-details{margin-top:11px;border-top:1px solid rgba(255,255,255,.08);padding-top:10px}
+.cm-film-app .cm-progress-details summary{font-size:11px;color:#aeb1bd;display:flex;gap:7px;align-items:center}
+.cm-film-app .cm-progress-details summary svg:last-child{margin-left:auto}
+.cm-film-app .cm-progress-details-body{display:grid;gap:7px;font-size:12px;line-height:1.6;color:#a9b0ba;padding:3px 0 3px}
+.cm-film-app .cm-rating-journey.compact .cm-progress-heading-copy h3{font-size:15px}
+
+/* Personal pages: no large block of algorithm explanation between posters. */
+.cm-film-app .cm-personal-film-page{background:#090a0e;color:#f5f2ea}
+.cm-film-app .cm-personal-film-hero>.relative{padding-top:36px;padding-bottom:40px}
+.cm-film-app .cm-personal-film-hero h1{letter-spacing:-.05em;line-height:1.13;max-width:700px}
+.cm-film-app .cm-personal-film-hero p{margin-top:12px;max-width:600px}
+.cm-film-app .cm-personal-film-page section button.group{background:#11141c;border:1px solid rgba(255,255,255,.095);border-radius:12px;box-shadow:none}
+.cm-film-app .cm-personal-film-page section button.group:hover{border-color:rgba(232,191,130,.45);box-shadow:0 12px 30px #0005}
+.cm-film-app .cm-personal-film-page section button.group img{transition:transform .3s}
+.cm-film-app .cm-personal-film-page section button.group:hover img{transform:scale(1.05)}
+.cm-film-app .cm-film-method-note{color:#acb0b8;font-size:12px;line-height:1.65}
+.cm-film-app .cm-film-method-note summary{font-weight:650;color:#d0b48e;gap:9px}
+.cm-film-app .cm-film-method-note p{margin:8px 0 0;color:#a9aeb9;line-height:1.7}
+.cm-film-app .cm-movielens-personal>div:first-child{padding:24px 29px;border-radius:19px;background:linear-gradient(120deg,#242019,#141820)}
+.cm-film-app .cm-movielens-personal>div:first-child h1{letter-spacing:-.045em}
+.cm-film-app .cm-movielens-personal>div:first-child p{line-height:1.55}
+.cm-film-app .cm-movielens-personal section button{border-radius:13px}
+
+/* Rate movies: movie-poster cards with visible star actions. */
+.cm-film-app #cm-rating-studio{color:#f5f2ea}
+.cm-film-app #cm-rating-studio>section:first-child{padding:0 0 15px}
+.cm-film-app #cm-rating-studio>section:first-child h1{font-size:clamp(26px,3vw,39px);letter-spacing:-.035em}
+.cm-film-app #cm-rating-studio>section:first-child p{margin-top:8px;line-height:1.6}
+.cm-film-app #cm-rating-studio>section:nth-child(2){padding:16px 20px;border-radius:14px;background:#14161c}
+.cm-film-app #cm-rating-studio>section:nth-child(2)>div:first-child{align-items:center;gap:20px}
+.cm-film-app #cm-rating-studio>section:nth-child(2) p.text-xs{font-size:11px}
+.cm-film-app #cm-rating-studio .cm-rating-films-grid{align-items:stretch;gap:14px}
+.cm-film-app #cm-rating-studio .cm-rating-film-card{background:#13161c;border:1px solid rgba(255,255,255,.11);border-radius:13px;overflow:hidden;padding:8px;min-width:0}
+.cm-film-app #cm-rating-studio .cm-rating-film-poster{border-radius:9px;max-height:310px;transition:filter .2s}
+.cm-film-app #cm-rating-studio .cm-rating-film-card:hover .cm-rating-film-poster{filter:brightness(1.1)}
+.cm-film-app #cm-rating-studio .cm-rating-film-meta{display:flex;flex-direction:column;justify-content:space-between;padding:4px 5px 7px}
+.cm-film-app #cm-rating-studio .cm-rating-film-meta>div:first-child button{font-size:13px;font-weight:720;line-height:1.45}
+.cm-film-app #cm-rating-studio .cm-rating-film-meta>div:first-child p{font-size:10px}
+.cm-film-app #cm-rating-studio .cm-rating-film-meta>div:last-child{margin-top:9px;padding-top:10px}
+.cm-film-app #cm-rating-studio .cm-rating-film-card .relative.h-9.w-9{width:29px;height:32px}
+.cm-film-app #cm-rating-studio .cm-rating-film-card .relative.h-9.w-9>svg,.cm-film-app #cm-rating-studio .cm-rating-film-card .relative.h-9.w-9>div svg{width:24px;height:24px;left:2px;top:3px}
+.cm-film-app #cm-rating-studio .cm-rating-film-card .relative.h-9.w-9 button{height:32px}
+.cm-film-app #cm-rating-studio .cm-rating-film-card .cm-rating-film-poster img{transition:transform .35s ease}
+.cm-film-app #cm-rating-studio .cm-rating-film-card:hover img{transform:scale(1.04)}
+.cm-film-app #cm-rating-studio select,.cm-film-app #cm-rating-studio input{border-radius:10px}
+
+/* Academic pages retain their full content, but steps and movie cards are primary. */
+.cm-film-app .cm-film-method-lab .cm-method-hero-inner{padding-top:30px;padding-bottom:27px}
+.cm-film-app .cm-film-method-lab .cm-method-hero h1{font-size:clamp(26px,3.4vw,42px);letter-spacing:-.045em}
+.cm-film-app .cm-film-method-lab .cm-method-hero p{font-size:13px;line-height:1.55}
+.cm-film-app .cm-film-method-lab .cm-method-mode-tabs{margin-top:18px}
+.cm-film-app .cm-film-method-lab .cm-method-mode-tabs button{border-radius:50px;padding:11px 15px}
+.cm-film-app .cm-film-method-lab .cm-method-input-layout{grid-template-columns:1.05fr .95fr}
+.cm-film-app .cm-film-method-lab .cm-method-panel{background:#12161d;border-color:#303039}
+.cm-film-app .cm-film-method-lab .cm-method-flowbar{margin-top:25px}
+.cm-film-app .cm-film-method-lab .cm-method-stepper button{padding:12px 11px;border-radius:11px}
+.cm-film-app .cm-film-method-lab .cm-method-stepper button small{color:#89919d;font-size:10px}
+.cm-film-app .cm-film-method-lab .cm-method-stage{background:#11151d;border-color:#34353e}
+.cm-film-app .cm-film-method-lab .cm-method-recommendations>button{padding:7px;background:#11141a;border-radius:12px}
+.cm-film-app .cm-film-method-lab .cm-method-recommendations>button:hover{border-color:#e8bf82}
+.cm-film-app .cm-film-method-lab .cm-method-recommendations .cm-method-poster{border-radius:9px}
+.cm-film-app .cm-film-method-lab .cm-method-disclaimer{font-size:11px;opacity:.75}
+
+/* Statistics/experiments retain accuracy, visually subordinate explanation. */
+.cm-film-app .cm-film-ml-dashboard,.cm-film-app .cm-film-ab-lab{color:#f5f2ea}
+.cm-film-app .cm-film-ml-dashboard>section:first-child,.cm-film-app .cm-film-ab-lab>section:first-child{border-bottom-color:rgba(232,191,130,.13)}
+.cm-film-app .cm-film-ml-dashboard section,.cm-film-app .cm-film-ab-lab section{scroll-margin-top:80px}
+.cm-film-app .cm-film-ml-dashboard :is(h1,h2),.cm-film-app .cm-film-ab-lab :is(h1,h2){letter-spacing:-.035em}
+
+@media(max-width:950px){
+  .cm-film-app .cm-cinema-page .cm-cinema-columns{grid-template-columns:1fr}
+  .cm-film-app .cm-cinema-page .cm-cinema-side{padding:14px 16px}
+  .cm-film-app .cm-cinema-page .cm-cinema-results .cm-cinema-track{grid-auto-columns:clamp(142px,22vw,188px)}
+  .cm-film-app .cm-film-method-lab .cm-method-input-layout{grid-template-columns:1fr}
+}
+@media(max-width:620px){
+  .cm-film-app .cm-cinema-page .cm-cinema-container{padding:18px 16px 30px}
+  .cm-film-app .cm-cinema-page .cm-cinema-hero-content{padding:28px 16px}
+  .cm-film-app .cm-cinema-page .cm-cinema-hero{min-height:172px}
+  .cm-film-app .cm-cinema-page .cm-cinema-heading h1{font-size:27px}
+  .cm-film-app .cm-cinema-page .cm-cinema-hero-content>p{font-size:12px}
+  .cm-film-app .cm-cinema-page .cm-cinema-results .cm-cinema-track{grid-auto-columns:148px;gap:11px}
+  .cm-film-app .cm-cinema-page .cm-cinema-results-head h2{font-size:22px}
+  .cm-film-app .cm-cinema-page .cm-cinema-mode-switch{display:flex}
+  .cm-film-app .cm-cinema-page .cm-cinema-mode-switch button{flex:1;padding:10px 9px;font-size:11px}
+  .cm-film-app .cm-rating-journey .cm-progress-heading-copy h3{font-size:15px}
+  .cm-film-app .cm-rating-journey .cm-account-state{margin-left:50px}
+  .cm-film-app #cm-rating-studio{padding-left:13px;padding-right:13px}
+  .cm-film-app #cm-rating-studio .cm-rating-film-card .relative.h-9.w-9{width:24px;height:28px}
+  .cm-film-app #cm-rating-studio .cm-rating-film-card .relative.h-9.w-9>svg,.cm-film-app #cm-rating-studio .cm-rating-film-card .relative.h-9.w-9>div svg{width:20px;height:20px}
+  .cm-film-app .cm-movielens-personal>div:first-child{padding:19px 20px}
+}
+@media(prefers-reduced-motion:reduce){.cm-film-app .cm-cinema-movie,.cm-film-app .cm-rating-film-card img{transition:none!important}}
