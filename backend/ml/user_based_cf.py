@@ -1,154 +1,129 @@
+"""CineMatch User-Based KNN, synchronized with the verified Colab experiment.
 
+Data: Training only. Numeric similarity: frozen Colab user_similarity.npy.
+Prediction: max K positive-similarity users who rated the target in Training.
+Ranking: -clipped rating, -actual number of neighbors, ascending movieId.
+No Validation/Testing data are loaded to fit or predict.
+"""
 from pathlib import Path
+
 import numpy as np
 import pandas as pd
-from scipy.sparse import csr_matrix
-from sklearn.metrics.pairwise import cosine_similarity
 
 ROOT = Path(__file__).resolve().parents[2]
 TRAIN_PATH = ROOT / "data" / "processed" / "ratings_train.csv"
 MOVIES_PATH = ROOT / "data" / "processed" / "movies_processed.csv"
+ASSET_PATH = ROOT / "data" / "ml_colab" / "user_similarity.npy"
 
 
 class UserBasedCF:
-    def __init__(self, k=30):
-        self.k = k
+    def __init__(self, k=21):
+        self.k = int(k)
+        if self.k < 1:
+            raise ValueError("K must be >= 1")
+
         self.ratings = pd.read_csv(TRAIN_PATH)
         self.movies = pd.read_csv(MOVIES_PATH)
-
-        # Diem trung binh chi duoc tinh tu Train
         self.user_means = self.ratings.groupby("userId")["rating"].mean()
         self.global_mean = float(self.ratings["rating"].mean())
+        self.user_ids = sorted(int(x) for x in self.ratings["userId"].unique())
+        self.movie_ids = sorted(int(x) for x in self.ratings["movieId"].unique())
+        self.user_to_idx = {uid: i for i, uid in enumerate(self.user_ids)}
+        self.movie_to_idx = {mid: i for i, mid in enumerate(self.movie_ids)}
+        self._user_ids_array = np.asarray(self.user_ids, dtype=int)
 
-        self.user_ids = sorted(self.ratings["userId"].unique())
-        self.movie_ids = sorted(self.ratings["movieId"].unique())
-
-        self.user_to_idx = {
-            uid: i for i, uid in enumerate(self.user_ids)
-        }
-        self.movie_to_idx = {
-            mid: i for i, mid in enumerate(self.movie_ids)
-        }
-
-        # Diem da khu do lech (train only)
-        centered = (
-            self.ratings["rating"]
-            - self.ratings["userId"].map(self.user_means)
-        )
-
-        row_idx = self.ratings["userId"].map(self.user_to_idx).to_numpy()
-        col_idx = self.ratings["movieId"].map(self.movie_to_idx).to_numpy()
-
-        matrix = csr_matrix(
-            (centered.to_numpy(), (row_idx, col_idx)),
-            shape=(len(self.user_ids), len(self.movie_ids))
-        )
-
-        # 610 x 610: similarity giua cac user
-        self.similarity = cosine_similarity(matrix)
-
-        np.fill_diagonal(self.similarity, 0)
+        # Load Colab similarity with the same ascending userId index.
+        self.similarity = np.load(ASSET_PATH, allow_pickle=False)
+        expected = (len(self.user_ids), len(self.user_ids))
+        if self.similarity.shape != expected or not np.all(np.isfinite(self.similarity)):
+            raise ValueError("Colab user similarity has incompatible shape or values")
+        if self.similarity.dtype != np.float64:
+            raise ValueError("Colab similarity must use float64")
+        if not np.allclose(np.diag(self.similarity), 0.0, atol=1e-12):
+            raise ValueError("Colab similarity diagonal must be zero")
 
         self.ratings_by_movie = {
-            mid: group.set_index("userId")["rating"].to_dict()
+            int(mid): {int(uid): float(score) for uid, score in
+                       zip(group["userId"], group["rating"])}
             for mid, group in self.ratings.groupby("movieId")
         }
-
         self.seen_by_user = {
-            uid: set(group["movieId"])
+            int(uid): set(group["movieId"].astype(int))
             for uid, group in self.ratings.groupby("userId")
         }
+        self.movie_titles = dict(zip(
+            self.movies["movieId"].astype(int),
+            self.movies["title"].astype(str)
+        ))
+        self._movie_neighbors = {}
+        for mid, raters in self.ratings_by_movie.items():
+            idx = np.asarray([self.user_to_idx[uid] for uid in raters], dtype=int)
+            deviations = np.asarray([
+                rating - float(self.user_means.loc[uid])
+                for uid, rating in raters.items()
+            ], dtype=np.float64)
+            self._movie_neighbors[mid] = idx, deviations
 
-        self.movie_titles = dict(
-            zip(self.movies["movieId"], self.movies["title"])
-        )
+    def _valid_neighbors(self, user_id, movie_id):
+        """Eligible rater indices and centered ratings in reproducible order."""
+        pair = self._movie_neighbors.get(int(movie_id))
+        if pair is None:
+            return np.empty(0, dtype=int), np.empty(0, dtype=float)
+        idx, deviation = pair
+        u = self.user_to_idx[int(user_id)]
+        scores = self.similarity[u, idx]
+        eligible = np.flatnonzero(scores > 0)
+        if len(eligible) == 0:
+            return np.empty(0, dtype=int), np.empty(0, dtype=float)
+        idx = idx[eligible]
+        deviation = deviation[eligible]
+        sim = self.similarity[u, idx]
+        order = np.lexsort((self._user_ids_array[idx], -sim))
+        return idx[order], deviation[order]
+
+    def predict_details(self, user_id, movie_id, k=None):
+        """(clipped_rating, used_neighbor_count, raw_rating, source)."""
+        uid, mid = int(user_id), int(movie_id)
+        if uid not in self.user_to_idx:
+            return (self.global_mean, 0, self.global_mean, "global_mean")
+        baseline = float(self.user_means.loc[uid])
+        idx, deviations = self._valid_neighbors(uid, mid)
+        if len(idx) == 0:
+            return (float(np.clip(baseline, .5, 5.0)), 0, baseline, "user_mean")
+        n = min(self.k if k is None else int(k), len(idx))
+        if n <= 0:
+            raise ValueError("K must be >= 1")
+        u = self.user_to_idx[uid]
+        weights = self.similarity[u, idx[:n]]
+        raw = float(baseline + np.dot(weights, deviations[:n]) / np.sum(np.abs(weights)))
+        return (float(np.clip(raw, .5, 5.0)), n, raw, "knn")
 
     def predict(self, user_id, movie_id):
-        user_id = int(user_id)
-        movie_id = int(movie_id)
-
-        baseline = float(
-            self.user_means.get(user_id, self.global_mean)
-        )
-
-        if user_id not in self.user_to_idx:
-            return baseline
-
-        raters = self.ratings_by_movie.get(movie_id)
-        if not raters:
-            return baseline
-
-        neighbors = []
-
-        for neighbor_id, rating in raters.items():
-            if neighbor_id == user_id:
-                continue
-
-            similarity = self.similarity[
-                self.user_to_idx[user_id],
-                self.user_to_idx[neighbor_id]
-            ]
-
-            if similarity > 0:
-                deviation = rating - self.user_means[neighbor_id]
-                neighbors.append((similarity, deviation))
-
-        if not neighbors:
-            return baseline
-
-        neighbors.sort(key=lambda x: x[0], reverse=True)
-        neighbors = neighbors[:self.k]
-
-        numerator = sum(s * dev for s, dev in neighbors)
-        denominator = sum(abs(s) for s, _ in neighbors)
-
-        if denominator == 0:
-            return baseline
-
-        prediction = baseline + numerator / denominator
-        return float(np.clip(prediction, 0.5, 5.0))
+        return self.predict_details(user_id, movie_id)[0]
 
     def recommend(self, user_id, top_n=10):
-        user_id = int(user_id)
-
-        seen = self.seen_by_user.get(user_id, set())
-        candidates = [
-            mid for mid in self.movie_ids if mid not in seen
-        ]
-
-        recommendations = [
-            (mid, self.predict(user_id, mid))
-            for mid in candidates
-        ]
-
-        recommendations.sort(
-            key=lambda item: (-item[1], item[0])
-        )
-
-        top = recommendations[:top_n]
-
-        return pd.DataFrame([
-            {
-                "movieId": mid,
-                "title": self.movie_titles.get(mid, "Unknown"),
-                "predicted_rating": round(score, 3)
-            }
-            for mid, score in top
-        ])
+        uid = int(user_id)
+        if uid not in self.user_to_idx:
+            raise ValueError(f"Unknown MovieLens userId: {uid}")
+        unseen = (mid for mid in self.movie_ids
+                  if mid not in self.seen_by_user.get(uid, set()))
+        rows = []
+        for mid in unseen:
+            score, count, raw, source = self.predict_details(uid, mid)
+            rows.append((mid, score, count, raw, source))
+        rows.sort(key=lambda item: (-item[1], -item[2], item[0]))
+        top = rows[:int(top_n)]
+        return pd.DataFrame([{
+            "movieId": mid,
+            "title": self.movie_titles.get(mid, "Unknown"),
+            "predicted_rating": round(score, 6),
+            "neighbor_count": count,
+            "raw_prediction": raw,
+            "source": source,
+        } for mid, score, count, raw, source in top])
 
 
 if __name__ == "__main__":
-    model = UserBasedCF(k=30)
-
-    print("=" * 55)
-    print("CINEMATCH ML - USER-BASED COLLABORATIVE FILTERING")
-    print("=" * 55)
-    print("So nguoi dung:", len(model.user_ids))
-    print("So phim trong Train:", len(model.movie_ids))
-    print("K neighbors:", model.k)
-
-    print("\nDu doan rating - User 1, Movie 1:")
-    print(round(model.predict(1, 1), 3))
-
-    print("\nTop 10 phim goi y cho User 1:")
-    print(model.recommend(1, top_n=10).to_string(index=False))
+    model = UserBasedCF(k=21)
+    print("K:", model.k, "| Users:", len(model.user_ids), "| Train films:", len(model.movie_ids))
+    print(model.recommend(1, 10).to_string(index=False))

@@ -92,3 +92,11 @@ design-backup/
 # 10. LOCAL CONFIGURATION
 # ------------------------------------------------------------
 *.local
+
+# Private deployment exclusions
+data/accounts/
+backups/
+.vercel/
+*.lnk
+*.sqlite
+*.sqlite3

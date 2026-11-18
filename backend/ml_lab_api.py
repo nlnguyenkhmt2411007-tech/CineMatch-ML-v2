@@ -1,4 +1,4 @@
-﻿"""
+"""
 CineMatch ML Lab API.
 
 API thuc nghiem User-Based Collaborative Filtering A/B.
@@ -25,7 +25,7 @@ class PredictionRequest(BaseModel):
     ratingsA: Dict[int, float] = Field(default_factory=dict)
     ratingsB: Dict[int, float]
     movieId: int = Field(gt=0)
-    k: int = Field(default=20, ge=1, le=20)
+    k: int = Field(default=21, ge=1, le=31)
 
     @field_validator("ratingsA", "ratingsB")
     @classmethod
@@ -48,7 +48,7 @@ class PredictionRequest(BaseModel):
 
 @lru_cache(maxsize=1)
 def get_lab_model():
-    return UserBasedCF(k=20)
+    return UserBasedCF(k=21)
 
 
 @router.post("/predict")

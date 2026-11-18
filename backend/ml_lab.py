@@ -133,7 +133,7 @@ def predict_topk_for_user_b(
     ratings_b: Dict[int, float],
     movie_id: int,
     model,
-    k: int = 20,
+    k: int = 21,
 ) -> dict:
     """
     Du doan rating cho B bang A + nguoi dung MovieLens.

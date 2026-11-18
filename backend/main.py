@@ -11,6 +11,9 @@ from backend.explore_api import router as explore_router
 from backend.ml_lab_api import router as ml_lab_router
 
 from backend.tmdb_api import router as tmdb_router
+from backend.methods_guide_api import router as methods_guide_router
+from backend.auth_api import router as auth_router
+from backend.knn_neighbor_api import router as knn_neighbor_router
 
 
 # ============================================================
@@ -38,7 +41,7 @@ GENRES = [
     "Thriller", "War", "Western"
 ]
 
-BEST_K = 20
+BEST_K = 21
 
 
 # ============================================================
@@ -76,7 +79,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["GET", "POST"],
+    allow_methods=["GET", "POST", "DELETE"],
     allow_headers=["*"],
 )
 
@@ -86,6 +89,9 @@ app.add_middleware(
 app.include_router(tmdb_router)
 app.include_router(explore_router)
 app.include_router(ml_lab_router)
+app.include_router(methods_guide_router)
+app.include_router(auth_router)
+app.include_router(knn_neighbor_router)
 
 
 # ============================================================
@@ -491,10 +497,8 @@ def explain_user_cf(user_id: int, movie_id: int):
             "weightedContribution": similarity * deviation,
         })
 
-    neighbors.sort(
-        key=lambda item: item["similarity"],
-        reverse=True
-    )
+    # Deterministic tie-break: same as Colab (higher similarity, lower userId).
+    neighbors.sort(key=lambda item: (-item["similarity"], item["userId"]))
 
     neighbors = neighbors[:model.k]
 
@@ -647,3 +651,12 @@ def experiments():
     }
 
 
+
+# STEP 12 PUBLIC MOVIELENS DEMO
+from backend.cinematch_demo_router import router as cinematch_demo_router
+app.include_router(cinematch_demo_router)
+
+
+# STEP 13 - authenticated account-scoped KNN, no training changes
+from backend.account_knn_api import router as account_knn_router
+app.include_router(account_knn_router)
