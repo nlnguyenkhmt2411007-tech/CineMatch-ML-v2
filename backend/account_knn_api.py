@@ -14,7 +14,7 @@ from typing import Any
 import numpy as np
 from fastapi import APIRouter, Header, HTTPException, Query
 
-from backend import auth_api
+from backend import auth_router_selector as auth_api
 
 router = APIRouter(prefix="/api/auth", tags=["Account-scoped ML"])
 MIN_RATINGS = 10

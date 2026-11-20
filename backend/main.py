@@ -12,7 +12,7 @@ from backend.ml_lab_api import router as ml_lab_router
 
 from backend.tmdb_api import router as tmdb_router
 from backend.methods_guide_api import router as methods_guide_router
-from backend.auth_api import router as auth_router
+from backend.auth_router_selector import router as auth_router
 from backend.knn_neighbor_api import router as knn_neighbor_router
 
 
