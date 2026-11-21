@@ -26,6 +26,7 @@ interface RateMoviesViewProps {
   onRemoveRating: (movieId: number) => Promise<void>;
   onResetRatings: () => Promise<void>;
   onSelectMovie: (movie: Movie) => void;
+  practiceMode?: boolean;
 }
 
 type RatingTab = "unrated" | "rated";
@@ -139,6 +140,7 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
   onRemoveRating,
   onResetRatings,
   onSelectMovie,
+  practiceMode = false,
 }) => {
   // ========================================================
   // STATE
@@ -353,7 +355,7 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
     setFeedback(null);
     try {
       await onRateMovie(movieId, rating);
-      setFeedback({ status: "success", message: `Đã lưu ${rating.toFixed(1)}/5 sao vào tài khoản CineMatch.` });
+      setFeedback({ status: "success", message: practiceMode ? `Đã chấm thử ${rating.toFixed(1)}/5 sao trên thiết bị này.` : `Đã lưu ${rating.toFixed(1)}/5 sao vào tài khoản CineMatch.` });
     } catch (error) {
       setFeedback({ status: "error", message: error instanceof Error ? error.message : "Không lưu được đánh giá. Hãy thử lại." });
     } finally {
@@ -367,7 +369,7 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
     setFeedback(null);
     try {
       await onRemoveRating(movieId);
-      setFeedback({ status: "success", message: "Đã xóa đánh giá khỏi tài khoản CineMatch." });
+      setFeedback({ status: "success", message: practiceMode ? "Đã xóa điểm chấm thử trên thiết bị này." : "Đã xóa đánh giá khỏi tài khoản CineMatch." });
     } catch (error) {
       setFeedback({ status: "error", message: error instanceof Error ? error.message : "Không xóa được đánh giá." });
     } finally {
@@ -383,7 +385,7 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
       await onResetRatings();
       setShowResetConfirm(false);
       setPage(1);
-      setFeedback({ status: "success", message: "Đã xóa toàn bộ đánh giá của tài khoản CineMatch." });
+      setFeedback({ status: "success", message: practiceMode ? "Đã xóa toàn bộ điểm chấm thử trên thiết bị này." : "Đã xóa toàn bộ đánh giá của tài khoản CineMatch." });
     } catch (error) {
       setFeedback({ status: "error", message: error instanceof Error ? error.message : "Không thể đặt lại đánh giá." });
     } finally {
@@ -400,6 +402,7 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
 
       {/* HEADER */}
 
+      {!practiceMode && (
       <section className="space-y-3 border-b border-white/[0.08] pb-6">
         <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#E8BF82]">
           <Star className="h-4 w-4" />
@@ -424,6 +427,7 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
 
         </div>
       </section>
+      )}
 
       {/* PROFILE OVERVIEW */}
 
@@ -440,7 +444,7 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
             </p>
 
             <p className="font-mono text-xs text-[#E8BF82]">
-              Tài khoản CineMatch · Không phải User MovieLens
+              {practiceMode ? "Hồ sơ MovieLens · Chấm thử" : "Tài khoản CineMatch · Không phải User MovieLens"}
             </p>
           </div>
 
@@ -454,7 +458,7 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
             </p>
 
             <p className="text-xs text-[#9EA3AE]">
-              Lưu theo tài khoản qua FastAPI
+              {practiceMode ? "Lưu riêng trên trình duyệt" : "Lưu theo tài khoản qua FastAPI"}
             </p>
           </div>
 
@@ -474,7 +478,7 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
             </p>
 
             <p className="text-xs text-[#9EA3AE]">
-              Tính từ các đánh giá của tài khoản
+              {practiceMode ? "Chỉ tính điểm chấm thử" : "Tính từ các đánh giá của tài khoản"}
             </p>
           </div>
 
@@ -496,7 +500,7 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
         {showResetConfirm && (
           <div className="mt-5 space-y-3 rounded-[8px] border border-amber-500/20 bg-amber-950/10 p-4">
             <p className="text-sm text-amber-200">
-              Bạn có chắc muốn xóa toàn bộ điểm đã lưu trong tài khoản CineMatch?
+              {practiceMode ? "Bạn có chắc muốn xóa toàn bộ điểm chấm thử trên trình duyệt này?" : "Bạn có chắc muốn xóa toàn bộ điểm đã lưu trong tài khoản CineMatch?"}
               Thao tác này không thể hoàn tác.
             </p>
 
@@ -525,6 +529,7 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
 
       {/* IMPORTANT STATUS */}
 
+      {!practiceMode && (
       <details className="cm-film-method-note rounded-[10px] border border-[#E8BF82]/20 bg-[#E8BF82]/[0.04] p-4">
         <summary><Info className="h-5 w-5 shrink-0 text-[#E8BF82]" /> Điểm đánh giá được lưu ở đâu?</summary>
         <div className="space-y-2 mt-3">
@@ -542,6 +547,7 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
           </p>
         </div>
       </details>
+      )}
 
       {feedback && (
         <div

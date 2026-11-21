@@ -1,12 +1,17 @@
 
 import { useEffect, useState } from "react";
 import "./styles/cinematch-film-ui.css";
+import "./styles/cinematch-v4.css";
 
 import { cineMatchApi } from "./services/api";
 import { adaptApiMovie } from "./services/movieAdapter";
 import { fetchFeaturedMovies } from "./services/featuredApi";
 
+import { Camera } from "lucide-react";
 import { Navbar } from "./components/layout/Navbar";
+import { MovieLensRatingLibrary } from "./components/history/MovieLensRatingLibrary";
+import { MovieLensPracticeRatingView } from "./components/rating/MovieLensPracticeRatingView";
+import { CinemaProfileView } from "./components/profile/CinemaProfileView";
 import { MethodLabView } from "./components/methods/MethodLabView";
 import { AuthGate, useCineMatchAccount } from "./components/auth/AuthGate";
 import { PersonalRecommendations } from "./components/auth/PersonalRecommendations";
@@ -445,7 +450,7 @@ function CineMatchApp() {
   // ========================================================
 
   return (
-    <div className="cm-film-app flex min-h-screen flex-col bg-[#090A0E] font-sans text-[#F5F2EA] selection:bg-[#E8BF82]/20 selection:text-white">
+    <div className="cm-film-app cmv4-film flex min-h-screen flex-col bg-[#090A0E] font-sans text-[#F5F2EA] selection:bg-[#E8BF82]/20 selection:text-white">
       {showCinematicIntro && (
         <CinematicIntro onComplete={completeCinematicIntro} />
       )}
@@ -558,8 +563,46 @@ function CineMatchApp() {
           />
         )}
 
+        {currentTab === "history" && (
+          <MovieLensRatingLibrary
+            account={account}
+            allMovies={allMovies}
+            onSelectMovie={handleSelectMovie}
+            onNavigateRecommendations={() => navigateToTab("personal")}
+          />
+        )}
+
+        {currentTab === "profile" && (
+          <>
+            <div className="mx-auto flex w-full max-w-[1320px] justify-end px-5 pt-6 sm:px-9">
+              <button
+                type="button"
+                onClick={openAccountSwitcher}
+                aria-label="Đổi ảnh đại diện"
+                className="inline-flex items-center gap-2 rounded-xl border border-[#E8BF82]/40 bg-[#E8BF82]/10 px-4 py-2.5 text-sm font-semibold text-[#E8BF82] transition hover:border-[#E8BF82]/70 hover:bg-[#E8BF82]/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E8BF82]"
+              >
+                <Camera size={18} aria-hidden="true" />
+                Đổi ảnh đại diện
+              </button>
+            </div>
+            <CinemaProfileView
+              account={account}
+              avatarUrl={avatarUrl}
+              onNavigate={navigateToTab}
+              onOpenAccountSwitcher={openAccountSwitcher}
+              onEditGenres={editGenres}
+              onLogout={() => void logout()}
+            />
+          </>
+        )}
+
         {currentTab === "rate" && account.accountType === "movielens" && (
-          <section className="mx-auto max-w-5xl px-6 py-20 text-white"><h1 className="text-3xl font-bold">Lịch sử đánh giá MovieLens User {account.movieLensUserId}</h1><p className="mt-4 text-slate-300">Hồ sơ demo có {Object.keys(account.ratings).length} đánh giá trong Training. Dữ liệu này được giữ chỉ đọc để không làm thay đổi mô hình KNN K = 21 hay kết quả Colab.</p><button type="button" onClick={() => navigateToTab("personal")} className="mt-7 rounded-xl bg-[#e8bf82] px-5 py-3 font-bold text-[#201811]">Xem gợi ý từ cả hai mô hình</button></section>
+          <MovieLensPracticeRatingView
+            currentUser={currentUser}
+            allMovies={allMovies}
+            onSelectMovie={handleSelectMovie}
+            onViewHistory={() => navigateToTab("history")}
+          />
         )}
         {currentTab === "rate" && account.accountType !== "movielens" && (
           <>
@@ -601,7 +644,15 @@ function CineMatchApp() {
             ? currentUser.ratings[selectedMovie.movieId]
             : undefined
         }
-        onRateMovie={handleRateMovie}
+        onRateMovie={(movieId, rating) => {
+          if (account.accountType === "movielens") {
+            setAccountActionError(
+              "Hồ sơ MovieLens chỉ đọc. Hãy chấm thử tại trang Đánh giá hoặc chuyển sang tài khoản CineMatch riêng."
+            );
+            return;
+          }
+          handleRateMovie(movieId, rating);
+        }}
         isBookmarked={
           selectedMovie
             ? bookmarkedMovieIds.has(
