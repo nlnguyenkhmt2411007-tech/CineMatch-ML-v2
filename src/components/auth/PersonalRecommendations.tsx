@@ -39,30 +39,48 @@ export function PersonalRecommendations({ account, onSelectMovie, onExplore, onR
   useEffect(() => {
     let live = true;
     setLoading(true);
+    setResult(null);
+    setPosters({});
     setError("");
     authApi.recommendations(10).then((value) => {
       if (!live) return;
       setResult(value);
       setLoading(false);
-      for (const movie of value.items) {
-        cineMatchApi.getEnrichedMovie(movie.movieId).then((enriched) => {
+      // Enrich a few cards at a time to avoid bursting the backend with 10 requests.
+      // Posters appear progressively; failures leave the title/genre fallback intact.
+      const loadPosters = async () => {
+        for (let start = 0; start < value.items.length; start += 3) {
           if (!live) return;
-          setPosters((current) => ({ ...current, [movie.movieId]: {
-            posterUrl: enriched.posterUrl ?? "",
-            backdropUrl: enriched.backdropUrl ?? "",
-            synopsis: enriched.synopsis ?? "",
-            tmdbId: enriched.tmdbId ?? undefined,
-            imdbId: enriched.imdbId ?? undefined,
-          } }));
-        }).catch(() => { /* Poster is optional; metadata from MovieLens remains visible. */ });
-      }
+          const batch = await Promise.all(value.items.slice(start, start + 3).map(async (movie) => {
+            try {
+              const enriched = await cineMatchApi.getEnrichedMovie(movie.movieId);
+              return [movie.movieId, {
+                posterUrl: enriched.posterUrl ?? "",
+                backdropUrl: enriched.backdropUrl ?? "",
+                synopsis: enriched.synopsis ?? "",
+                tmdbId: enriched.tmdbId ?? undefined,
+                imdbId: enriched.imdbId ?? undefined,
+              }] as const;
+            } catch {
+              return null;
+            }
+          }));
+          if (!live) return;
+          setPosters((current) => {
+            const next = { ...current };
+            for (const entry of batch) if (entry) next[entry[0]] = entry[1];
+            return next;
+          });
+        }
+      };
+      void loadPosters();
     }).catch((err: unknown) => {
       if (!live) return;
       setError(err instanceof Error ? err.message : "Không tải được gợi ý phim.");
       setLoading(false);
     });
     return () => { live = false; };
-  }, [ratingsFingerprint, genresFingerprint, refresh]);
+  }, [account.accountId, ratingsFingerprint, genresFingerprint, refresh]);
 
   const description = result?.source === "rated_movies"
     ? "Từ những bộ phim bạn yêu thích."
@@ -74,9 +92,9 @@ export function PersonalRecommendations({ account, onSelectMovie, onExplore, onR
     <div className="cm-personal-film-page min-h-[70vh] bg-[#090A0E] text-white">
       <div className="cm-personal-film-hero relative overflow-hidden border-b border-white/10 bg-gradient-to-br from-[#201C19] via-[#11151D] to-[#0B0E15]">
         <div className="pointer-events-none absolute -right-10 -top-10 h-64 w-64 rounded-full bg-[#E8BF82]/10 blur-[80px]" />
-        <div className="relative mx-auto max-w-[1320px] px-5 py-12 sm:px-9 sm:py-16">
+        <div className="relative mx-auto max-w-[1320px] px-5 py-9 sm:px-9 sm:py-11">
           <div className="inline-flex items-center gap-2 rounded-full border border-[#E8BF82]/30 bg-[#E8BF82]/10 px-3 py-1.5 text-xs font-semibold tracking-wide text-[#f1cd97]"><Sparkles size={15} /> DÀNH RIÊNG CHO BẠN</div>
-          <h1 className="mt-5 max-w-3xl text-3xl font-extrabold tracking-tight sm:text-5xl">Chọn phim hợp <span className="text-[#E8BF82]">gu của bạn.</span></h1>
+          <h1 className="mt-5 max-w-3xl text-3xl font-extrabold tracking-tight sm:text-4xl">Chọn phim hợp <span className="text-[#E8BF82]">gu của bạn.</span></h1>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">{description}</p>
           <div className="mt-6 flex flex-wrap gap-2">{account.preferredGenres.map((genre) => <span key={genre} className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs text-slate-200">{genre}</span>)}<button onClick={onEditGenres} className="rounded-full border border-[#E8BF82]/30 px-3 py-1.5 text-xs font-semibold text-[#E8BF82] hover:bg-[#E8BF82]/10">Chỉnh sửa thể loại</button></div>
           <div className="mt-7 flex flex-wrap items-center gap-3"><button onClick={onExplore} className="flex items-center gap-2 rounded-xl bg-[#E8BF82] px-5 py-3 text-sm font-bold text-[#1f160b] hover:brightness-110">Khám phá phim <ArrowRight size={17}/></button><button onClick={onRate} className="flex items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-5 py-3 text-sm text-white hover:bg-white/10"><Star size={16}/> Đánh giá phim</button></div>
@@ -85,7 +103,10 @@ export function PersonalRecommendations({ account, onSelectMovie, onExplore, onR
       </div>
       <section className="mx-auto max-w-[1320px] px-5 py-11 sm:px-9">
         <div className="mb-7 flex flex-wrap items-center justify-between gap-4"><div><h2 className="flex items-center gap-2 text-xl font-extrabold sm:text-2xl"><Heart className="text-[#E8BF82]" /> Phim dành cho bạn</h2></div><button onClick={() => setRefresh((n) => n + 1)} className="flex items-center gap-2 rounded-xl border border-white/15 px-4 py-2.5 text-sm text-slate-300 hover:bg-white/10"><RefreshCcw size={15} /> Tải lại</button></div>
-        {loading && <div className="flex min-h-52 items-center justify-center gap-3 rounded-2xl border border-white/10 text-slate-400"><Clapperboard className="animate-pulse text-[#E8BF82]" /> Đang tìm phim phù hợp...</div>}
+        {loading && <div className="cm-video-personal-loading" role="status" aria-label="Đang tải phim gợi ý">
+          <div className="cm-video-personal-status"><Clapperboard size={18} className="text-[#E8BF82]"/> Đang tìm phim phù hợp…</div>
+          <div className="cm-video-personal-skeleton" aria-hidden="true">{[0, 1, 2, 3, 4].map(n => <div key={n} className="cm-video-personal-card"><div className="cm-video-personal-poster"/><div className="cm-video-personal-line"/><div className="cm-video-personal-line short"/></div>)}</div>
+        </div>}
         {error && <div className="rounded-xl border border-rose-400/20 bg-rose-400/10 p-5 text-sm text-rose-200" role="alert">{error}</div>}
         {!loading && !error && result?.items.length === 0 && <p className="rounded-xl border border-white/10 p-6 text-slate-400">Chưa có phim phù hợp. Hãy thử thay đổi thể loại yêu thích.</p>}
         {!loading && result && <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 xl:gap-6">{result.items.map((movie, i) => {

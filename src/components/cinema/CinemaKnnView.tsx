@@ -4,6 +4,7 @@ import { CollaborativeView as LegacyCollaborativeView } from "../collaborative/C
 import { authApi, type LiveKnnStatus } from "../../services/authApi";
 import { useCineMatchAccount } from "../auth/AuthGate";
 import { KnnUnlockProgress } from "../auth/KnnUnlockProgress";
+import { CinemaNeighborInsights } from "./CinemaNeighborInsights";
 import {
   CinemaHero,
   CinemaRecommendations,
@@ -163,7 +164,7 @@ export function CinemaKnnView(props: Props) {
             Những bộ phim <em>đúng gu của bạn</em>
           </>
         }
-        subtitle="Danh sách phim được chọn lọc theo sở thích và những đánh giá của chính bạn."
+        subtitle="Dự đoán điểm phim từ những hồ sơ có gu tương đồng."
         icon={<Heart size={37} />}
         backdrop={lead?.backdropUrl}
       >
@@ -208,11 +209,10 @@ export function CinemaKnnView(props: Props) {
                 </div>
                 <div>
                   <h2 className="text-base font-semibold text-[#F6F0E7] sm:text-lg">
-                    Dành riêng cho bạn
+                    Phim hợp gu với bạn
                   </h2>
                   <p className="mt-1 max-w-xl text-xs leading-6 text-[#AFA497] sm:text-sm">
-                    Chọn số lượng phim muốn khám phá. CineMatch sẽ xếp hạng
-                    những phim bạn chưa đánh giá theo mức độ phù hợp dự đoán.
+                    Chọn số phim muốn xem. Xếp theo điểm dự đoán.
                   </p>
                 </div>
               </div>
@@ -241,17 +241,26 @@ export function CinemaKnnView(props: Props) {
               </div>
             </section>
 
-            <div className="w-full min-w-0">
-              <CinemaRecommendations
-                title={`Top-${topN} dành riêng cho bạn`}
-                description="Phim bạn chưa đánh giá, được xếp theo mức độ phù hợp dự đoán."
-                movies={visible}
-                extras={extras}
-                loading={loading}
-                error={error}
-                kind="rating"
-                onSelectMovie={props.onSelectMovie}
-                localMovies={props.allMovies}
+            <div className="cm-modern-knn-layout">
+              <div className="cm-modern-knn-results">
+                <CinemaRecommendations
+                  title={`Top-${topN} phim dành cho bạn`}
+                  description="Phim chưa đánh giá · xếp theo điểm dự đoán."
+                  movies={visible}
+                  extras={extras}
+                  loading={loading}
+                  error={error}
+                  kind="rating"
+                  onSelectMovie={props.onSelectMovie}
+                  localMovies={props.allMovies}
+                />
+              </div>
+              <CinemaNeighborInsights
+                key={accountKey}
+                accountKey={accountKey}
+                accountUserId={account.userId}
+                isDemo={isDemo}
+                status={status}
               />
             </div>
 

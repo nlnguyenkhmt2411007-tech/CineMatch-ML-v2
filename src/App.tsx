@@ -1,7 +1,8 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./styles/cinematch-film-ui.css";
 import "./styles/cinematch-v4.css";
+import "./styles/cinematch-modern-ux.css";
 
 import { cineMatchApi } from "./services/api";
 import { adaptApiMovie } from "./services/movieAdapter";
@@ -36,6 +37,21 @@ import { MOCK_MOVIES } from "./data/mockMovies";
 
 
 import type { Movie, UserProfile } from "./types";
+
+// Account-scoped bookmarks are loaded synchronously, before any persistence effect.
+// This avoids writing one account's bookmarks into another account's storage key.
+function readSavedBookmarks(key: string): Set<number> {
+  try {
+    const saved: unknown = JSON.parse(localStorage.getItem(key) || "[]");
+    return new Set(
+      Array.isArray(saved)
+        ? saved.filter((value): value is number => Number.isSafeInteger(value))
+        : []
+    );
+  } catch {
+    return new Set<number>();
+  }
+}
 
 function CineMatchApp() {
   const [showCinematicIntro, setShowCinematicIntro] = useState(
@@ -118,16 +134,28 @@ function CineMatchApp() {
   // ========================================================
 
   const bookmarkKey = `cinematch_bookmarks_v2_${account.accountType === "movielens" ? "ml" : "personal"}_${account.accountId}`;
-  const [bookmarkedMovieIds, setBookmarkedMovieIds] = useState<Set<number>>(() => {
-    try {
-      const saved: unknown = JSON.parse(localStorage.getItem(bookmarkKey) || "[]");
-      return new Set(Array.isArray(saved) ? saved.filter((v): v is number => Number.isSafeInteger(v)) : []);
-    } catch { return new Set<number>(); }
-  });
+  const [bookmarkState, setBookmarkState] = useState<{key: string; ids: Set<number>}>(
+    () => ({ key: bookmarkKey, ids: readSavedBookmarks(bookmarkKey) })
+  );
+  // Use the correct account's bookmarks immediately, even on the first switch render.
+  const bookmarkedMovieIds = bookmarkState.key === bookmarkKey
+    ? bookmarkState.ids
+    : readSavedBookmarks(bookmarkKey);
+
   useEffect(() => {
-    try { localStorage.setItem(bookmarkKey, JSON.stringify([...bookmarkedMovieIds])); }
-    catch { /* Browser storage may be unavailable. */ }
-  }, [bookmarkKey, bookmarkedMovieIds]);
+    if (bookmarkState.key !== bookmarkKey) {
+      setBookmarkState({ key: bookmarkKey, ids: readSavedBookmarks(bookmarkKey) });
+    }
+  }, [bookmarkKey, bookmarkState.key]);
+
+  useEffect(() => {
+    if (bookmarkState.key !== bookmarkKey) return;
+    try {
+      localStorage.setItem(bookmarkKey, JSON.stringify([...bookmarkState.ids]));
+    } catch {
+      // Browser storage may be unavailable.
+    }
+  }, [bookmarkKey, bookmarkState]);
 
   // ========================================================
   // 5. FASTAPI HEALTH CHECK
@@ -290,27 +318,23 @@ function CineMatchApp() {
 
         const converted = collected.map(adaptApiMovie);
 
-        // Uu tien metadata anh TMDb cho 12 phim
-        // da duoc tai tu API featured.
-        const featuredMap = new Map(
-          featuredMovies.map((movie) => [
-            movie.movieId,
-            movie,
-          ])
-        );
-
-        const mergedMovies = converted.map(
-          (movie) => {
-            const featured =
-              featuredMap.get(movie.movieId);
-
-            return featured
-              ? { ...movie, ...featured }
-              : movie;
-          }
-        );
-
-        setAllMovies(mergedMovies);
+        // Merge existing TMDb metadata into the catalog using functional state.
+        // The catalog request is NOT restarted when the 12 featured movies arrive.
+        setAllMovies((previous) => {
+          const cached = new Map(previous.map((movie) => [movie.movieId, movie]));
+          return converted.map((movie) => {
+            const enriched = cached.get(movie.movieId);
+            if (!enriched) return movie;
+            const safePoster = enriched.posterUrl?.startsWith("https://image.tmdb.org/t/p/")
+              ? enriched.posterUrl : movie.posterUrl;
+            return {
+              ...movie,
+              posterUrl: safePoster,
+              backdropUrl: enriched.backdropUrl || movie.backdropUrl,
+              synopsis: enriched.synopsis || movie.synopsis,
+            };
+          });
+        });
         setMoviesLoadedFromApi(true);
         setIsFastApiConnected(true);
       } catch (error) {
@@ -336,7 +360,7 @@ function CineMatchApp() {
     return () => {
       cancelled = true;
     };
-  }, [catalogRequested, featuredMovies]);
+  }, [catalogRequested]);
 
   // ========================================================
   // 8. CHUYEN TRANG
@@ -419,16 +443,13 @@ function CineMatchApp() {
   // ========================================================
 
   const handleToggleBookmark = (movieId: number) => {
-    setBookmarkedMovieIds((previous) => {
-      const next = new Set(previous);
-
-      if (next.has(movieId)) {
-        next.delete(movieId);
-      } else {
-        next.add(movieId);
-      }
-
-      return next;
+    setBookmarkState((previous) => {
+      const next = new Set(
+        previous.key === bookmarkKey ? previous.ids : readSavedBookmarks(bookmarkKey)
+      );
+      if (next.has(movieId)) next.delete(movieId);
+      else next.add(movieId);
+      return { key: bookmarkKey, ids: next };
     });
   };
 
@@ -436,13 +457,40 @@ function CineMatchApp() {
   // 14. CHON PHIM CO POSTER
   // ========================================================
 
+  const movieDetailRequest = useRef(0);
   const handleSelectMovie = (movie: Movie) => {
-    const enriched =
-      featuredMovies.find(
-        (item) => item.movieId === movie.movieId
-      ) || movie;
+    const requestId = ++movieDetailRequest.current;
+    const catalogMovie = allMovies.find((item) => item.movieId === movie.movieId);
+    const featuredMovie = featuredMovies.find((item) => item.movieId === movie.movieId);
 
-    setSelectedMovie(enriched);
+    // Open immediately; do not replace richer metadata passed by the recommendation card.
+    const initial: Movie = {
+      ...(catalogMovie ?? {}),
+      ...(featuredMovie ?? {}),
+      ...movie,
+      posterUrl: movie.posterUrl || featuredMovie?.posterUrl || catalogMovie?.posterUrl || "",
+      backdropUrl: movie.backdropUrl || featuredMovie?.backdropUrl || catalogMovie?.backdropUrl || "",
+      synopsis: movie.synopsis || featuredMovie?.synopsis || catalogMovie?.synopsis || "",
+    };
+    setSelectedMovie(initial);
+
+    // Enrich missing poster/description on demand. Ignore stale responses on fast clicks.
+    if (initial.posterUrl && initial.synopsis) return;
+    void cineMatchApi.getEnrichedMovie(movie.movieId)
+      .then((detail) => {
+        if (movieDetailRequest.current !== requestId) return;
+        setSelectedMovie((current) => current?.movieId !== movie.movieId
+          ? current
+          : {
+              ...current,
+              posterUrl: detail.posterUrl || current.posterUrl,
+              backdropUrl: detail.backdropUrl || current.backdropUrl,
+              synopsis: detail.synopsis || current.synopsis,
+              tmdbId: detail.tmdbId ?? current.tmdbId,
+              imdbId: detail.imdbId ?? current.imdbId,
+            });
+      })
+      .catch(() => { /* Keep the movie card usable when TMDb is unavailable. */ });
   };
 
   // ========================================================
@@ -636,7 +684,7 @@ function CineMatchApp() {
 
       <MovieModal
         movie={selectedMovie}
-        onClose={() => setSelectedMovie(null)}
+        onClose={() => { movieDetailRequest.current += 1; setSelectedMovie(null); }}
         onSelectMovie={handleSelectMovie}
         allMovies={allMovies}
         userRating={

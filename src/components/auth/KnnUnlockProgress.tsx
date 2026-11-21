@@ -12,6 +12,7 @@ export function KnnUnlockProgress({ account, onRate, compact = false }: {
   const [status, setStatus] = useState<LiveKnnStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [retry, setRetry] = useState(0);
   const fingerprint = JSON.stringify(account.ratings);
 
   useEffect(() => {
@@ -33,7 +34,7 @@ export function KnnUnlockProgress({ account, onRate, compact = false }: {
       })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [account.accountId, account.accountType, fingerprint]);
+  }, [account.accountId, account.accountType, fingerprint, retry]);
 
   if (account.accountType === "movielens") return null;
   const count = status?.ratedCount ?? 0;
@@ -44,7 +45,7 @@ export function KnnUnlockProgress({ account, onRate, compact = false }: {
   const similar = status?.positiveNeighborCount ?? 0;
   const reason = status?.reason;
   const subline = loading ? "Đang cập nhật tiến độ…" : ready
-    ? `CineMatch đã tìm thấy ${similar} người có gu phim tương tự bạn.`
+    ? `${similar} hồ sơ phù hợp · chọn tối đa 21 láng giềng.`
     : left > 0
       ? `Đánh giá thêm ${left} phim để CineMatch hiểu sở thích của bạn hơn.`
       : reason === "no_variance"
@@ -66,9 +67,13 @@ export function KnnUnlockProgress({ account, onRate, compact = false }: {
         {ready ? "Đã có gợi ý" : `${count}/${required} phim`}
       </span>
     </div>
-    {error && <p className="cm-account-error" role="alert">{error}</p>}
+    {error && <div className="cm-account-error" role="alert">
+      <span>{error}</span>
+      <button type="button" onClick={() => setRetry((value) => value + 1)}
+        className="cm-account-button cm-account-retry">Tải lại tiến độ</button>
+    </div>}
     {!loading && !error && status && <>
-      <div className="cm-account-meter-line"><b>{ready ? `${count} phim đã đánh giá` : `${count}/${required} phim cần thiết`}</b><span>{progress}%</span></div>
+      <div className="cm-account-meter-line"><b>{ready ? `${count} phim đã đánh giá` : `${count}/${required} phim cần thiết`}</b><span title="Tiến độ đạt mốc đánh giá tối thiểu, không phải độ chính xác mô hình">{progress}% mục tiêu</span></div>
       <div className="cm-account-meter" role="progressbar" aria-valuenow={Math.min(count,required)} aria-valuemin={0} aria-valuemax={required} aria-label="Tiến độ đánh giá phim"><i style={{width:`${progress}%`}}/></div>
       {!ready && <button type="button" className="cm-account-button" onClick={onRate}><Star size={16}/> Đánh giá phim <ArrowRight size={16}/></button>}
       <details className="cm-progress-details">

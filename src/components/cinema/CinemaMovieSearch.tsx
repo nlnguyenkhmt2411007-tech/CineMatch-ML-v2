@@ -180,6 +180,6 @@ export function CinemaMovieSearch({ onPick, onEditingChange, localMovies }: Prop
       {!busy && results.length === 0 && <div className="cm-cinema-suggestion-empty">{searchError || "Chưa tìm thấy phim phù hợp."}</div>}
       {busy && results.length === 0 && <div className="cm-cinema-suggestion-empty">Đang tìm phim trong MovieLens...</div>}
     </div>}
-    <p className="cm-cinema-search-hint">Gõ từ 2 ký tự, chọn phim trong danh sách để xem Top-10 ngay. Không cần nhớ mã phim.</p>
+    <p className="cm-cinema-search-hint">Gõ tên phim rồi chọn từ danh sách.</p>
   </div>;
 }

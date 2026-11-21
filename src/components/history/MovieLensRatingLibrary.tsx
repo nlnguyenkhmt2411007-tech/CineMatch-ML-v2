@@ -30,9 +30,7 @@ export function MovieLensRatingLibrary({ account, allMovies, onSelectMovie, onNa
     [account.ratings]);
 
   const knownMovies = useMemo(() => new Map<number, Movie>([...allMovies.map(m=>[m.movieId,m] as const), ...Object.values(loadedMovies).map(m=>[m.movieId,m] as const)]),[allMovies,loadedMovies]);
-  const moviesWithYears = ratings.map(r => knownMovies.get(r.id)?.year ?? 0).filter(Boolean);
-  const earliest = moviesWithYears.length ? Math.min(...moviesWithYears) : null;
-  const latest = moviesWithYears.length ? Math.max(...moviesWithYears) : null;
+  const fiveStarCount = ratings.filter(row => row.rating === 5).length;
   const avg = ratings.length ? ratings.reduce((sum,r)=>sum+r.rating,0)/ratings.length : 0;
 
   const filtered = useMemo(() => {
@@ -88,7 +86,7 @@ export function MovieLensRatingLibrary({ account, allMovies, onSelectMovie, onNa
     <div className="cmv4-page cmv4-history-page">
       <div className="cmv4-page-head">
         <div className="cmv4-page-eyebrow"><History size={19}/> BỘ SƯU TẬP CỦA BẠN</div>
-        <h1>Bộ sưu tập <span>đã đánh giá</span></h1>
+        <h1>Thư viện <span>đã đánh giá</span></h1>
         <p>{demo ? `Lịch sử đánh giá Training của MovieLens User ${account.movieLensUserId ?? account.userId} · Dữ liệu thử nghiệm chỉ đọc.` : "Những bộ phim bạn đã đánh giá trong tài khoản CineMatch."}</p>
       </div>
 
@@ -96,9 +94,9 @@ export function MovieLensRatingLibrary({ account, allMovies, onSelectMovie, onNa
         <div className="cmv4-user-chip"><div className="cmv4-user-symbol"><Film size={19}/></div><span>{account.name}</span></div>
         <div className="cmv4-stat"><strong>{ratings.length.toLocaleString("vi-VN")}</strong><span>Phim đã đánh giá</span></div>
         <div className="cmv4-stat"><strong>{avg.toFixed(2)}</strong><span>Điểm trung bình / 5</span></div>
-        <div className="cmv4-stat"><strong>{earliest && latest ? `${earliest}–${latest}` : "—"}</strong><span>Khoảng năm phát hành*</span></div>
+        <div className="cmv4-stat"><strong>{fiveStarCount.toLocaleString("vi-VN")}</strong><span>Phim 5 sao</span></div>
       </div>
-      {demo && <p className="cmv4-fineprint"><ShieldCheck size={15}/> Hồ sơ MovieLens chỉ đọc; dữ liệu gốc không bị sửa. *Khoảng năm chỉ tính các phim đã tải metadata.</p>}
+      {demo && <p className="cmv4-fineprint"><ShieldCheck size={15}/> Hồ sơ MovieLens chỉ đọc; dữ liệu gốc không bị sửa.</p>}
 
       <div className="cmv4-library-toolbar">
         <label className="cmv4-search"><Search size={19}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Tìm trong phim đã đánh giá…" aria-label="Tìm phim đã đánh giá"/>{query && <button type="button" onClick={()=>setQuery("")} aria-label="Xóa tìm kiếm"><X size={17}/></button>}</label>

@@ -23,7 +23,7 @@ export function CinemaProfileView({ account, avatarUrl, onNavigate, onOpenAccoun
     {icon:Users,label:"Chuyển tài khoản",action:onOpenAccountSwitcher},
   ];
   return <div className="cmv4-page cmv4-profile-page">
-    <div className="cmv4-page-head"><div className="cmv4-page-eyebrow"><UserRound size={19}/> KHÔNG GIAN CÁ NHÂN</div><h1>Hồ sơ <span>của bạn</span></h1><p>Quản lý tài khoản và nhìn lại hành trình khám phá phim cùng CineMatch.</p></div>
+    <div className="cmv4-page-head"><div className="cmv4-page-eyebrow"><UserRound size={19}/> KHÔNG GIAN CÁ NHÂN</div><h1>Hồ sơ <span>của bạn</span></h1><p>Tài khoản, sở thích và phim đã đánh giá.</p></div>
     <div className="cmv4-profile-grid">
       <aside className="cmv4-profile-sidebar">
         <div className="cmv4-profile-avatar">{avatarUrl ? <img src={avatarUrl} alt="Ảnh đại diện"/> : <UserRound size={49}/>}</div>
@@ -36,7 +36,7 @@ export function CinemaProfileView({ account, avatarUrl, onNavigate, onOpenAccoun
         </div>
       </aside>
       <section className="cmv4-profile-main">
-        <div className="cmv4-profile-section-title"><Clapperboard size={21}/>Thông tin thống kê</div>
+        <div className="cmv4-profile-section-title"><Clapperboard size={21}/>Tổng quan</div>
         <div className="cmv4-profile-stats">
           <div><strong>{ratings.length.toLocaleString("vi-VN")}</strong><span>Phim đã đánh giá</span></div>
           <div><strong>{mean.toFixed(2)}</strong><span>Điểm trung bình</span></div>
@@ -46,7 +46,7 @@ export function CinemaProfileView({ account, avatarUrl, onNavigate, onOpenAccoun
         <div className="cmv4-genre-chips">
           {account.preferredGenres.length ? account.preferredGenres.map(genre=><span key={genre}>{genre}</span>) : <p>Chưa có thể loại yêu thích. Hãy khám phá và đánh giá thêm phim.</p>}
         </div>
-        <div className="cmv4-profile-note"><Star size={20}/><div><strong>{isDemo ? "Dữ liệu MovieLens được bảo toàn" : "Gợi ý cải thiện theo đánh giá của bạn"}</strong><p>{isDemo ? "Các đánh giá thuộc tập Training là dữ liệu thử nghiệm chỉ đọc. Mô hình User-Based dùng K = 21 và không ghi đè rating gốc." : "Thêm đánh giá để cải thiện hồ sơ sở thích. KNN trực tuyến sẽ kích hoạt khi đủ số phim đánh giá và tìm được láng giềng tương đồng."}</p></div></div>
+        <div className="cmv4-profile-note"><Star size={20}/><div><strong>{isDemo ? "Dữ liệu MovieLens được bảo toàn" : "Gợi ý cải thiện theo đánh giá của bạn"}</strong><p>{isDemo ? "Điểm MovieLens chỉ đọc. KNN dùng K = 21." : "Đánh giá thêm phim để mở gợi ý KNN khi đủ dữ liệu tương đồng."}</p></div></div>
         <div className="cmv4-profile-actions"><button type="button" onClick={()=>onNavigate("personal")}>Xem phim dành cho bạn <ArrowRight size={17}/></button><button type="button" onClick={()=>onNavigate("history")}>Lịch sử đánh giá</button></div>
       </section>
     </div>

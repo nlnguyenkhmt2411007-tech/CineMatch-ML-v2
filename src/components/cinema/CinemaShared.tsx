@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { ArrowLeft, ArrowRight, Clapperboard, Film, LoaderCircle, Star } from "lucide-react";
+import { ArrowLeft, ArrowRight, Clapperboard, Film, Layers3, Star, Users } from "lucide-react";
 import { cineMatchApi } from "../../services/api";
 import type { Movie } from "../../types";
 
@@ -10,6 +10,7 @@ export interface RankedMovie {
   genres?: string[];
   similarity?: number;
   predicted_rating?: number;
+  neighbor_count?: number;
 }
 
 interface MovieExtra {
@@ -90,7 +91,10 @@ export function CinemaRecommendations({ title, description, movies, extras, load
       <div><div className="cm-cinema-kicker"><Film size={17}/> TUYỂN CHỌN CHO BẠN</div><h2>{title}</h2><p>{description}</p></div>
       <div className="cm-cinema-arrows"><button type="button" aria-label="Cuộn về trái" onClick={() => scrollRef.current?.scrollBy({left: -640, behavior: "smooth"})}><ArrowLeft size={19}/></button><button type="button" aria-label="Cuộn về phải" onClick={() => scrollRef.current?.scrollBy({left: 640, behavior: "smooth"})}><ArrowRight size={19}/></button></div>
     </div>
-    {loading && <div className="cm-cinema-message"><LoaderCircle className="cm-cinema-spin" size={23}/> Đang lấy kết quả từ mô hình...</div>}
+    {loading && <div className="cm-modern-skeleton-grid" role="status" aria-label="Đang tải phim gợi ý">
+      {[0,1,2,3,4].map(index => <div className="cm-modern-skeleton-card" key={index} aria-hidden="true"><div className="cm-modern-skeleton-poster"/><div className="cm-modern-skeleton-line"/><div className="cm-modern-skeleton-line short"/></div>)}
+      <span className="sr-only">Đang tải phim gợi ý…</span>
+    </div>}
     {!loading && error && <div className="cm-cinema-message error" role="alert">Không tải được kết quả: {error}</div>}
     {!loading && !error && movies.length === 0 && <div className="cm-cinema-message">Chưa có phim phù hợp với lựa chọn này.</div>}
     {!loading && !error && movies.length > 0 && <div className="cm-cinema-track" ref={scrollRef}>
@@ -106,8 +110,9 @@ export function CinemaRecommendations({ title, description, movies, extras, load
             <span className="cm-cinema-rank">#{idx+1}</span>
           </div>
           <strong className="cm-cinema-movie-name">{row.title}</strong>
-          <span className="cm-cinema-movie-score"><Star size={15} fill="currentColor"/> {kind === "rating" ? "Dự đoán" : "Độ tương đồng"}: <b>{typeof value === "number" && Number.isFinite(value) ? value.toFixed(kind === "rating" ? 2 : 2) : "—"}{kind === "rating" ? " / 5" : ""}</b></span>
+          <span className="cm-cinema-movie-score">{kind === "rating" ? <Star size={15} fill="currentColor"/> : <Layers3 size={15}/>} {kind === "rating" ? "Dự đoán" : "Giống thể loại"}: <b>{typeof value === "number" && Number.isFinite(value) ? value.toFixed(2) : "—"}{kind === "rating" ? " / 5" : ""}</b></span>
           <span className="cm-cinema-movie-genres">{genres.slice(0,3).join(" · ") || `MovieLens #${row.movieId}`}</span>
+          {kind === "rating" && typeof row.neighbor_count === "number" && row.neighbor_count > 0 && <span className="cm-cinema-movie-neighbors"><Users size={12}/> {row.neighbor_count} láng giềng góp điểm</span>}
         </button>;
       })}
     </div>}

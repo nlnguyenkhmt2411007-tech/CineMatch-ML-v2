@@ -70,11 +70,11 @@ export function CinemaContentView(props: Props) {
   const localSelected = props.allMovies.find(row => row.movieId === movieId);
   const extra = extras[movieId];
 
-  return <div className="cm-cinema-page cm-account-view">
+  return <div className="cm-cinema-page cm-account-view cm-modern-cbf">
     <CinemaHero
       eyebrow="PHIM DÀNH CHO BẠN"
       title={<>Phim hợp <em>gu của bạn</em></>}
-      subtitle="Khám phá những bộ phim bạn có thể yêu thích."
+      subtitle="Phim phù hợp với thể loại và đánh giá của bạn."
       icon={<Layers3 size={36}/>} backdrop={extra?.backdropUrl || localSelected?.backdropUrl}
     >
 
@@ -104,7 +104,7 @@ export function CinemaContentView(props: Props) {
           </>}
         </aside>
         <CinemaRecommendations
-          title={mode === "similar" ? `Giống ${selectedFilm?.title ?? "phim bạn chọn"}` : "Đề xuất cho bạn"}
+          title={mode === "similar" ? `Giống ${selectedFilm?.title ?? "phim bạn chọn"}` : "Top-10 phim hợp gu"}
           description={mode === "similar" ? "Khám phá phim có thể loại tương tự." : "Những bộ phim được chọn từ sở thích của bạn."}
           movies={items} extras={extras} loading={loading} error={error} kind="similarity" onSelectMovie={props.onSelectMovie} localMovies={props.allMovies}
         />

@@ -1,0 +1,232 @@
+/* CineMatch ML V2 · approved modern cinema refresh, 2026-11-21.
+   Appearance only. Scoped to recommendations, rating, profile, and library.
+   Home and Explore remain unchanged. */
+
+.cm-modern-cbf, .cm-cinema-knn, .cmv4-profile-page, .cmv4-history-page, .cm-rating-film-page {
+  --cm-modern-gold: #E8BF82;
+  --cm-modern-line: rgba(232,191,130,.22);
+  --cm-modern-panel: #141720;
+  --cm-modern-muted: #B7AD9F;
+}
+
+/* Restrained cinema hero: comfortable hierarchy, no oversized walls of text */
+.cm-modern-cbf .cm-cinema-hero, .cm-cinema-knn .cm-cinema-hero { min-height:196px; }
+.cm-modern-cbf .cm-cinema-hero-content, .cm-cinema-knn .cm-cinema-hero-content {padding-top:29px; padding-bottom:30px;}
+.cm-modern-cbf .cm-cinema-heading h1, .cm-cinema-knn .cm-cinema-heading h1 {font-size:clamp(27px,3vw,43px); letter-spacing:-.035em;}
+.cm-modern-cbf .cm-cinema-hero-content > p, .cm-cinema-knn .cm-cinema-hero-content > p {max-width:560px; margin-top:8px; color:#D0C5B8;}
+.cm-modern-cbf .cm-cinema-container, .cm-cinema-knn .cm-cinema-container {padding-top:24px;}
+.cm-modern-cbf .cm-account-pinned, .cm-cinema-knn .cm-account-pinned {border-color:var(--cm-modern-line);}
+
+/* CBF gallery first, contextual controls second. This does not alter Explore. */
+.cm-cinema-page.cm-modern-cbf .cm-cinema-columns {grid-template-columns:minmax(0,1fr) minmax(255px,315px);gap:19px;align-items:start;}
+.cm-cinema-page.cm-modern-cbf .cm-cinema-results {grid-column:1; grid-row:1;}
+.cm-modern-cbf .cm-cinema-side {grid-column:2; grid-row:1; border-color:var(--cm-modern-line);border-radius:18px;}
+.cm-cinema-page.cm-modern-cbf .cm-cinema-results .cm-cinema-track,
+.cm-cinema-page.cm-cinema-knn .cm-cinema-results .cm-cinema-track {
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  grid-template-rows:none!important;
+  grid-auto-flow:row!important;
+  grid-auto-columns:auto!important;
+  gap:18px 12px!important;
+  max-height:none!important;
+  min-height:0!important;
+  overflow:visible!important;
+  scroll-snap-type:none!important;
+  padding:0!important;
+}
+.cm-modern-cbf .cm-cinema-results .cm-cinema-movie,
+.cm-cinema-knn .cm-cinema-results .cm-cinema-movie {border:1px solid rgba(232,191,130,.16)!important;border-radius:13px;overflow:hidden;background:linear-gradient(180deg,#1D2027,#101319)!important;padding:0 0 11px!important;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;}
+.cm-modern-cbf .cm-cinema-results .cm-cinema-movie:hover,
+.cm-cinema-knn .cm-cinema-results .cm-cinema-movie:hover {transform:translateY(-4px);border-color:rgba(232,191,130,.6)!important;box-shadow:0 12px 28px #0005;}
+.cm-modern-cbf .cm-cinema-results .cm-cinema-poster,
+.cm-cinema-knn .cm-cinema-results .cm-cinema-poster {border-radius:11px 11px 0 0;}
+.cm-modern-cbf .cm-cinema-results .cm-cinema-movie-name,
+.cm-cinema-knn .cm-cinema-results .cm-cinema-movie-name {padding:0 9px;min-height:37px; margin:9px 0 4px;font-size:12px;}
+.cm-modern-cbf .cm-cinema-results .cm-cinema-movie-score,
+.cm-cinema-knn .cm-cinema-results .cm-cinema-movie-score,
+.cm-modern-cbf .cm-cinema-results .cm-cinema-movie-genres,
+.cm-cinema-knn .cm-cinema-results .cm-cinema-movie-genres {padding:0 9px;}
+.cm-modern-cbf .cm-cinema-results .cm-cinema-movie-score,
+.cm-cinema-knn .cm-cinema-results .cm-cinema-movie-score {font-size:10px;color:#d3c6b4;}
+.cm-modern-cbf .cm-cinema-results .cm-cinema-movie-genres,
+.cm-cinema-knn .cm-cinema-results .cm-cinema-movie-genres {white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cm-modern-cbf .cm-cinema-results .cm-cinema-arrows,
+.cm-cinema-knn .cm-cinema-results .cm-cinema-arrows {display:none;}
+.cm-modern-cbf .cm-cinema-results,
+.cm-cinema-page.cm-cinema-knn .cm-cinema-results {padding:22px;border:1px solid var(--cm-modern-line);border-radius:19px;background:linear-gradient(145deg,#151920,#0C0E13);}
+.cm-modern-cbf .cm-cinema-results-head h2,
+.cm-cinema-knn .cm-cinema-results-head h2 {color:#F4E7D3;font-size:clamp(18px,1.7vw,23px);}
+.cm-modern-cbf .cm-cinema-results-head p,
+.cm-cinema-knn .cm-cinema-results-head p {margin-top:5px;max-width:460px;}
+.cm-modern-cbf .cm-cinema-mode-switch {margin-bottom:17px;}
+.cm-modern-cbf .cm-cinema-mode-switch button {border-radius:999px;padding:10px 16px;}
+.cm-modern-cbf .cm-cinema-search-hint {font-size:11px;line-height:1.5;}
+/* Results are in normal document flow, so the search dropdown cannot cover Search. */
+.cm-modern-cbf .cm-cinema-suggestion-panel {position:relative!important;inset:auto!important;top:auto!important;left:auto!important;right:auto!important;margin-top:8px;max-height:230px!important;overflow-y:auto!important;z-index:2!important;box-shadow:0 12px 25px #0005;}
+.cm-modern-cbf .cm-cinema-autocomplete {isolation:auto;}
+
+/* Real explanatory evidence, not decorative or fabricated scores. */
+.cm-modern-knn-layout {display:grid;grid-template-columns:minmax(0,1fr) minmax(275px,330px);align-items:start;gap:18px;}
+.cm-modern-knn-results {min-width:0;}
+.cm-modern-neighbor-panel {min-width:0;border:1px solid rgba(232,191,130,.38);border-radius:19px;padding:18px;background:linear-gradient(150deg,#25201c,#15171c 55%,#101117);color:#F7EEE2;box-shadow:0 12px 35px rgba(0,0,0,.18);}
+.cm-modern-neighbor-heading {display:flex;align-items:center;gap:11px;margin-bottom:15px;}
+.cm-modern-neighbor-icon {width:43px;height:43px;display:grid;place-items:center;border-radius:12px;background:#E8BF821b;color:var(--cm-modern-gold);border:1px solid #E8BF8240;flex-shrink:0;}
+.cm-modern-neighbor-heading h2 {font-size:17px;line-height:1.3;margin:0 0 4px;font-weight:800;}
+.cm-modern-neighbor-heading span {font-size:11px;color:var(--cm-modern-muted);}
+.cm-modern-knn-metrics {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 14px;}
+.cm-modern-knn-metrics>div {padding:13px 5px 11px;border-radius:12px;border:1px solid #E8BF8233;background:#E8BF820b;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;}
+.cm-modern-knn-metrics svg {color:var(--cm-modern-gold);}
+.cm-modern-knn-metrics strong {font-size:22px;color:var(--cm-modern-gold);line-height:1.1;font-variant-numeric:tabular-nums;}
+.cm-modern-knn-metrics span {font-size:10px;color:#D1C4B2;line-height:1.3;}
+.cm-modern-top-one {border:1px solid #E8BF8270;border-radius:14px;background:linear-gradient(110deg,#4E341B6e,#242020 72%);padding:14px;}
+.cm-modern-top-one-title {display:flex;align-items:center;gap:7px;color:var(--cm-modern-gold);font-size:12px;font-weight:800;}
+.cm-modern-top-one-title span {margin-left:auto;background:#E8BF82;color:#1b160f;border-radius:30px;padding:4px 9px;font-size:10px;}
+.cm-modern-top-one-body {display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;}
+.cm-modern-top-one-body>div:first-child {min-width:0;}
+.cm-modern-top-one-body strong {display:block;font-size:14px;font-weight:800;overflow:hidden;text-overflow:ellipsis;}
+.cm-modern-top-one-body small {display:block;color:#c7bcae;font-size:10px;margin-top:4px;}
+.cm-modern-top-one-score {flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;}
+.cm-modern-top-one-score b {font-size:26px;line-height:1;color:var(--cm-modern-gold);font-variant-numeric:tabular-nums;}
+.cm-modern-neighbor-details {margin-top:11px;border:1px solid #E8BF8230;border-radius:12px;background:#ffffff06;}
+.cm-modern-neighbor-details>summary {display:flex;align-items:center;justify-content:space-between;gap:8px;list-style:none;cursor:pointer;padding:12px 13px;font-size:12px;font-weight:750;color:#f3e3cb;}
+.cm-modern-neighbor-details>summary::-webkit-details-marker {display:none;}
+.cm-modern-neighbor-details[open]>summary svg {transform:rotate(180deg);}
+.cm-modern-neighbor-details ol {list-style:none;margin:0;padding:0 10px 10px;max-height:250px;overflow:auto;}
+.cm-modern-neighbor-row {display:flex;align-items:center;gap:7px;min-height:37px;padding:6px 5px;border-top:1px solid #ffffff12;font-size:11px;}
+.cm-modern-neighbor-number {display:grid;place-items:center;flex:0 0 19px;height:19px;border-radius:50%;background:#E8BF8222;color:var(--cm-modern-gold);font-size:10px;}
+.cm-modern-neighbor-id {min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cm-modern-neighbor-row strong {color:var(--cm-modern-gold);font-variant-numeric:tabular-nums;}
+.cm-modern-neighbor-row small {color:#a99e90;font-size:10px;}
+.cm-modern-neighbor-wait {border-radius:11px;border:1px dashed #E8BF8238;padding:13px;color:#c8bba8;font-size:12px;}
+.cm-modern-neighbor-error {color:#ff9a9a;font-size:12px;}
+.cm-modern-neighbor-hint {display:flex;gap:7px;margin:15px 2px 0;color:#b9aa95;font-size:10px;line-height:1.55;}
+.cm-modern-neighbor-hint svg {flex-shrink:0;margin-top:1px;color:var(--cm-modern-gold);}
+.cm-modern-knn-intro {display:flex!important;gap:18px!important;flex-wrap:wrap;}
+.cm-modern-knn-intro p {max-width:500px;}
+.cm-cinema-knn .cm-account-progress {margin-bottom:12px;}
+
+/* Real skeleton cards rather than an empty waiting region. */
+.cm-modern-skeleton-grid {display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;overflow:hidden;}
+.cm-modern-skeleton-card {min-width:0;border:1px solid #E8BF821f;border-radius:12px;padding:0 0 11px;overflow:hidden;background:#171a22;}
+.cm-modern-skeleton-poster,.cm-modern-skeleton-line {background:linear-gradient(100deg,#2e333e 18%,#424753 35%,#2e333e 52%);background-size:220% 100%;animation:cm-modern-shimmer 1.4s ease-in-out infinite;}
+.cm-modern-skeleton-poster {width:100%;aspect-ratio:2/3;}
+.cm-modern-skeleton-line {height:11px;margin:10px 8px 0;border-radius:6px;}
+.cm-modern-skeleton-line.short {width:58%;}
+@keyframes cm-modern-shimmer {from{background-position:200% 0}to{background-position:-200% 0}}
+
+/* Profile / library: compact and polished, no oversized paragraphs. */
+.cmv4-profile-page,.cmv4-history-page {padding-top:37px;}
+.cmv4-profile-page .cmv4-page-head,.cmv4-history-page .cmv4-page-head {margin-bottom:21px;}
+.cmv4-profile-page .cmv4-page-head h1,.cmv4-history-page .cmv4-page-head h1 {font-size:clamp(28px,3vw,39px);}
+.cmv4-profile-page .cmv4-profile-sidebar,.cmv4-profile-page .cmv4-profile-main {border-color:var(--cm-modern-line);background:linear-gradient(155deg,#1C1D24,#11151C 75%);}
+.cmv4-profile-page .cmv4-profile-stats div {background:linear-gradient(135deg,#32271D,#1A1C24);border-color:#E8BF8229;}
+.cmv4-profile-page .cmv4-profile-note {padding:14px 17px;}
+.cmv4-profile-page .cmv4-profile-stats {margin-bottom:25px;}
+.cmv4-history-page .cmv4-stats-bar {border-color:var(--cm-modern-line);}
+.cmv4-history-page .cmv4-library-row {background:#12161e;min-height:79px;transition:background .15s ease;}
+.cmv4-history-page .cmv4-library-row:hover {background:#26221c;}
+.cmv4-history-page .cmv4-search {border-radius:13px;}
+.cmv4-history-page .cmv4-movie-library {border:1px solid var(--cm-modern-line);border-radius:15px;overflow:hidden;}
+
+/* Rating Studio: stronger poster hierarchy, simpler actions, safer touch targets. */
+.cm-rating-film-page {padding-top:25px;}
+.cm-rating-film-page h1 {letter-spacing:-.035em;}
+.cm-rating-film-page .cm-rating-film-card {border-color:rgba(232,191,130,.17);border-radius:15px;transition:transform .2s ease,border-color .2s ease;}
+.cm-rating-film-page .cm-rating-film-card:hover {transform:translateY(-3px);border-color:rgba(232,191,130,.55);}
+.cm-rating-film-page .cm-rating-film-poster {border-radius:11px;}
+.cm-rating-film-page button {min-height:32px;}
+.cm-rating-film-page :is(input,select,button):focus-visible {outline:2px solid var(--cm-modern-gold);outline-offset:2px;}
+
+@media(max-width:1250px) {
+  .cm-cinema-page.cm-modern-cbf .cm-cinema-results .cm-cinema-track,.cm-cinema-page.cm-cinema-knn .cm-cinema-results .cm-cinema-track {grid-template-columns:repeat(4,minmax(0,1fr))!important;}
+  .cm-modern-skeleton-grid {grid-template-columns:repeat(4,minmax(0,1fr));}
+  .cm-modern-skeleton-card:nth-child(5){display:none;}
+}
+@media(max-width:1050px) {
+  .cm-cinema-page.cm-modern-cbf .cm-cinema-columns,.cm-modern-knn-layout{grid-template-columns:1fr;}
+  .cm-modern-cbf .cm-cinema-results,.cm-modern-cbf .cm-cinema-side{grid-row:auto;grid-column:auto;}
+  .cm-modern-cbf .cm-cinema-results{order:1;}
+  .cm-modern-cbf .cm-cinema-side{order:2;}
+  .cm-modern-neighbor-panel{margin-top:0;}
+}
+@media(max-width:630px) {
+  .cm-cinema-page.cm-modern-cbf .cm-cinema-results .cm-cinema-track,.cm-cinema-page.cm-cinema-knn .cm-cinema-results .cm-cinema-track {grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px 10px!important;}
+  .cm-modern-skeleton-grid {grid-template-columns:repeat(2,minmax(0,1fr));}
+  .cm-modern-skeleton-card:nth-child(n+3){display:none;}
+  .cm-modern-cbf .cm-cinema-results,.cm-cinema-page.cm-cinema-knn .cm-cinema-results {padding:15px 12px;}
+  .cm-modern-cbf .cm-cinema-movie-name,.cm-cinema-knn .cm-cinema-movie-name {font-size:12px;}
+  .cm-modern-knn-metrics strong{font-size:19px;}
+  .cm-modern-knn-intro {padding:16px!important;}
+  .cmv4-profile-page,.cmv4-history-page {padding-top:25px;}
+}
+@media(prefers-reduced-motion:reduce) {
+  .cm-modern-cbf .cm-cinema-movie,.cm-cinema-knn .cm-cinema-movie,.cm-rating-film-page .cm-rating-film-card {transition:none!important;}
+  .cm-modern-skeleton-poster,.cm-modern-skeleton-line {animation:none;}
+}
+.cm-cinema-knn .cm-cinema-movie-neighbors {display:flex;align-items:center;gap:5px;color:#bba985;font-size:10px;padding:3px 9px 0;}
+.cm-cinema-knn .cm-cinema-movie-neighbors svg {color:var(--cm-modern-gold);flex-shrink:0;}
+
+/* CINEMATCH VIDEO UX V2 2026-11-21 - scoped enhancements */
+/* The first personalized CBF view had a large empty loading container. */
+.cm-personal-film-page .cm-video-personal-loading {
+  border: 1px solid rgba(232,191,130,.19);
+  border-radius: 17px;
+  background: linear-gradient(135deg, #13171f, #0f1118);
+  padding: 18px;
+}
+.cm-personal-film-page .cm-video-personal-status {
+  display:flex; align-items:center; gap:9px;
+  color:#CFC3B4; font-size:12px; margin:0 0 14px;
+}
+.cm-personal-film-page .cm-video-personal-skeleton {
+  display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:13px;
+}
+.cm-personal-film-page .cm-video-personal-card {
+  overflow:hidden; border-radius:12px; border:1px solid rgba(232,191,130,.12);
+  background:#191d26; padding-bottom:14px; min-width:0;
+}
+.cm-personal-film-page .cm-video-personal-poster,
+.cm-personal-film-page .cm-video-personal-line {
+  background:linear-gradient(105deg,#242a36 15%,#3d4250 38%,#242a36 60%);
+  background-size:220% 100%; animation:cm-video-pulse 1.6s linear infinite;
+}
+.cm-personal-film-page .cm-video-personal-poster {aspect-ratio:2/3; width:100%;}
+.cm-personal-film-page .cm-video-personal-line {height:11px;margin:12px 9px 0;border-radius:5px;}
+.cm-personal-film-page .cm-video-personal-line.short {width:60%;}
+@keyframes cm-video-pulse {from{background-position:200% 0}to{background-position:-200% 0}}
+/* Refine recommendation grid without touching Home or Explore. */
+.cm-personal-film-page section > .grid button.group {border-color:rgba(232,191,130,.2); background:#131821;}
+.cm-personal-film-page section > .grid button.group:hover {border-color:rgba(232,191,130,.62);}
+/* Rating screen: slightly tighter toolbars, poster-first card hierarchy. */
+.cm-rating-film-page .cm-rating-film-card {box-shadow:0 10px 28px rgba(0,0,0,.15);}
+.cm-rating-film-page .cm-rating-film-meta {gap:8px;}
+/* History library: useful 5-star stat replaces partial metadata year range. */
+.cmv4-history-page .cmv4-library-row {grid-template-columns:30px 54px minmax(0,1fr) 82px 76px;gap:13px;min-height:90px;}
+.cmv4-history-page .cmv4-row-poster {width:48px; height:66px;}
+.cmv4-history-page .cmv4-row-poster img {width:100%;height:100%;object-fit:cover;}
+.cmv4-history-page .cmv4-row-main strong {font-size:13px;}
+.cmv4-history-page .cmv4-row-main small {font-size:11px;}
+@media(max-width:1050px) {
+ .cm-personal-film-page .cm-video-personal-skeleton {grid-template-columns:repeat(4,minmax(0,1fr));}
+ .cm-personal-film-page .cm-video-personal-card:nth-child(5) {display:none;}
+}
+@media(max-width:680px) {
+ .cm-personal-film-page .cm-video-personal-skeleton {grid-template-columns:repeat(2,minmax(0,1fr));}
+ .cm-personal-film-page .cm-video-personal-card:nth-child(n+3) {display:none;}
+ .cmv4-history-page .cmv4-library-row {grid-template-columns:20px 40px minmax(0,1fr) 61px;min-height:74px;gap:9px;}
+ .cmv4-history-page .cmv4-row-poster {width:38px;height:53px;}
+}
+@media(prefers-reduced-motion:reduce) {
+ .cm-personal-film-page .cm-video-personal-poster,.cm-personal-film-page .cm-video-personal-line{animation:none;}
+}
+
+
+/* FIX2: four visible history columns on mobile (index, poster, name, rating). */
+@media (max-width:680px) {
+  .cmv4-history-page .cmv4-row-year { display:none; }
+  .cmv4-history-page .cmv4-rating { justify-self:end; white-space:nowrap; }
+}
+.cm-account-progress .cm-account-error .cm-account-retry {
+  display:inline-flex; margin-top:8px; padding:7px 11px; font-size:12px;
+}

@@ -414,7 +414,7 @@ export const RateMoviesView: React.FC<RateMoviesViewProps> = ({
         </h1>
 
         <p className="max-w-3xl text-sm leading-relaxed text-[#9EA3AE]">
-          Chọn số sao cho những bộ phim bạn đã xem để nhận gợi ý ngày càng hợp gu.
+          Chấm từ 0,5 đến 5 sao. Gợi ý sẽ ngày càng hợp gu.
         </p>
 
         <div className="flex flex-wrap gap-2 pt-2">
